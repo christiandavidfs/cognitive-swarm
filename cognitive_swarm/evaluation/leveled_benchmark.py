@@ -161,10 +161,11 @@ class QwenSolver:
 
 
 class OptimizedDebateSolver:
-    """Phi + Qwen swarm debate with optimized prompts."""
-    def __init__(self):
+    """Phi + Qwen swarm debate with optimized prompts and confidence consensus."""
+    def __init__(self, samples_per_model: int = 1):
         from cognitive_swarm.orchestration.optimized_debate import OptimizedDebate
-        self.debate = OptimizedDebate(max_rounds=1)
+        self.debate = OptimizedDebate(max_rounds=1, samples_per_model=samples_per_model)
+        self.samples_per_model = samples_per_model
 
     def solve(self, q, max_tokens=32):
         res = self.debate.run_debate(q, max_tokens=max_tokens)
@@ -222,11 +223,11 @@ def summarize(results: List[Dict]) -> Dict[str, Any]:
     }
 
 
-def run_leveled_benchmark(runs_per_problem: int = 2):
+def run_leveled_benchmark(runs_per_problem: int = 2, samples_per_model: int = 1):
     solvers = {
         "phi": PhiSolver(),
         "qwen": QwenSolver(),
-        "debate": OptimizedDebateSolver(),
+        "debate": OptimizedDebateSolver(samples_per_model=samples_per_model),
         "api": APISolver(),
     }
 
@@ -332,6 +333,7 @@ def run_leveled_benchmark(runs_per_problem: int = 2):
     out = {
         "config": {
             "runs_per_problem": runs_per_problem,
+            "samples_per_model": samples_per_model,
             "problems_total": len(LEVELED_PROBLEMS),
             "api_available": api_available,
             "levels": ["easy", "medium", "hard"],
@@ -348,5 +350,9 @@ def run_leveled_benchmark(runs_per_problem: int = 2):
 
 
 if __name__ == "__main__":
-    runs = int(sys.argv[1]) if len(sys.argv) > 1 else 2
-    run_leveled_benchmark(runs_per_problem=runs)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("runs", type=int, nargs="?", default=2, help="runs per problem")
+    parser.add_argument("--samples", type=int, default=1, help="samples per model for confidence consensus")
+    args = parser.parse_args()
+    run_leveled_benchmark(runs_per_problem=args.runs, samples_per_model=args.samples)

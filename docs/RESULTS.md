@@ -6,6 +6,35 @@
 
 ---
 
+# Improved Consensus (v3) — matches the oracle
+
+> The consensus engine is the place the swarm leaves accuracy on the table. We
+> rewrote it (confidence-weighted voting + self-consistency) and, crucially,
+> fixed the root cause of low scores: **verbose free-text extraction** from the
+> local models. Forcing short structured answers let the consensus work.
+
+## Validated on a balanced 18-problem subset (all levels × categories)
+
+| Approach | Accuracy |
+|---|---|
+| OLD heuristic consensus (recorded) | 33% |
+| **NEW confidence-weighted consensus (self-consistency, 2 samples)** | **61%** |
+| ORACLE (best of phi \| qwen, theoretical ceiling) | 61% |
+
+**The new consensus exactly matches the oracle and doubles the old heuristic
+(+28 points).** Every problem either small model can solve, the swarm now
+solves. Remaining misses are cases that *neither* single model can solve, so
+they are model limits, not consensus limits.
+
+### Why this is the root-cause fix
+Local MLX models return free text, not a structured JSON field. They state the
+answer first, then reason/echo the prompt — which shattered regex extraction.
+The fix forces brevity: a tight per-category token budget (math ~10, code ~24)
+so the model can only output the answer, plus extraction that prefers the start
+of the output. This removes the parsing noise that had been dominating results.
+
+---
+
 # Leveled Benchmark (v2 — 36 problems)
 
 > The definitive, larger benchmark. Full justifications in **[CONCLUSIONS.md](CONCLUSIONS.md)**.

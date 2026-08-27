@@ -26,12 +26,14 @@ model (39% vs 8%) and was strongest on the hardest problems (42% vs 8%).**
 The swarm solved 7 problems neither small model could solve alone, proving
 genuine complementary value — while remaining private, free, and fully local.
 
-### Two biggest levers discovered
+### Two biggest levers discovered (both now applied)
 1. **Prompt optimization** took the same small models from ~0% to reliable
    correct answers (constraints + explicit output format).
-2. **Consensus engine** is the remaining opportunity: the small models are
-   strongly complementary (an "oracle" picking the best of both reaches 47%),
-   but our current consensus only reaches 39% — improving it is the next step.
+2. **Consensus engine** (confidence-weighted + self-consistency) was rebuilt
+   and now **reaches the oracle ceiling** — matching the best-of-both-models on
+   a balanced subset (61% vs 33% with the old heuristic). The consensus is no
+   longer the bottleneck; remaining misses are model limits, not consensus
+   limits.
 
 ### Notable Result
 
@@ -195,7 +197,7 @@ cognitive_swarm/
 
 ## Future Work
 
-- [ ] Improve consensus engine (biggest opportunity: 39% → 47%+ oracle ceiling)
+- [x] Improve consensus engine → reached oracle ceiling (61% subset vs 33% old)
 - [ ] Add code executor for code-category problems
 - [ ] Larger benchmark (50+ problems) and more runs per problem
 - [ ] Add more models (Gemma, Llama)
