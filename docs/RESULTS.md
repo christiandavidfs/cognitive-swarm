@@ -4,6 +4,48 @@
 
 **Can structured interaction between multiple weak models create stronger reasoning than a single weak model?**
 
+---
+
+# Leveled Benchmark (v2 — 36 problems)
+
+> The definitive, larger benchmark. Full justifications in **[CONCLUSIONS.md](CONCLUSIONS.md)**.
+
+## Experimental Setup
+
+- **36 problems** across 3 difficulty levels (12 easy / 12 medium / 12 hard)
+  and 3 categories (math / reasoning / code).
+- Local models (Phi, Qwen, Debate) use **optimized prompts** (constraints +
+  explicit output format).
+- Accuracy = problem solved if the answer is correct.
+- Compared against single large API model (Qwen 27B via Groq).
+
+## Overall Results
+
+| Approach | Overall | Easy | Medium | Hard | Math | Reasoning | Code |
+|---|---|---|---|---|---|---|---|
+| Phi-3.5 Mini (single) | 28% | 67% | 8% | 8% | 42% | 25% | 17% |
+| Qwen 2.5 3B (single) | 28% | 33% | 42% | 8% | 17% | 33% | 33% |
+| **Debate (Phi + Qwen)** | **39%** | 42% | 33% | **42%** | **67%** | **42%** | 8% |
+| API (Qwen 27B) | 8% | 8% | 8% | 8% | 8% | 0% | 17% |
+
+## Headline Findings
+
+1. **Debate swarm beat the large API model overall** (39% vs 8%).
+2. **Debate was strongest on the hardest tier** (42% vs 8% for any single model).
+3. **Debate solved 7 problems neither single small model could solve** — real
+   complementary value, not averaging.
+4. **The small models are strongly complementary:** an "oracle" that always
+   picks the best of Phi-or-Qwen reaches 47%, above the debate's 39%. Our
+   consensus engine currently leaves ~8 pts on the table — the top improvement.
+5. **Large API model was hampered in practice** by persistent "thinking mode"
+   output that pollutes answers regardless of prompt.
+
+---
+
+# Specialized Benchmark (v1 — 7 problems)
+
+> Historical baseline. Retained for comparison with the earlier phase of the project.
+
 ## Experimental Setup
 
 ### Models Tested
@@ -166,7 +208,10 @@ To reproduce these results:
 # Install dependencies
 pip install -r requirements.txt
 
-# Run benchmark
+# Run the leveled benchmark (36 problems; add a number for more runs/problem)
+python cognitive_swarm/evaluation/leveled_benchmark.py 2
+
+# Run the legacy specialized benchmark
 python cognitive_swarm/evaluation/specialized_benchmark.py
 
 # Run full comparison (requires Groq API key)

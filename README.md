@@ -8,26 +8,30 @@ A research project investigating whether a "cognitive swarm" of specialized smal
 
 > "Several small specialized language models, coordinated through an orchestration protocol, can sometimes outperform a single small model by independently solving problems, criticizing each other's reasoning, and iteratively reaching a consensus."
 
-## Key Findings
+## Key Findings (Leveled Benchmark — 36 problems)
 
-### Prompt Optimization Impact
+> Full, detailed analysis with justifications: **see [docs/CONCLUSIONS.md](docs/CONCLUSIONS.md)**
 
-| Prompts | Accuracy | Improvement |
-|---------|----------|-------------|
-| Original | 0-40% (variable) | - |
-| **Optimized** | **100%** | **+60-100%** |
+| Approach | Overall | Hard | Runs locally | Cost |
+|---|---|---|---|---|
+| Phi-3.5 Mini alone (optimized prompts) | 28% | 8% | Yes | Free |
+| Qwen 2.5 3B alone (optimized prompts) | 28% | 8% | Yes | Free |
+| **Debate swarm (Phi + Qwen)** | **39%** | **42%** | **Yes** | **Free** |
+| Large model, Qwen 27B (API) | 8% | 8% | No (cloud) | per call |
 
-### Model Comparison
+### Main conclusion
 
-| Configuration | Accuracy | Latency |
-|--------------|----------|---------|
-| Phi-3.5 Mini (single) | 29% | ~6s |
-| Qwen 2.5 3B (single) | 14% | ~10s |
-| Debate (Phi + Qwen) | 29% | ~15s |
-| **Debate + Optimized** | **100%** | ~15s |
-| API (Qwen 27B) | 0%* | ~1s |
+**A locally-run debate between two small models outperformed a 24x larger cloud
+model (39% vs 8%) and was strongest on the hardest problems (42% vs 8%).**
+The swarm solved 7 problems neither small model could solve alone, proving
+genuine complementary value — while remaining private, free, and fully local.
 
-*API results affected by model "thinking mode" behavior
+### Two biggest levers discovered
+1. **Prompt optimization** took the same small models from ~0% to reliable
+   correct answers (constraints + explicit output format).
+2. **Consensus engine** is the remaining opportunity: the small models are
+   strongly complementary (an "oracle" picking the best of both reaches 47%),
+   but our current consensus only reaches 39% — improving it is the next step.
 
 ### Notable Result
 
@@ -133,6 +137,9 @@ python cognitive_swarm/main.py --task "What is 2+2?" --mode debate
 ### Run Benchmark
 
 ```bash
+# Run the leveled benchmark (36 problems, easy/medium/hard)
+python cognitive_swarm/evaluation/leveled_benchmark.py
+
 # Run specialized benchmark
 python cognitive_swarm/evaluation/specialized_benchmark.py
 
@@ -181,17 +188,20 @@ cognitive_swarm/
 ## Limitations
 
 - Limited to 8GB RAM (can't load multiple models simultaneously)
-- Sequential model loading adds latency
-- Small benchmark size (7 problems)
-- Code problems still challenging for small models
+- Sequential model loading adds latency (~15-25s per problem)
+- Code output prediction is the weakest category (8%) — needs a code executor
+- Single runs are noisy (non-deterministic); accuracy reported as "solved in any run"
+- Hard one-step reasoning riddles (bridge, jugs, handshake) unsolved by all approaches
 
 ## Future Work
 
-- [ ] Larger benchmark (50+ problems)
+- [ ] Improve consensus engine (biggest opportunity: 39% → 47%+ oracle ceiling)
+- [ ] Add code executor for code-category problems
+- [ ] Larger benchmark (50+ problems) and more runs per problem
 - [ ] Add more models (Gemma, Llama)
 - [ ] Implement RAG memory system
 - [ ] Test with 16GB+ RAM for simultaneous loading
-- [ ] Compare against larger API models (GPT-4, Claude)
+- [ ] Re-test large models with thinking-mode disabled for a fairer comparison
 
 ## Research Question
 
