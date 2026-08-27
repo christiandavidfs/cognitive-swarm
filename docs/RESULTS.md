@@ -6,6 +6,69 @@
 
 ---
 
+# Truth Hierarchy (v5) — source of truth + verified memory (real-life learning)
+
+> The realization that consensus is only a *fallback*, not the primary
+> mechanism. Real learning uses the cheapest, most-certain *source of truth*,
+> a persistent memory of verified experience, and honest handling of ambiguous
+> domains (history, opinions, contested facts) where no single truth exists.
+> Full code: `cognitive_swarm/tools/executor.py`,
+> `cognitive_swarm/memory/verified_memory.py`,
+> `cognitive_swarm/orchestration/truth_router.py`,
+> `cognitive_swarm/orchestration/corroboration.py`.
+
+## The tier order (cheapest-most-certain first)
+
+```
+Tier 0  MEMORY    : already-verified (provenance-aware). Instant, no compute.
+Tier 1  CODE EXEC : code-output question -> run the interpreter. Deterministic.
+Tier 2  CALC      : self-contained arithmetic -> evaluate deterministically.
+Tier 3  RETRIEVAL : factual/contested -> corroborate reliability-weighted
+                    sources; surface CONFLICT honestly (no forced answer).
+Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source (fallback only).
+```
+
+## Results (all tiers run with ZERO model loads)
+
+| Tier | Result |
+|---|---|
+| Code executor (12 code-category problems) | **12/12 = 100%** (was 8% with models) |
+| Calculator (simple arithmetic) | correct where applicable |
+| Memory compounding (pass 2 of the 36) | 15 hits in **5.3ms** (no recompute) |
+| Total deterministic resolve (36-problem set) | **15/36 = 42% in 0.35s, 0 model loads** |
+
+### Key numbers
+- The **weakest category (code, 8%) becomes the strongest (100%)** — simply by
+  *running* the code instead of trusting models to predict output. Ground truth
+  beats consensus every time.
+- Memory archives every verified answer with **provenance** `{answer,
+  confidence, tier, reliability, sources[], disagreement}`. Repeats/rephrases
+  hit memory in milliseconds with zero inference — the swarm's "experience"
+  compounds over time, independent of any single model's weights.
+- **Similarity is code-aware**: distinct code questions never blur together
+  (we reject soft token-overlap for executable questions, which would wrongly
+  merge `sorted([1,2,3])` and `len([1,2,[3,4]])` because they share digits).
+
+### Honest handling of ambiguous domains (history example)
+- **Corroborated**: two independent source claims about the Fall of the Western
+  Roman Empire converge -> answer `476 CE` with confidence 0.95.
+- **Conflict**: two reliable historians disagree on the *cause* of the fall ->
+  we return **no forced single answer** and surface the disagreement with
+  provenance. Real learning admits when sources conflict instead of faking
+  certainty.
+- The corroborator weights each claim by **reliability and independence**, so a
+  single primary source outweighs ten derived copies.
+
+### Conclusion
+This is the "slowly feed up a small model from a source of truth instead of
+consensus alone" idea made concrete: deterministic tools provide ground truth,
+memory is the accumulating experience (with provenance and honest conflict),
+consensus/debate is reduced to its correct role — a fallback for genuinely
+unverifiable questions. This is the architecture that makes a small-model swarm
+yield high-leverage, compounding, verifiable reasoning on a single laptop.
+
+---
+
 # Emergence (v4) — the swarm EXCEEDS the oracle (cross-critique debate)
 
 > The decisive experiment for the hive-mind premise: does a swarm solve problems
