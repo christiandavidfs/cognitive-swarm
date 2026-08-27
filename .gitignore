@@ -60,3 +60,12 @@ comparison_results.json
 
 # API keys (NEVER commit)
 GROQ_API_KEY=
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+

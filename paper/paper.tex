@@ -1,17 +1,10 @@
 \documentclass[10pt,twocolumn]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{fullpage}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
 \usepackage[hidelinks]{hyperref}
-\usepackage{microtype}
-\usepackage{xcolor}
-\usepackage{titlesec}
-
-\titleformat{\section}{\large\bfseries}{}{0pt}{}[]
-\titleformat{\subsection}{\normalsize\bfseries}{}{0pt}{}
 
 \title{%
   A Cognitive Swarm of Small Local Models:\\
@@ -201,7 +194,7 @@ solved if the answer is correct. Single runs are noisy, so we report
   \caption{Overall accuracy, 36-problem benchmark. Highest in each column in
   bold.}
   \label{tab:leveled}
-  \begin{tabular}{@{}lccccl@{}}
+  \begin{tabular}{@{}lcccccccl@{}}
     \toprule
     Approach & Overall & Easy & Med & Hard & Math & Reas & Code \\
     \midrule
