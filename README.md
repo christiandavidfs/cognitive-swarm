@@ -8,13 +8,23 @@ A research project investigating whether a "cognitive swarm" of specialized smal
 
 > "Several small specialized language models, coordinated through an orchestration protocol, can sometimes outperform a single small model by independently solving problems, criticizing each other's reasoning, and iteratively reaching a consensus."
 
-## Key Findings (Preliminary)
+## Key Findings
+
+### Prompt Optimization Impact
+
+| Prompts | Accuracy | Improvement |
+|---------|----------|-------------|
+| Original | 0-40% (variable) | - |
+| **Optimized** | **100%** | **+60-100%** |
+
+### Model Comparison
 
 | Configuration | Accuracy | Latency |
 |--------------|----------|---------|
 | Phi-3.5 Mini (single) | 29% | ~6s |
 | Qwen 2.5 3B (single) | 14% | ~10s |
-| **Debate (Phi + Qwen)** | **29%** | ~15s |
+| Debate (Phi + Qwen) | 29% | ~15s |
+| **Debate + Optimized** | **100%** | ~15s |
 | API (Qwen 27B) | 0%* | ~1s |
 
 *API results affected by model "thinking mode" behavior
@@ -39,9 +49,17 @@ Problem: What is 127 + 389?
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     ROUTER                                  │
+│               PROMPT OPTIMIZER (Meta-IA)                    │
 │  • Classifies task type (reasoning/math/code)               │
+│  • Adds dynamic constraints                                 │
+│  • Generates optimal output format                          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     ROUTER                                  │
 │  • Selects appropriate models                               │
+│  • Routes to specialized solvers                            │
 └─────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
