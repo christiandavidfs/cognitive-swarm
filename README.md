@@ -198,6 +198,10 @@ cognitive_swarm/
 ## Future Work
 
 - [x] Improve consensus engine → reached oracle ceiling (61% subset vs 33% old)
+- [x] Test emergence above the oracle → cross-critique debate **beats the oracle**
+      (hard subset: oracle 12%, swarm candidates 62%) — see docs/RESULTS.md
+- [ ] Fix consensus SELECTION (majority voting discards novel-correct minorities:
+      candidates 62% → system 38%). Highest-leverage next step.
 - [ ] Add code executor for code-category problems
 - [ ] Larger benchmark (50+ problems) and more runs per problem
 - [ ] Add more models (Gemma, Llama)
