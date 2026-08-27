@@ -1,0 +1,18 @@
+# Cognitive Swarm - Requirements
+# For Apple Silicon (M1/M2/M3) with MLX backend
+
+# Core MLX dependencies
+mlx>=0.4.0
+mlx-lm>=0.0.10
+
+# Utilities
+psutil>=5.9.0
+pyyaml>=6.0
+
+# Optional: For future RAG support
+# chromadb>=0.4.0
+# sentence-transformers>=2.2.0
+
+# Development
+pytest>=7.0.0
+black>=23.0.0

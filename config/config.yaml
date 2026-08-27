@@ -1,0 +1,51 @@
+# Cognitive Swarm Configuration
+
+model:
+  # Default model for all agents
+  # Using MLX-compatible model for Apple Silicon
+  default: "mlx-community/phi-3.5-mini-instruct-4bit"
+
+  # Model configuration
+  max_tokens: 512
+  temperature: 0.7
+  top_p: 0.9
+  repetition_penalty: 1.1
+  context_window: 2048
+
+agents:
+  solver_a:
+    strategy: "normal"
+    max_retries: 2
+
+  solver_b:
+    strategy: "skeptical"
+    max_retries: 2
+
+  critic:
+    focus: "falsification"
+    severity_threshold: "moderate"
+
+  verifier:
+    enable_code_execution: true
+    timeout_seconds: 10
+
+orchestration:
+  max_rounds: 3
+  early_stop: true
+  min_confidence: 0.6
+
+  # Debate protocol settings
+  debate:
+    require_verification: true
+    preserve_disagreement: true
+
+evaluation:
+  benchmark_problems: 10
+  modes:
+    - "single"
+    - "debate"
+    - "verified"
+
+logging:
+  level: "INFO"
+  file: "cognitive_swarm.log"
