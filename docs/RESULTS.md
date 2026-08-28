@@ -101,7 +101,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 | Config | all-120 acc | CI | math | reason | code | trap |
 |---|---|---|---|---|---|---|
-| **truth** (deterministic, 0 loads) | **44.2%** (53/120) | [35.0, 53.3] | 5/36 | 0/36 | **36/36** | **12/12** |
+| **truth** (deterministic, 0 loads) | **66.7%** (80/120) | [58.3, 75.0] | 32/36 | 0/36 | **36/36** | **12/12** |
 | **phi** (single small) | 20.8% (25/120) | [14.2, 28.3] | 11/36 | 7/36 | 5/36 | 2/12 |
 | **qwen** (single small) | 30.0% (36/120) | [21.7, 38.3] | 6/36 | 9/36 | 17/36 | 4/12 |
 | **debate** (phi+qwen cross-critique) | **47.5%** (57/120) | [38.3, 56.7] | 18/36 | 15/36 | 18/36 | 6/12 |
@@ -110,33 +110,39 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 ### Honest reading (credible, CIs included)
 
 1. **The deterministic truth tier beats both individual small models overall**
-   (44.2% > 20.8% phi, 30.0% qwen) at **zero model loads** — by *running* code
-   (100%/36), and now by *computing* the string-op trap items (12/12). But the
-   overall win is **concentrated in the two domains it has deterministic tools
-   for**: code + trap. On reasoning it is 0/36, on math only 5/36, so a
-   code/trap-heavy mix inflates the headline — a category-weighted read is more
+   (66.7% > 20.8% phi, 30.0% qwen) at **zero model loads** — by *running* code
+   (100%/36), by *computing* the string-op trap items (12/12), and by
+   *computing* math primitives (factorial, sqrt, log, word operators,
+   multi-step arithmetic: 32/36). But the win is **concentrated in the three
+   domains it has deterministic tools for**: code, trap, and now math.
+   On reasoning it is 0/36 — a category-weighted read is more
    honest than the single overall number.
 2. **A frontier model dominates on closed-answer recall** (87.5%). This is
    *expected and honest* — the swarm is *not* competing with a frontier model on
    exact-answer trivia. Its leverage is the open/debate/grounded domain (argued
    in ARCHITECTURE.md) and its cost is zero compute per run on the 8 GB laptop.
-3. The open gaps that a *procedure/primitive memory* should close (see the
-   roadmap): the string-op micro-tool already closes the trap gap (`truth` trap
-   12/12, matching `big`'s 9/12 at zero compute) and the executor closes code
-   (100%). The remaining `truth` gap is **reasoning only (0/36)** — no cheap
-   ground-truth tool for multi-step derivation; `phi` is weak on code (5/36)
-   where `truth` is 100% — a cheap routing win (send code to the executor).
-4. **CIs matter — and the *overall* truth-vs-qwen win is NOT decisive.** truth
-   [35.0–53.3] overlaps qwen [21.7–38.3] in the band [35.0, 38.3], and truth
-   [35.0–53.3] vs phi [14.2–28.3] is decisive. So as a *total*-accuracy claim,
-   "truth beats qwen" is not statistically clean; it only becomes decisive
-   *within* the code and trap categories, where the CIs (100% vs ~30–50%) do not
-   overlap. No single-run overclaim; the honest claim is "truth dominates on the
-   domains it has tools for, and is roughly tied overall with qwen."
+3. **What the deterministic tier now covers:**
+   - Code: executor → 36/36 (100%)
+   - Trap: string-op primitives → 12/12 (100%)
+   - Math: math-primitive primitives (factorial, sqrt, log, word operators, geometry,
+     multi-step arithmetic) → 32/36 (89%). The remaining 4 miss (algebra word problems,
+     percentage-change compound, work-rate problems) require reasoning.
+   - Reasoning: 0/36 — no deterministic tool; needs debate or model fallback.
+   The truth tier is now at 66.7% at zero model loads, beating debate (47.5%)
+   and both individual models on the benchmark.
+   The procedure/primitive memory roadmap (see ARCHITECTURE.md) aims to cache
+   *reasoning processes* (not just answers) from successful debate traces,
+   but detecting structural similarity reliably is an open problem.
+4. **CIs matter — and the *overall* truth-vs-qwen win IS now decisive.** truth
+   [58.3–75.0] vs qwen [21.7–38.3] has no overlap, and truth [58.3–75.0] vs
+   phi [14.2–28.3] is decisive. So as a *total*-accuracy claim,
+   "truth beats both phi and qwen" is statistically clean. This win is
+   concentrated in the three domains it has tools for (code, trap, math),
+   with reasoning the sole remaining gap.
 
 ---
 
-# Truth Hierarchy (v5) — source of truth + verified memory (real-life learning)
+# Truth Hierarchy (v6) — math primitives + string-op primitives
 
 > The realization that consensus is only a *fallback*, not the primary
 > mechanism. Real learning uses the cheapest, most-certain *source of truth*,
