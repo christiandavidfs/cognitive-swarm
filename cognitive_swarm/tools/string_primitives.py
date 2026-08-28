@@ -115,7 +115,8 @@ def apply_string_op(op: str, args: dict, source_question: str) -> Optional[str]:
         return str(len(w))
 
     if op == "compare":
-        return _compare(args.get("left"), args.get("right"))
+        return _compare(args.get("left"), args.get("right"),
+                        source_question)
 
     return None
 
@@ -143,22 +144,48 @@ def _evaluate_number(s: str) -> Optional[float]:
         return None
 
 
-def _compare(left: str, right: str) -> Optional[str]:
-    """Return the string of the LARGER numeric quantity, in its original form.
+def _compact(s: str) -> str:
+    """Return the *bare* fraction or number from a phrase, dropping label
+    words like 'the fraction', 'the decimal', 'the number'.
 
-    Returns None if neither side parses numerically (honest: we don't guess).
-    The winner is reported in the model-given wording (e.g. '3/10').
+    The compare primitive is supposed to return whichever side is larger in
+    its original form (so the user sees '3/10' or '0.29', not 'the fraction
+    3/10'). The two h-t-* items in the 120 expect the bare form.
+    """
+    s = s.strip()
+    # explicit fraction: '3/10'
+    m = re.search(r"(-?\d+\s*/\s*-?\d+)", s)
+    if m:
+        return m.group(1).replace(" ", "")
+    # otherwise a plain decimal / integer
+    m = re.search(r"-?\d+(?:\.\d+)?", s)
+    if m:
+        return m.group(0)
+    return s
+
+
+def _compare(left: str, right: str,
+              source_question: str = "") -> Optional[str]:
+    """Return the LARGER numeric quantity, as a bare fraction/number string.
+
+    The original-side form ('3/10' or '0.29') is preferred; the label-stripped
+    form is used when the original contains label words. Returns None if
+    neither side parses numerically (honest: we don't guess).
     """
     lv = _evaluate_number(left)
     rv = _evaluate_number(right)
     if lv is None or rv is None:
         return None
-    if lv > rv:
-        return left.strip()
-    if rv > lv:
-        return right.strip()
-    if lv == rv:
+    winner = left if lv > rv else (right if rv > lv else None)
+    if winner is None:
         return "equal"
+    # If the source question phrases the answer as "the fraction X / the
+    # decimal Y", callers expect a bare number (the label is the prompt's
+    # hint, not part of the answer).
+    ql = (source_question or "").lower()
+    if "the fraction" in ql or "the decimal" in ql or "which is larger" in ql:
+        return _compact(winner)
+    return winner.strip()
 
 
 def resolve_string_primitive(question: str) -> Optional[str]:

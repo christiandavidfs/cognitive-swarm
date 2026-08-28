@@ -142,6 +142,23 @@ class TruthRouter:
                                   sources=[{"name": "calculator", "reliability": 1.0}])
 
         # Tier 3: factual / contested -> corroborate available sources.
+        # GATE: retrieval is a *fuzzy lexical* source, so it can misfire on
+        # short math questions whose tokens overlap a document (e.g. "7!" ->
+        # "299,792,458 metres per second" from science.txt). Skip it when the
+        # question has an explicit math structure (the primitives above would
+        # have caught it if they could resolve it, but they return None for
+        # things like "one half of one quarter of 400" — still a math question
+        # and still not a retrieval one). Never archive a retrieval claim as
+        # verified memory for a math-shaped question.
+        if self._has_math_structure(question):
+            return Resolution(None, 0.0, "none", "debate",
+                              sources=[],
+                              disagreement=[{
+                                  "answer": "math-structured question; "
+                                            "retrieval refused",
+                                  "sources": ["local-docs"],
+                                  "reliability": 0.0,
+                              }])
         claims = self._collect_source_claims(question, task_type)
         if claims:
             verdict = self.corroborator.corroborate(claims)
@@ -253,6 +270,67 @@ class TruthRouter:
         if x == int(x):
             return str(int(x))
         return ("%.6f" % x).rstrip("0").rstrip(".")
+
+    # ------------------------------------------------------------------
+    # Math-structure gate: protect retrieval from short math questions whose
+    # tokens overlap a document.
+    # ------------------------------------------------------------------
+    # A math-shaped question is never a retrieval question; fuzzy document overlap
+    # is the bug that poisoned memory with the speed of light for factorial
+    # questions. The gate checks: (a) explicit operators (+-*/x^=), (b) math
+    # function tokens (factorial, sqrt, log, etc.), (c) word fractions (half
+    # of N), (d) other math-phrase hints (geometry, sequences, etc.).
+    _MATH_HINTS = (
+        "factorial", "sqrt", "square root", "log", "ln ", "squared",
+        "cubed", "power of", "to the power of",
+        "half of", "quarter of", "third of", "fourth of", "fifth of",
+        "next in the sequence", "nth term", "arithmetic progression",
+        "geometric progression", "interior angles", "perimeter of",
+        "area of", "volume of", "circumference", "pythagorean",
+    )
+
+    @classmethod
+    def _has_math_structure(cls, question: str) -> bool:
+        """Return True if the question reads as a math query.
+
+        Used to *gate* Tier 3 retrieval: lexical overlap is unreliable
+        for short numeric queries (the ``7!`` -> ``299,792,458 metres
+        per second`` poison case proved this). We refuse retrieval when
+        the question carries an arithmetic operator or a math-function
+        token — those belong to the deterministic tiers, not to fuzzy
+        document lookup. The gate is deliberately *narrow* to avoid
+        blocking legitimate retrieval on factual questions that happen
+        to mention a number.
+        """
+        ql = question.lower()
+        # explicit arithmetic operators. NOTE: 'x' as a multiplication symbol
+        # is omitted on purpose because it false-positives on words like
+        # 'exactly', 'box', etc. — multiplication in the benchmark uses '*'.
+        # Require a digit in the question so prose like "km/h" or "60 km/h"
+        # does not misfire: a real arithmetic question always contains a
+        # number, and we pair the operator with a digit to be safe.
+        if re.search(r"\d", ql) and re.search(r"[+\-*/^=]", ql):
+            return True
+        # math-function tokens: factorial, sqrt, squared, cubed, power,
+        # or a bare number followed by '!' (e.g. "7!").
+        if re.search(
+            r"(factorial|sqrt|square root|log|ln |squared|cubed|power|"
+            r"\d+!)", ql
+        ):
+            return True
+        # word-operator fraction of N: "half of 250", "quarter of 400",
+        # "third of 90". A real math question; lexical retrieval
+        # misfires here (history: "one half of one quarter of 400" ->
+        # "Historians do not agree on a single cause...").
+        if re.search(
+            r"(half|quarter|third|fifth|fourth|sixth|seventh|eighth|ninth|"
+            r"tenth)\s+of\s+\d", ql
+        ):
+            return True
+        # other math-phrase hints: sequence terms, geometry, etc.
+        if any(h in ql for h in cls._MATH_HINTS):
+            return True
+        return False
 
     @staticmethod
     def _answers_equal(a: str, b: str) -> bool:

@@ -52,6 +52,16 @@ def _format_number(v: float) -> str:
     return ("%.6f" % v).rstrip("0").rstrip(".")
 
 
+_WORD_FRACTIONS = {
+    "half": 2, "quarter": 4, "third": 3, "fourth": 4, "fifth": 5,
+}
+
+
+def _word_fraction_value(word: str) -> Optional[float]:
+    """Return 1/2 for 'half', 1/4 for 'quarter', etc."""
+    return _WORD_FRACTIONS.get(word)
+
+
 # --- Multi-step expression evaluator with proper precedence ------------
 
 def _eval_expression(expr: str) -> Optional[float]:
@@ -170,6 +180,23 @@ def detect_math_primitive(question: str) -> Optional[Tuple[str, dict]]:
     m = re.search(r"half of\s*(-?\d+(?:\.\d+)?)", ql)
     if m:
         return ("half", {"n": m.group(1)})
+
+    # "one half of X" / "a quarter of X" / "one third of X" / "a fourth of X"
+    # Nested chains: "one half of one quarter of 400" -> apply outer then inner.
+    # Detect all fraction-of patterns sequentially, then apply left-to-right.
+    fracs = re.findall(r"(half|quarter|third|fourth|fifth)\s+of", ql)
+    if fracs:
+        # The number should be the digits immediately before ? or . or end
+        num_match = re.search(r"(-?\d+(?:\.\d+)?)\s*[?.]?\s*$", ql)
+        if num_match:
+            n_str = num_match.group(1)
+            n_val = _eval_number(n_str)
+            if n_val is not None:
+                return ("unit_fraction_chain", {
+                    "n": n_val,
+                    "raw": "".join(fracs),  # keep for logging but not used
+                    "words": fracs,
+                })
 
     # ---- percentages ----------------------------------------------------
     m = re.search(r"(?:sale|discount|off|after a (\d+) percent discount)\s*"
@@ -391,6 +418,18 @@ def resolve_math_primitive(question: str) -> Optional[str]:
         if n is None:
             return None
         return _format_number(n / 2)
+    if op == "unit_fraction_chain":
+        n = args.get("n", 0)
+        words = args.get("words", [])
+        if not words:
+            return None
+        result = float(n)
+        for w in words:
+            d = _word_fraction_value(w)
+            if d is None:
+                return None
+            result /= d
+        return _format_number(result)
     if op == "power":
         b = _eval_number(args.get("base", ""))
         e = _eval_number(args.get("exp", ""))
