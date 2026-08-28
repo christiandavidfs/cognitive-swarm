@@ -112,8 +112,8 @@ is what earns trust.
 
 ## 5. The connector / retriever interface
 
-Tier 3's `_collect_source_claims` is currently a **stub** (a demo fact table).
-The production design is a pluggable retriever layer:
+Tier 3's `_collect_source_claims` is implemented behind a pluggable, medium-
+agnostic retriever layer (`cognitive_swarm/orchestration/retrievers.py`):
 
 ```python
 class SourceClaim:      # already in corroboration.py
@@ -123,8 +123,10 @@ class SourceClaim:      # already in corroboration.py
     independent: bool    # penalize copies
     reason: str = ""
 
-class Retriever(ABC):
-    name: str
+class Retriever(ABC):                    # implemented: TableRetriever,
+    name: str                            # LocalDocsRetriever
+    categories: Optional[Sequence[TaskType]]  # gate: which question kinds it serves
+    def applies_to(self, task_type) -> bool
     def get_claims(self, question: str) -> list[SourceClaim]: ...
 
 MATH_SOURCE     = InterpreterRetriever()   # REPL / CAS (sympy)  -> reliability 1.0
@@ -134,10 +136,19 @@ SCHOLARLY       = AcademicDBRetriever(...) # peer-reviewed
 STRUCTURED      = DatabaseRetriever(...)   # sql / spreadsheets / unit tests
 ```
 
-The router's Tier 3 calls **all registered retrievers**, merges their claims,
-and corroborates. Each connector is self-contained — swap a source, add a
-source, or have a source update, and knowledge is automatically current without
-touching the model.
+**Gate by category (design decision, "path of least resistance").** Rather than
+score every source per query or rely on static reliability alone, each retriever
+declares the `TaskType` categories it serves, and the router only queries the
+connectors whose gate passes. Factual questions classify as `REASONING` /
+`UNKNOWN` and reach the docs + knowledge table; `CODE` and `MATH` never touch a
+factual connector, so Tier 3 neither wastes work nor injects irrelevant verbose
+claims into corroboration — and it avoids a ~10–15s model load that a
+query-by-query source-scoring "Option 3" would have required.
+
+The router's Tier 3 merges every gated retriever's claims and corroborates
+them reliability-weighted. Each connector is self-contained — swap a source,
+add a source, or have a source update, and knowledge is automatically current
+without touching the model.
 
 ## 6. The growing-ceiling trainer (hive-mind loop)
 
