@@ -13,9 +13,9 @@
 }
 
 \author{%
-  \textbf{\LARGE Kaizen}\\[2mm]
+  \textbf{\LARGE Christian David Filippini Souto}\\[2mm]
   \normalsize Independent Research / Personal Project\\
-  \href{mailto:author@example.com}{author@example.com}%
+  \href{mailto:christiandavid.fs@gmail.com}{christiandavid.fs@gmail.com}%
 }
 
 \date{\today}
@@ -85,7 +85,7 @@ reasoning \emph{on a laptop}.
 \section{Related Work}
 \paragraph{Multi-agent LLM debate.} Several works propose having multiple model
 instances debate to improve factual consistency and reasoning quality
-\cite{du2023improving, liang2023encouraging, cohen2023debate}. These
+\cite{du2023improving, liang2023encouraging, irving2018debate}. These
 predominantly use large or frontier models and show the debate recovers
 individual-model capability. Less explored is whether a \emph{cross-critique}
 loop on small models can \emph{exceed} the oracle of its members; our
@@ -190,11 +190,10 @@ solved if the answer is correct. Single runs are noisy, so we report
 \subsection{Leveled Benchmark (36 problems)}
 \begin{table}[t]
   \centering
-  \small
   \caption{Overall accuracy, 36-problem benchmark. Highest in each column in
   bold.}
   \label{tab:leveled}
-  \begin{tabular}{@{}lcccccccl@{}}
+  \resizebox{\columnwidth}{!}{\begin{tabular}{@{}lcccccccl@{}}
     \toprule
     Approach & Overall & Easy & Med & Hard & Math & Reas & Code \\
     \midrule
@@ -204,9 +203,9 @@ solved if the answer is correct. Single runs are noisy, so we report
                              \textbf{67} & \textbf{42} & 8 \\
     API (Qwen 27B)        & 8 & 8 & 8 & 8 & 8 & 0 & 17 \\
     \bottomrule
-  \end{tabular}
+  \end{tabular}}
   \\[2mm]
-  Values are percentages. ``Reas''=reasoning.
+  \footnotesize Values are percentages. ``Reas''=reasoning.
 \end{table}
 
 The locally-running swarm of two small models outperformed a 24$\times$ larger
@@ -275,10 +274,9 @@ The cross-critique debate \emph{beat the oracle}: system-level 38\% vs.\ 12\%
 \subsection{The truth hierarchy (v5)}
 \begin{table}[t]
   \centering
-  \small
   \caption{Deterministic tiers; all run with zero model loads.}
   \label{tab:truth}
-  \begin{tabular}{@{}lr@{}}
+  \resizebox{\columnwidth}{!}{\begin{tabular}{@{}lr@{}}
     \toprule
     Tier & Result \\
     \midrule
@@ -287,7 +285,7 @@ The cross-critique debate \emph{beat the oracle}: system-level 38\% vs.\ 12\%
     Memory compounding (pass 2 of 36) & 15 hits in 5.3\,ms \\
     Total deterministic resolve (36) & \textbf{15/36 = 42\% in 0.35\,s} \\
     \bottomrule
-  \end{tabular}
+  \end{tabular}}
 \end{table}
 
 The weakest category (code, 8\%) became the strongest (100\%) simply by
@@ -313,9 +311,15 @@ learning, consensus is not the answer: deterministic, corroborated ground truth
 dominates (\S\ref{tab:truth}).
 
 The persistent bottleneck is \textbf{selection}. Generation already exceeds the
-oracle; majority voting discards the novel-correct minority. We believe
-selecting a confident, well-argued minority correction over a stable-but-wrong
-majority is the highest-leverage next step.
+oracle; majority voting discards the novel-correct minority. We believe the
+highest-leverage step is not a generic selection classifier but a selector that
+exploits the debate's own \emph{disagreement structure}: distinguish when a
+model that changed its answer did so by \emph{refuting a specific argument}
+(reasoned correction --- a signal to trust a confident minority) from when it
+merely \emph{capitulated} to a crowded majority (conformity --- no epistemic
+signal). This reasoned-vs-capitulated distinction is, to our knowledge,
+under-utilized in multi-agent debate work and is coherent with our
+``trust a well-argued minority'' framework.
 
 \section{Conclusion and Future Work}
 A debate among two small, specialized, locally-run models is a practical,
@@ -325,14 +329,28 @@ generates answers neither member produces alone, so the swarm beats its own
 oracle. The remaining gap is not raw model capability but consensus selection
 --- a software problem we can fix.
 
-Future work: (i) replace majority selection with a selector that trusts a
-confident minority correction; (ii) generalize the emergence experiment to the
-full 36-problem set; (iii) extend the connector layer (retrieval, databases,
-academic sources) behind the truth-hierarchy router; (iv) a growing-ceiling
-trainer that consumes fresh verified signal into verified memory (instant) and
-optionally into slow LoRA fine-tuning, guarding against model collapse; and
-(v) treat a multimodal model as the final-model target, reading far more source
-kinds while memory keeps knowledge current without growing the model.
+Future work: (i) replace majority selection with a selector that distinguishes
+\emph{reasoned correction from capitulation} --- whether a model that changed
+its answer did so by refuting a specific argument, or merely by conforming to a
+crowded (wrong) consensus --- and trusts only the former as a confident-minority
+signal; (ii) generalize the emergence experiment to the full 36-problem set;
+(iii) extend the connector layer (retrieval, databases, academic sources)
+behind the truth-hierarchy router, and apply the Corroborator's
+reliability/independence weighting to the debate candidates themselves rather
+than only to external sources; (iv) expand the benchmark to 100--150 problems
+with multiple runs, reporting mean $\pm$ std instead of ``solved in any run,''
+and separating \emph{solved-at-least-once} from \emph{solved-consistently};
+(v) instrument end-to-end latency to quantify how much the deterministic tiers
+save before any model is touched; (vi) a growing-ceiling trainer that consumes
+fresh verified signal into verified memory (instant) and optionally into slow
+LoRA fine-tuning, with a concrete model-collapse guard (monitoring held-out
+response entropy and pausing the loop if it drops below a threshold); and
+(vii) treat a multimodal model as the final-model target, reading far more
+source kinds while memory keeps knowledge current without growing the model.
+Prioritizing a real connector (e.g.\ a small local-docs retriever) is the
+highest-leverage step: it is what separates a designed truth hierarchy from a
+working one, since everything else --- selection, the benchmark, fine-tuning ---
+depends on at least one live external source validating the design end to end.
 
 \section*{Honest Limits}
 \begin{itemize}
@@ -357,9 +375,8 @@ kinds while memory keeps knowledge current without growing the model.
     R.~Wang, Y.~Yang, Z.~Tu, and S.~Shi. Encouraging divergent thinking in
     large language models through multi-agent debate. \emph{arXiv:2305.19118},
     2023.
-  \bibitem{cohen2023debate} R.~Cohen, M.~Hamri, M.~Geva, and
-    A.~Globerson. Language model cascades: Token-level uncertainty and beyond.
-    \emph{arXiv:2304.11082}, 2023.
+  \bibitem{irving2018debate} G.~Irving, P.~Christiano, and D.~Amodei. AI safety via
+    debate. \emph{arXiv:1805.00899}, 2018.
   \bibitem{lewis2020retrieval} P.~Lewis, E.~Perez, A.~Piktus, et al. Retrieval-
     augmented generation for knowledge-intensive NLP tasks. In \emph{NeurIPS},
     2020.
@@ -369,8 +386,9 @@ kinds while memory keeps knowledge current without growing the model.
   \bibitem{shumailov2024curse} I.~Shumailov, Z.~Shumaylov, Y.~Zhao, et al. The
     curse of recursion: Training on generated data makes models forget.
     \emph{arXiv:2305.17493}, 2024.
-  \bibitem{mlx} A.~Dembo, Z.~Prillo, P.~R.~Bridgers, et al. MLX: An array
-    framework for Apple Silicon. \emph{Apple}, 2024.
+  \bibitem{mlx} A.~Hannun, J.~Digani, A.~Katharopoulos, and A.~Sudarshan. MLX:
+    Efficient and flexible machine learning on Apple silicon.
+    \emph{arXiv:2312.13281}, 2023.
   \bibitem{consensus} Cognitive swarm project repository, confidence consensus
     engine. \url{https://github.com/christiandavidfs/cognitive-swarm}, 2026.
 \end{thebibliography}

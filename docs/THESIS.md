@@ -4,7 +4,8 @@
 ### models — plus a truth hierarchy of deterministic and corroborated sources —
 ### beats a 27B cloud model, and the swarm's own oracle, on a single 8 GB laptop
 
-**Author:** Kaizen
+**Author:** Christian David Filippini Souto
+**Contact:** christiandavid.fs@gmail.com
 **Version:** 1.0
 **Date:** August 2026
 **Repo:** `https://github.com/christiandavidfs/cognitive-swarm`
@@ -352,9 +353,25 @@ Three results reframe "small models are too weak":
    relegated to its correct role as fallback.
 
 **The persistent bottleneck is selection, not generation.** Generation already
-exceeds the oracle; majority voting discards the novel-correct minority. A
-selector that trusts a confident, well-argued minority over a stable-but-wrong
-majority is the single highest-leverage next step.
+exceeds the oracle; majority voting discards the novel-correct minority. The
+highest-leverage fix is not a generic selection classifier; it is a selector
+that exploits the debate's own *disagreement structure*. The key distinction:
+**reasoned correction vs. capitulation**.
+
+> When a model changes its answer, we must ask *why*. If it did so by
+> **refuting a specific argument** in the other model's reasoning, that is an
+> *epistemic* signal — a correction born of reasoning, worth trusting even in
+> the minority. If it did so merely by **conforming to a crowded majority**, it
+> is *social pressure*, which carries no truth signal and should be discounted.
+
+This distinction (reasoned correction vs. capitulation) is, to our knowledge,
+under-utilized in multi-agent debate literature. It is coherent with our
+"trust a well-argued minority" framework, and it is exactly the mechanism a
+debate that separates answer-capture from reasoning-capture (Stages A/A2/B/C)
+can support: we already keep the reasoning traces, so we can inspect *whether*
+a flip was argument-driven or conformity-driven. That is a genuine contribution
+candidate, not mere consolidation — but it is harder to implement than the other
+improvements below.
 
 ## 9. Honest limitations
 
@@ -375,19 +392,41 @@ majority is the single highest-leverage next step.
 
 ## 10. Future work and roadmap
 
-1. **Fix selection (highest leverage).** Trust a confident minority correction;
-   prefer the answer both critique rounds converge on, or that overturns the
-   other's stated reasoning.
-2. **Generalize the emergence experiment** to the full 36-problem set.
+1. **Selection by reasoned correction vs. capitulation (highest leverage,
+   potential novel contribution).** Instead of a generic selection classifier,
+   exploit the debate's disagreement structure. Use cheap features derived from
+   the traces we already keep: did the answer survive its counterpart's critique
+   without being refuted? did the model change its mind *after refuting a
+   specific argument*, or only *to conform to a crowded majority*? is there
+   self-consistency across that model's own rounds? This is implementable as a
+   small logistic/rule model over these features, and it reframes selection from
+   "count votes" to "judge whether a flip was epistemic or social."
+2. **Reuse Tier 3 (corroboration) on the debate candidates.** Apply the
+   existing Corroborator's reliability + independence weighting to the candidate
+   pool itself, not only to external sources — reusing infrastructure we already
+   built rather than inventing a new piece.
 3. **Build the connector layer:** real `Retriever` implementations (interpreter,
    local docs, encyclopedia, academic, database) behind the router, with source
-   media-agnosticism.
-4. **Growing-ceiling trainer:** verified memory (instant) + optional LoRA
-   fine-tuning (slow), guarded against model collapse by fresh verified signal.
-5. **Multimodal final model:** evaluate a 4-bit VLM on the M1 once connectors
+   media-agnosticism. **This is the highest-leverage non-selection step**: with a
+   stub Tier 3, the "5-tier truth hierarchy" is in practice a 3-tier hierarchy
+   (memory, code, calc) plus a debate fallback. One real connector (e.g. a small
+   `LocalDocsRetriever`) validates the design end to end.
+4. **Benchmark rigor.** Expand to 100–150 problems with multiple runs;
+   report mean ± standard deviation rather than "solved in any run"; and
+   separate *solved at least once* from *solved consistently* — these are very
+   different claims that are currently being conflated.
+5. **Instrument real latency, not just accuracy.** With the router adding tiers,
+   measure how much the 42% deterministic resolve saves end-to-end before any
+   model is loaded (v1 had single ~6–10 s, debate ~15 s; v4/v5 do not measure
+   this). A latency argument is a stronger deployment story than accuracy alone.
+6. **Model-collapse guardrail.** Beyond "needs fresh signal," add a concrete
+   check: measure response diversity/entropy of the fine-tuned model on a fixed
+   held-out set; if it drops below a threshold between cycles, pause the loop.
+   Without this, the hive-mind loop has no safety instrumentation.
+7. **Growing-ceiling trainer:** verified memory (instant) + optional LoRA
+   fine-tuning (slow), fed by fresh verified signal with the guardrail above.
+8. **Multimodal final model:** evaluate a 4-bit VLM on the M1 once connectors
    are media-ready.
-6. **Statistical rigor:** larger benchmarks, more runs, and stripping the
-   large model's thinking-mode noise for a fair comparison.
 
 ## 11. Conclusion
 
