@@ -104,6 +104,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 | **truth** (deterministic, 0 loads) | **44.2%** (53/120) | [35.0, 53.3] | 5/36 | 0/36 | **36/36** | **12/12** |
 | **phi** (single small) | 20.8% (25/120) | [14.2, 28.3] | 11/36 | 7/36 | 5/36 | 2/12 |
 | **qwen** (single small) | 30.0% (36/120) | [21.7, 38.3] | 6/36 | 9/36 | 17/36 | 4/12 |
+| **debate** (phi+qwen cross-critique) | **47.5%** (57/120) | [38.3, 56.7] | 18/36 | 15/36 | 18/36 | 6/12 |
 | **big (minimax-m3, frontier-free)** | **87.5%** (105/120) | [81.7, 92.5] | **36/36** | 26/36 | 34/36 | 9/12 |
 
 ### Honest reading (credible, CIs included)
