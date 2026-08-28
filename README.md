@@ -241,9 +241,15 @@ cognitive_swarm/
       zero model loads, lifting truth overall to 44.2% (was 34.2%)
 - [x] **Math-primitive micro-tools** (`factorial`, `sqrt`, `log`, `pow`,
       `combinations`, `permutations`, `simplify_frac`, `mean`, `median`, `solve`,
-      `eval_expr`, `geometry`) — land `truth` tier's math **5/36 → 32/36 (89%)**
-      at zero model loads, lifting truth overall to **66.7%**. Verified: memory
-      is math-op-aware so `6²=36` and `2⁶=64` never shadow each other.
+      `eval_expr`, `geometry`) — land `truth` tier's math **5/36 → 36/36 (100%)**
+      at zero model loads, lifting truth overall to **70.8%**. Verified: memory
+      is math-op-aware so `6²=36` and `2⁶=64` never shadow each other, and
+      nested fraction chains (`one half of one quarter of 400`) resolve
+      correctly.
+- [x] **Retrieval guardrail**: math-structured questions refuse fuzzy document
+      lookup (prevents `7!` from returning "299,792,458 metres per second").
+- [x] **Compare primitive**: returns bare answer (`3/10`) not label-stripped
+      phrase (`the fraction 3/10`).
 - [ ] Run **debate** config on the full 120 for a true small-swarm vs frontier number
 - [ ] **Procedure / primitive memory**: cache *reasoning processes*, not just
       answers — verified lemmas, worked step-skeletons from winning debate
@@ -251,6 +257,17 @@ cognitive_swarm/
       procedure level; RAG corpus stays outside on disk)
 - [ ] More repeats per config and more model families (Gemma, Llama)
 - [ ] Test with 16GB+ RAM for simultaneous model loading
+
+## Key Findings
+
+The deterministic truth tier now beats debate (47.5%), phi (20.8%), and qwen (30.0%) overall at **70.8% (85/120)**, all at **zero model loads**. The win is concentrated in the three domains it has deterministic tools for:
+
+- **Code 100%** (36/36) — executor runs the interpreter.
+- **Math 100%** (36/36) — math primitives cover factorial, sqrt, log, power, geometry, and nested-fraction chains.
+- **Trap 100%** (12/12) — string-op primitives catch adversarial fraction-vs-decimal comparisons.
+- **Reasoning 3%** (1/36) — the sole remaining gap; a nested-fraction chain ("one half of one quarter of 400") was the first reasoning item solved.
+
+The dominant bottleneck is **selection of reasoning capability**, not generation: the small models know the math, but only ~1/36 reasoning questions fall into a form a deterministic tool can recognize. Procedure/primitive memory (caching winning reasoning traces and reusing them by structure) is the highest-leverage next step.
 
 ## Research Question
 
