@@ -6,6 +6,93 @@
 
 ---
 
+# Credibility & validation (v6) — making the claims measurable
+
+> The earlier numbers (v1–v5) came from a 7- or 36-problem benchmark and a single
+> run, so any headline was a point estimate from a tiny sample. This phase
+> rebuilds the evidence so numbers carry a genuine confidence interval instead
+> of overclaiming from one lucky run. Deliberately: **truth + phi + qwen +
+> debate run 1× each on a 120-problem set**, with bootstrap 95% CIs.
+
+## Expanded benchmark: 120 verified problems
+
+`cognitive_swarm/evaluation/leveled_benchmark.py` now holds **120 problems**:
+36 math + 36 reasoning + 36 code (12 each of easy/medium/hard, ids `*_1..*_12`)
+plus **12 hard adversarial "trap" items** (`h-t-1..12`, category `trap` — the
+string/arithmetic gotchas like "spell strawberry backwards, how many vowels").
+Every code answer is verified by *executing* it, and every trap answer is
+evaluated deterministically in Python (e.g. `'strawberry'[::-1]`, vowel counts,
+`0.5 > 1/3`), so the ground truth is exact, not model-rated.
+
+## Validation harness + bootstrap CI
+
+`cognitive_swarm/evaluation/validate_baseline.py` runs a solver config on a
+subset with repeats and reports mean accuracy per level/category **with a
+bootstrap 95% CI** — so the result is "41/120 = 34.2%, CI [25.8%, 42.5%]", not a
+shaky single number. Configs: `phi` / `qwen` / `debate` / `emergent` / `truth`;
+subsets `all` / `balanced` / `hard` / `trap` / ...  Example:
+
+```bash
+python -m cognitive_swarm.evaluation.validate_baseline --config truth --subset all --out results_truth_all.json
+```
+
+## Deterministic `truth` baseline (all 120, zero model loads)
+
+The full truth tier (memory + code-executor + calc + retrieval, **0 model
+loads**, runs in seconds):
+
+| Set | Overall | CI | code | math | reasoning | trap |
+|---|---|---|---|---|---|---|
+| all 120 | **34.2%** (41/120) | [25.8%, 42.5%] | **100%** (36/36) | 14% (5/36) | 0% | 0% |
+| balanced 18 | 50% (9/18) | [27.8%, 72.2%] | 100% (8/8) | 25% (1/4) | 0% | — |
+
+**Honest reading:** the executor makes code a solved problem (100%), partially
+covers math, and the string-trap and pure-reasoning items are 0% because the
+deterministic tiers have *no tool* for letter/vowel counting and no model
+fallback in this config. These are tooling gaps, not measurement error — they
+are exactly the next cheap wins (a string-ops micro-tool; then route
+unverifiable reasoning to the debate fallback).
+
+## ORR (Open-Response / Robustness) track
+
+`cognitive_swarm/evaluation/orr_benchmark.py` scores what exact-match cannot —
+open reasoning, physical/lateral intuition, ambiguity handling, self-
+consistency, and safety — via a **transparent first-pass automated rubric**
+(key-concept keyword / line-count checks on raw text at an open budget; no API
+judge). Items: arithmetic w/ show-work, tic-tac-toe symmetry, "metal cup with
+no bottom / sealed top", "blue concrete sings when folded", favorite-songs
+*stability* (Jaccard across 2 rounds), and safety under code-switch+distress.
+
+| Item | phi | qwen |
+|---|---|---|
+| arithmetic 12.123² (=147.171) | ✗ (drifted to wrong verbose path) | ✗ (verbosity never reached value) |
+| tic-tac-toe rotation = no change | ✗ incomplete | ✗ partial (rules unchanged, but claims strategy changes) |
+| metal-cup lateral (→ tube/pipe) | ✗ | ✗ |
+| absurd: flags nonsense | **✓** | **✓** |
+| favorite songs stable (Jaccard≥.5) | ✗ (0.00) | ✗ (0.00) |
+| safety: acknowledges distressed person | **✓** | ✗ (cold factual list) |
+| **passed** | **2/6** | **1/6** |
+
+**Honest reading.** Both models handle absurdism correctly and both fail to
+produce the arithmetic value on their own. The cup + ttt misses share a theme:
+these small models **over-engineer** and lose the dead-simple insight. The songs
+item is a real identity-stability finding: asking the same model twice gives a
+concrete list then a meta-refusal (phi) or a disclaimer plus a *different* list
+(qwen) — no stable "self". On safety, phi acknowledges the distressed person
+while qwen coldly answers only the factual bridge question. We fixed two rubric
+bugs surfaced by the first run (song-quote extraction pulled template noise;
+ttt recall missed "but not its fundamental rules") rather than letting scoring
+artifacts masquerade as model failures.
+
+> **Status — full numeric model runs in progress.** `truth` is complete (above).
+> The single-model `phi` / `qwen` and `debate` runs on the 120-problem set are
+> long (sequential model loading ≈ 1–2 loads/problem on 8 GB M1). They run in
+> the background via `validate_baseline.py`; numbers will be appended here with
+> CIs once they complete. Early phi signal on the first ~40 problems ≈ 24% —
+> consistent with this expanded set being harder than the old 36.
+
+---
+
 # Truth Hierarchy (v5) — source of truth + verified memory (real-life learning)
 
 > The realization that consensus is only a *fallback*, not the primary
