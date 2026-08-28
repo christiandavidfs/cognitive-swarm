@@ -24,7 +24,7 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 
 | Approach | all-120 acc | 95% CI | code | Cost | Runs locally |
 |---|---|---|---|---|---|
-| Deterministic **truth** tier (memory + executor + calc + string-op, 0 loads) | **44.2%** | [35.0, 53.3] | **100%** | Free | Yes |
+| Deterministic **truth** tier (memory + executor + calc + string-op + math-primitives, 0 loads) | **66.7%** | [58.3, 75.0] | **100%** | Free | Yes |
 | Phi-3.5 Mini alone | 20.8% | [14.2, 28.3] | 14% | Free | Yes |
 | Qwen 2.5 3B alone | 30.0% | [21.7, 38.3] | 47% | Free | Yes |
 | **Big model, `minimax-m3` (frontier-class, OpenRouter free)** | **87.5%** | [81.7, 92.5] | 94% | Free (cloud) | No |
@@ -34,7 +34,7 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 1. **Ground truth beats consensus.** The deterministic `truth` tier (**100% on
    code** by *executing* it; **12/12 on the adversarial trap items** via
    string-op primitives — all at zero model loads) beats the individual small
-   models overall (44.2% > 20.8% / 30.0%). Caveat: the win is concentrated in
+   models overall (66.7% > 20.8% / 30.0%). Caveat: the win is concentrated in
    the code + trap domains; on reasoning it is 0/36 and the *overall*
    truth-vs-qwen gap is within CI overlap — the decisive edge is category-level.
 2. **A frontier model dominates on closed-answer recall** (87.5%). The swarm is
@@ -238,7 +238,12 @@ cognitive_swarm/
 - [x] Big-model comparator vs **frontier model** via free OpenRouter (`minimax-m3`)
 - [x] **String-op micro-primitives** (`count_char`, `count_vowels`, `count_letters`,
       `reverse`, `compare`) — land `truth` tier's trap **0% → 100% (12/12)** at
-      zero model loads, lifting truth overall to **44.2%** (was 34.2%)
+      zero model loads, lifting truth overall to 44.2% (was 34.2%)
+- [x] **Math-primitive micro-tools** (`factorial`, `sqrt`, `log`, `pow`,
+      `combinations`, `permutations`, `simplify_frac`, `mean`, `median`, `solve`,
+      `eval_expr`, `geometry`) — land `truth` tier's math **5/36 → 32/36 (89%)**
+      at zero model loads, lifting truth overall to **66.7%**. Verified: memory
+      is math-op-aware so `6²=36` and `2⁶=64` never shadow each other.
 - [ ] Run **debate** config on the full 120 for a true small-swarm vs frontier number
 - [ ] **Procedure / primitive memory**: cache *reasoning processes*, not just
       answers — verified lemmas, worked step-skeletons from winning debate

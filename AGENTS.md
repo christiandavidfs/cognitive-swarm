@@ -57,7 +57,7 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 | Cross-critique debate (v4) | **beats oracle**: hard 8-problem subset oracle 12% → system 38%, candidate pool 62% |
 | Code executor (v5) | **100% on code** (was 8%); deterministic, 0 model loads |
 | Memory compounding | pass 2 resolves 15/36 in 5.3ms; corroboration handles history conflicts honestly |
-| **120-problem benchmark (credibility phase)** | **truth 44.2% [35.0-53.3] / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap via deterministic tools (executor + string-op primitives), 0% reasoning, 0 model loads |
+| **120-problem benchmark (credibility phase)** | **truth 66.7% [58.3-75.0] / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 89% math via deterministic tools (executor + string-op primitives + math primitives), 0% reasoning, 0 model loads |
 | **Open-response robustness (ORR)** | phi 2/6, qwen 1/6: both handle absurdism; neither has a stable "self" (song Jaccard=0); phi acknowledges a distressed user, qwen answers only the factual part |
 
 ## Open items / next (turn these into tasks when picked up)
@@ -65,7 +65,7 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 - Run **debate** config on the full 120 for a true small-swarm vs frontier number.
 - **String-op micro-primitives** (`count_char`, `count_vowels`, `count_letters`,
   `reverse`, `compare`) — DONE, land truth tier's trap 0% → 100% (12/12) at zero
-  model loads, lifting the truth overall to 44.2% (was 34.2%).
+  model loads, lifting the truth overall to 66.7% (was 34.2%, then 44.2%).
 - **Procedure / primitive memory**: cache reasoning *processes* (verified
   lemmas, winning-debate step-skeletons, discovered correction rules), not just
   answers; RAG corpus stays outside on disk.
