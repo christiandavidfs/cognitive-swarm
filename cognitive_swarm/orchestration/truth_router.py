@@ -11,26 +11,33 @@ contested question has no single truth:
                       Deterministic ground truth, ms, no model load.
   Tier 2  CALC      : self-contained arithmetic -> evaluate deterministically.
   Tier 3  RETRIEVAL : factual/contested (history, chemistry-opinion) -> collect
-                      claims from the memory's corroboration table / sources,
-                      reliability-weighted; surface conflict, never fake a
-                      single answer for ambiguous domains. (Pluggable source
-                      list — a stub here that a real RAG/DB layer can fill.)
+                      claims from ALL registered retrievers (local docs, a
+                      knowledge table, and any future connector), merge and
+                      corroborate reliability-weighted; surface conflict, never
+                      fake a single answer for ambiguous domains.
   Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source; any candidate
                       a ground-truth check can confirm is elevated/archived.
 
 Tier 1/2 results are archived to memory with their provenance. Disagreement is
 preserved in memory so the swarm's experience keeps conflicts rather than
 erasing them.
+
+The retriever layer is pluggable and media-agnostic: any object implementing
+``Retriever.get_claims(question) -> list[SourceClaim]`` (see
+``retrievers.py``) can be registered, so a live document store, a database, or
+a web API can be swapped in without touching the router.
 """
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List, Optional, Tuple
 
 from cognitive_swarm.tools.executor import execute as _exec_code
 from cognitive_swarm.memory.verified_memory import VerifiedMemory
 from cognitive_swarm.orchestration.prompt_optimizer import PromptOptimizer, TaskType
 from cognitive_swarm.orchestration.corroboration import Corroborator, SourceClaim, Verdict
+from cognitive_swarm.orchestration.retrievers import Retriever
 
 
 @dataclass
@@ -48,10 +55,16 @@ class TruthRouter:
     """Routes a question to the strongest available source of truth."""
 
     def __init__(self, memory: Optional[VerifiedMemory] = None,
-                 corroborator: Optional[Corroborator] = None):
+                 corroborator: Optional[Corroborator] = None,
+                 retrievers: Optional[List[Retriever]] = None):
         self.memory = memory or VerifiedMemory()
         self.corroborator = corroborator or Corroborator()
+        self.retrievers: List[Retriever] = list(retrievers or [])
         self.optimizer = PromptOptimizer(use_llm=False)
+
+    def add_retriever(self, retriever: Retriever) -> None:
+        """Register a connector; the router queries all of them at Tier 3."""
+        self.retrievers.append(retriever)
 
     # ------------------------------------------------------------------
     # Main entry: resolve a question with the cheapest certain source.
@@ -86,7 +99,7 @@ class TruthRouter:
                                   sources=[{"name": "calculator", "reliability": 1.0}])
 
         # Tier 3: factual / contested -> corroborate available sources.
-        claims = self._collect_source_claims(question)
+        claims = self._collect_source_claims(question, task_type)
         if claims:
             verdict = self.corroborator.corroborate(claims)
             if verdict.status == "corroborated":
@@ -138,26 +151,27 @@ class TruthRouter:
     # ------------------------------------------------------------------
     # Retrieval / source collection (Tier 3)
     # ------------------------------------------------------------------
-    def _collect_source_claims(self, question: str) -> List[SourceClaim]:
+    def _collect_source_claims(self, question: str,
+                               task_type: Optional[TaskType] = None) -> List[SourceClaim]:
         """Gather candidate facts for a factual/contested question.
 
-        This is a STUB in the base implementation: it demonstrates the
-        mechanism with a tiny hand-authored knowledge table. In a real system
-        this is where a RAG retriever / document store / web API would return
-        documents that are turned into SourceClaims, each with a reliability
-        and independence flag.
+        This is the Tier 3 **gate**: only connectors whose declared
+        ``categories`` match the question's category are queried. A code or
+        arithmetic question skips factual connectors entirely (path of least
+        resistance), so we neither waste work nor inject irrelevant verbose
+        claims into corroboration. Each selected connector returns its own
+        ``SourceClaim`` objects (reliability + independence flag), merged here
+        before corroboration.
         """
-        claims = []
-        table = getattr(self, "_fact_table", {})
-        norm = question.strip().lower()
-        for key, sources in table.items():
-            if key in norm:
-                for s in sources:
-                    claims.append(SourceClaim(
-                        source=s["name"], answer=s["answer"],
-                        reliability=s["reliability"], independent=s.get("independent", True),
-                        reason=s.get("reason", ""),
-                    ))
+        claims: List[SourceClaim] = []
+        for retriever in self.retrievers:
+            if not retriever.applies_to(task_type):
+                continue
+            try:
+                claims.extend(retriever.get_claims(question))
+            except Exception:
+                # One failing connector must not take down the whole tier.
+                continue
         return claims
 
 
@@ -209,12 +223,20 @@ class TruthRouter:
 
 
 def demo_fact_table(router: TruthRouter) -> None:
-    """Attach a small hand-authored knowledge table to demo Tier 3.
+    """Register demonstration retrievers to demo Tier 3.
 
-    Shows a CORROBORATED case (two independent sources agree) and a CONFLICT
-    case (two reliable sources disagree -> honest disagreement report).
+    Registers a hand-authored knowledge table AND a live ``LocalDocsRetriever``
+    over the committed ``retrieval_corpus/`` documents. Together they show a
+    CORROBORATED case (two independent sources agree) and a CONFLICT case (two
+    reliable sources disagree -> honest disagreement report), and exercise the
+    real retrieval tier end to end.
     """
-    router._fact_table = {
+    from cognitive_swarm.orchestration.prompt_optimizer import TaskType
+    from cognitive_swarm.orchestration.retrievers import LocalDocsRetriever, TableRetriever
+
+    factual = [TaskType.REASONING, TaskType.UNKNOWN]
+
+    table = {
         "fall of the western roman empire": [
             {"name": "primary: contemporary chronicle", "answer": "476 CE",
              "reliability": 0.9, "independent": True,
@@ -233,3 +255,8 @@ def demo_fact_table(router: TruthRouter) -> None:
              "reliability": 0.8, "independent": True},
         ],
     }
+    router.add_retriever(TableRetriever(table, categories=factual))
+    router.add_retriever(LocalDocsRetriever(
+        Path(__file__).parent.parent.parent / "retrieval_corpus", name="local-docs",
+        categories=factual,
+    ))
