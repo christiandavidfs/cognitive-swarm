@@ -364,14 +364,23 @@ that exploits the debate's own *disagreement structure*. The key distinction:
 > the minority. If it did so merely by **conforming to a crowded majority**, it
 > is *social pressure*, which carries no truth signal and should be discounted.
 
-This distinction (reasoned correction vs. capitulation) is, to our knowledge,
-under-utilized in multi-agent debate literature. It is coherent with our
-"trust a well-argued minority" framework, and it is exactly the mechanism a
-debate that separates answer-capture from reasoning-capture (Stages A/A2/B/C)
-can support: we already keep the reasoning traces, so we can inspect *whether*
-a flip was argument-driven or conformity-driven. That is a genuine contribution
-candidate, not mere consolidation — but it is harder to implement than the other
-improvements below.
+This distinction (reasoned correction vs. capitulation) is **not novel to us**.
+A vigorous recent literature decomposes exactly this flip: "Not All Flips Are
+Conformity" [(Qin, arXiv:2606.00820)] separates stance-induced conformity from
+reasoning-induced persuasion (strict conformity is 29% and mostly harmful —
+63.6% correct-to-incorrect flips); "The Cost of Consensus" [(Bertalanič &
+Fortuna, arXiv:2605.00914)] measures sycophantic modal adoption up to 85.5% and
+the resulting "consensus collapse" (oracle gap ~32 pp — the same shape as our
+62%→38%); "Can LLM Agents Really Debate?" [(Wu, arXiv:2511.07784)] scores
+rational argument-driven correction vs. social conformity; and BASIL
+[(arXiv:2508.16846)] isolates sycophancy from rational Bayesian belief updating.
+Our only incremental angle is the extreme low-resource regime — two models of
+~3–3.8B on 8 GB — on a closed, numeric, answer-first problem class where a
+refuted specific argument is more interpretable than in large-model
+multiple-choice settings, and where we already keep the reasoning traces (Stage
+A/A2/B/C) so we can inspect *whether* a flip was argument-driven or
+conformity-driven. That is a modest extension, not a new mechanism; we report it
+as such.
 
 ## 9. Honest limitations
 
@@ -392,15 +401,16 @@ improvements below.
 
 ## 10. Future work and roadmap
 
-1. **Selection by reasoned correction vs. capitulation (highest leverage,
-   potential novel contribution).** Instead of a generic selection classifier,
-   exploit the debate's disagreement structure. Use cheap features derived from
-   the traces we already keep: did the answer survive its counterpart's critique
-   without being refuted? did the model change its mind *after refuting a
-   specific argument*, or only *to conform to a crowded majority*? is there
-   self-consistency across that model's own rounds? This is implementable as a
-   small logistic/rule model over these features, and it reframes selection from
-   "count votes" to "judge whether a flip was epistemic or social."
+1. **Selection by reasoned correction vs. capitulation (highest leverage;
+   *incremental* low-resource case, not a novel mechanism — see Discussion).**
+   Instead of a generic selection classifier, exploit the debate's disagreement
+   structure. Use cheap features derived from the traces we already keep: did the
+   answer survive its counterpart's critique without being refuted? did the model
+   change its mind *after refuting a specific argument*, or only *to conform to a
+   crowded majority*? is there self-consistency across that model's own rounds?
+   This is implementable as a small logistic/rule model over these features, and
+   it reframes selection from "count votes" to "judge whether a flip was
+   epistemic or social."
 2. **Reuse Tier 3 (corroboration) on the debate candidates.** Apply the
    existing Corroborator's reliability + independence weighting to the candidate
    pool itself, not only to external sources — reusing infrastructure we already

@@ -311,15 +311,28 @@ learning, consensus is not the answer: deterministic, corroborated ground truth
 dominates (\S\ref{tab:truth}).
 
 The persistent bottleneck is \textbf{selection}. Generation already exceeds the
-oracle; majority voting discards the novel-correct minority. We believe the
-highest-leverage step is not a generic selection classifier but a selector that
-exploits the debate's own \emph{disagreement structure}: distinguish when a
-model that changed its answer did so by \emph{refuting a specific argument}
-(reasoned correction --- a signal to trust a confident minority) from when it
-merely \emph{capitulated} to a crowded majority (conformity --- no epistemic
-signal). This reasoned-vs-capitulated distinction is, to our knowledge,
-under-utilized in multi-agent debate work and is coherent with our
-``trust a well-argued minority'' framework.
+oracle; majority voting discards the novel-correct minority. The natural fix is
+a selector that exploits the debate's own \emph{disagreement structure}:
+distinguish when a model that changed its answer did so by \emph{refuting a
+specific argument} (reasoned correction --- a signal to trust a confident
+minority) from when it merely \emph{capitulated} to a crowded majority
+(conformity --- no epistemic signal). We emphasize that this reasoned-vs-
+capitulated distinction is \emph{not novel to us}; a vigorous recent
+literature decomposes exactly this flip: \cite{flipsConformity} separates
+stance-induced conformity from reasoning-induced persuasion (finding strict
+conformity is 29\% and mostly harmful, 63.6\% correct-to-incorrect flips),
+\cite{costConsensus} measures sycophantic modal adoption up to 85.5\% and the
+resulting ``consensus collapse'' (oracle gap $\sim$32\,pp --- the same shape as
+our 62\%$\rightarrow$38\%), \cite{agentsDebate} scores rational argument-driven
+correction versus social conformity, \cite{basil} isolates sycophancy from
+rational Bayesian belief-updating, \cite{whyGiveIn} ties the direction of
+conformity to \emph{what} the model attends to in its own reasoning trace, and
+\cite{peoplePleasers} warns that chain-of-thought can \emph{mask} sycophancy
+with post-hoc rationalization. Our only incremental angle is the extreme
+low-resource regime --- two models of $\sim$3--3.8\,B on 8\,GB --- on a closed,
+numeric, closed-answer problem class where a refuted specific argument is more
+interpretable than in large-model multiple-choice settings. That is a modest
+extension, not a new mechanism, and we report it as such.
 
 \section{Conclusion and Future Work}
 A debate among two small, specialized, locally-run models is a practical,
@@ -329,11 +342,12 @@ generates answers neither member produces alone, so the swarm beats its own
 oracle. The remaining gap is not raw model capability but consensus selection
 --- a software problem we can fix.
 
-Future work: (i) replace majority selection with a selector that distinguishes
-\emph{reasoned correction from capitulation} --- whether a model that changed
-its answer did so by refuting a specific argument, or merely by conforming to a
-crowded (wrong) consensus --- and trusts only the former as a confident-minority
-signal; (ii) generalize the emergence experiment to the full 36-problem set;
+Future work: (i) build a reasoned-vs-capitulation selector --- whether a model
+that changed its answer did so by refuting a specific argument, or merely by
+conforming to a crowded (wrong) consensus --- trusting only the former as a
+confident-minority signal; given \cite{flipsConformity,costConsensus,
+agentsDebate,basil}, we position this as an \emph{incremental} low-resource
+case, not a novel mechanism; (ii) generalize the emergence experiment to the full 36-problem set;
 (iii) extend the connector layer (retrieval, databases, academic sources)
 behind the truth-hierarchy router, and apply the Corroborator's
 reliability/independence weighting to the debate candidates themselves rather
@@ -391,6 +405,25 @@ depends on at least one live external source validating the design end to end.
     \emph{arXiv:2312.13281}, 2023.
   \bibitem{consensus} Cognitive swarm project repository, confidence consensus
     engine. \url{https://github.com/christiandavidfs/cognitive-swarm}, 2026.
+  \bibitem{flipsConformity} J.~Qin et al. Not all flips are conformity:
+    Decomposing stance convergence in multi-agent LLM debate.
+    \emph{arXiv:2606.00820}, 2026.
+  \bibitem{costConsensus} B.~Bertalani\v{c} and T.~Fortuna. The cost of
+    consensus: When agreement destroys accuracy in model collectives.
+    \emph{arXiv:2605.00914}, 2026.
+  \bibitem{debateVote} B.~Bertalani\v{c} and T.~Fortuna. Debate or vote: A
+    taxonomy of multi-agent agreement mechanisms. In \emph{NeurIPS}, 2025.
+  \bibitem{agentsDebate} J.~Wu et al. Can LLM agents really debate?
+    Evidence from (un)contested settings. \emph{arXiv:2511.07784}, 2025.
+  \bibitem{whyGiveIn} B.~C\c{a}r{\i}k, X.~Ding, and T.~Wang. Why LLMs give in:
+    Conversational factors and reasoning behind medical sycophancy.
+    \emph{arXiv:2608.01017}, 2026.
+  \bibitem{basil} K.~Atwell, S.~Hwang, C.~Jeong, and J.~Choi. BASIL: Bias
+    and sycophancy in language models. \emph{arXiv:2508.16846}, 2025.
+  \bibitem{peoplePleasers} Z.~Feng, Z.~Chen, J.~Ma, Y.-T.~Po, E.~Chersoni, and
+    B.~Li. Good arguments against the people pleasers: How reasoning mitigates
+    (yet masks) LLM sycophancy. In \emph{Proceedings of ACL 2026 (Volume 1:
+    Long Papers)}, San Diego, CA, 2026.
 \end{thebibliography}
 
 \end{document}
