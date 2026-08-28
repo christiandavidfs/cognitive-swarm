@@ -121,6 +121,16 @@ class EmergentDebate:
             samples_per_model=max(self.answer_samples, self.critique_samples),
         )
 
+        # Also run the plain v3 engine so we can measure the reasoned
+        # selector's NET contribution (did it change the vote-count winner?).
+        from cognitive_swarm.orchestration.confidence_consensus import (
+            ConfidenceConsensusEngine,
+        )
+        base = ConfidenceConsensusEngine().reach_consensus(
+            votes, task_type=task_type,
+            samples_per_model=max(self.answer_samples, self.critique_samples),
+        )
+
         phi_ans = candidates["phi"][0] if candidates.get("phi") else ""
         qwen_ans = candidates["qwen"][0] if candidates.get("qwen") else ""
 
@@ -132,9 +142,13 @@ class EmergentDebate:
             confidence=verdict.confidence,
             candidates=candidates,
             consensus_metadata={
+                "selector": verdict.metadata.get("selector", "vote"),
                 "winning_cluster": verdict.winning_cluster,
                 "cluster_scores": verdict.cluster_scores,
                 "num_votes": len(votes),
+                "base_answer": base.final_answer,
+                "base_selector_changed": base.final_answer != verdict.final_answer,
+                "corrections": verdict.metadata.get("corrections", []),
             },
             total_latency_ms=(time.time() - start) * 1000,
         )
