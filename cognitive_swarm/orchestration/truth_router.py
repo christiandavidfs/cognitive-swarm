@@ -116,19 +116,22 @@ class TruthRouter:
                               sources=[{"name": "string-primitives", "reliability": 1.0}])
 
         # Tier 2c: math primitives for word operators / special forms.
-        # Compound expressions (multi-step arithmetic) are tried first
-        # to capture cases like ``100 / 4 + 6`` with proper precedence.
-        # Specific primitives (factorial, sqrt, log, series sum, etc.) are
-        # tried second to handle unambiguous cases.
+        # These are intent-gated (regex patterns that only fire on explicit
+        # math phrasings) so they are safe to run on ANY task type — many
+        # math questions are classified UNKNOWN by the prompt optimizer
+        # (e.g. "What is half of 250?" or "7! (seven factorial)" contain
+        # no ``N op N`` pattern), but the primitives catch them regardless.
+        # Compound expressions (multi-step arithmetic) are tried FIRST to
+        # capture cases like ``100 / 4 + 6`` with proper precedence, then
+        # specific primitives (factorial, sqrt, log, series sum, etc.) for
+        # word-operator questions. The compound detector skips ellipsis
+        # questions (``...``), so no false matches on series sums.
         # Cached thinking primitives -> zero model load, ms.
-        if task_type == TaskType.MATH:
-            mp = _resolve_compound_expression(question)
-            if mp is None:
-                mp = _resolve_math_primitive(question)
-            if mp is not None:
-                self._verify(question, mp, "math-primitives", tier="math-primitives")
-                return Resolution(mp, 1.0, "math-primitives", "math-primitives",
-                                  sources=[{"name": "math-primitives", "reliability": 1.0}])
+        mp = _resolve_compound_expression(question) or _resolve_math_primitive(question)
+        if mp is not None:
+            self._verify(question, mp, "math-primitives", tier="math-primitives")
+            return Resolution(mp, 1.0, "math-primitives", "math-primitives",
+                              sources=[{"name": "math-primitives", "reliability": 1.0}])
 
         # Tier 2: self-contained arithmetic.
         if task_type == TaskType.MATH:

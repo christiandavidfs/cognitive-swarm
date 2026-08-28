@@ -111,6 +111,7 @@ class VerifiedMemory:
             "disagreement": disagreement,
             "code_sig": self._code_sig(question),
             "string_op_sig": self._string_op_sig(question),
+            "math_op_sig": self._math_op_sig(question),
             "verified": verified,
             "hits": (existing["hits"] + 1 if existing else 0),
         }
@@ -151,6 +152,24 @@ class VerifiedMemory:
         op, args = det
         return op + ":" + "|".join(str(v) for _, v in sorted(args.items()))
 
+    def _math_op_sig(self, text: str) -> Optional[str]:
+        """Signature for a question that expresses a resolvable math primitive
+        (factorial, sqrt, log, power, geometry, series, etc.), used so
+        near-duplicate math questions about DIFFERENT operands never blur
+        together in memory.
+
+        Mirrors the code-aware / string-op-aware guards: instead of
+        stoplist-filtered token overlap (which would wrongly merge
+        'What is 2 to the power of 6 (2^6)?' with 'What is 6 squared (6^2)?'
+        — they share the digits 2 and 6 and score 0.8 similarity, above the
+        0.75 threshold), we require an IDENTICAL (op, operands) signature."""
+        from cognitive_swarm.tools.math_primitives import detect_math_primitive
+        det = detect_math_primitive(text)
+        if not det:
+            return None
+        op, args = det
+        return op + ":" + "|".join(f"{k}={v}" for k, v in sorted(args.items()))
+
     def lookup(self, question: str) -> Optional[dict]:
         """Return the stored record (full provenance) for this question or a
         close, salient rephrase. Returns None if no strong match.
@@ -180,6 +199,18 @@ class VerifiedMemory:
             for entry in self.entries.values():
                 stored_so = (entry.get("string_op_sig") or self._string_op_sig(entry["question"]))
                 if stored_so and stored_so == q_so:
+                    self.bump(question)
+                    return entry
+            return None
+
+        # Math-op-aware path: identical (op, operands) signature, else no
+        # match. Prevents '2 to the power of 6' (64) from being shadowed by
+        # '6 squared' (36) via stoplist token overlap (both share digits).
+        q_math = self._math_op_sig(question)
+        if q_math is not None:
+            for entry in self.entries.values():
+                stored_math = (entry.get("math_op_sig") or self._math_op_sig(entry["question"]))
+                if stored_math and stored_math == q_math:
                     self.bump(question)
                     return entry
             return None
