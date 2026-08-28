@@ -8,15 +8,22 @@ contested question has no single truth:
 
   Tier 0  MEMORY    : already-verified (provenance-aware). Instant, no compute.
   Tier 1  CODE EXEC : code-output question -> run the interpreter.
-                      Deterministic ground truth, ms, no model load.
-  Tier 2  CALC      : self-contained arithmetic -> evaluate deterministically.
-  Tier 3  RETRIEVAL : factual/contested (history, chemistry-opinion) -> collect
-                      claims from ALL registered retrievers (local docs, a
-                      knowledge table, and any future connector), merge and
-                      corroborate reliability-weighted; surface conflict, never
-                      fake a single answer for ambiguous domains.
-  Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source; any candidate
-                      a ground-truth check can confirm is elevated/archived.
+                       Deterministic ground truth, ms, no model load.
+  Tier 2  DETERM    : deterministic primitives, checked from most-
+                       to least-specific:
+                         2b  string-op   (reverse/count/compare)
+                         2c  math-prims  (factorial, sqrt, log, power,
+                                         geometry, multi-step)
+                         2  calculator  (literal ``a op b``)
+  Tier 3  RETRIEVAL : factual/contested (history, chemistry-opinion) ->
+                       collect claims from ALL registered retrievers
+                       (local docs, a knowledge table, and any future
+                       connector), merge and corroborate
+                       reliability-weighted; surface conflict, never
+                       fake a single answer for ambiguous domains.
+  Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source; any
+                       candidate a ground-truth check can confirm is
+                       elevated/archived.
 
 Tier 1/2 results are archived to memory with their provenance. Disagreement is
 preserved in memory so the swarm's experience keeps conflicts rather than
@@ -35,6 +42,10 @@ from typing import List, Optional, Tuple
 
 from cognitive_swarm.tools.executor import execute as _exec_code
 from cognitive_swarm.tools.string_primitives import resolve_string_primitive as _resolve_string_primitive
+from cognitive_swarm.tools.math_primitives import (
+    resolve_math_primitive as _resolve_math_primitive,
+    resolve_compound_expression as _resolve_compound_expression,
+)
 from cognitive_swarm.memory.verified_memory import VerifiedMemory
 from cognitive_swarm.orchestration.prompt_optimizer import PromptOptimizer, TaskType
 from cognitive_swarm.orchestration.corroboration import Corroborator, SourceClaim, Verdict
@@ -103,6 +114,21 @@ class TruthRouter:
             self._verify(question, prim, "string-op", tier="string-op")
             return Resolution(prim, 1.0, "string-op", "string-op",
                               sources=[{"name": "string-primitives", "reliability": 1.0}])
+
+        # Tier 2c: math primitives for word operators / special forms.
+        # Compound expressions (multi-step arithmetic) are tried first
+        # to capture cases like ``100 / 4 + 6`` with proper precedence.
+        # Specific primitives (factorial, sqrt, log, series sum, etc.) are
+        # tried second to handle unambiguous cases.
+        # Cached thinking primitives -> zero model load, ms.
+        if task_type == TaskType.MATH:
+            mp = _resolve_compound_expression(question)
+            if mp is None:
+                mp = _resolve_math_primitive(question)
+            if mp is not None:
+                self._verify(question, mp, "math-primitives", tier="math-primitives")
+                return Resolution(mp, 1.0, "math-primitives", "math-primitives",
+                                  sources=[{"name": "math-primitives", "reliability": 1.0}])
 
         # Tier 2: self-contained arithmetic.
         if task_type == TaskType.MATH:
