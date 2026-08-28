@@ -31,13 +31,16 @@ def _eval_number(s: str) -> Optional[float]:
     s = s.strip().strip(".,?")
     if not s:
         return None
-    m = re.search(r"(-?\d+)\s*/\s*(-?\d+)", s)
+    m = re.search(r"(-?[\d,]+)\s*/\s*(-?[\d,]+)", s)
     if m:
-        den = int(m.group(2))
-        if den == 0:
-            return None
-        return int(m.group(1)) / den
-    m = re.search(r"-?\d+(?:\.\d+)?", s)
+        den_str = m.group(2).replace(",", "")
+        num_str = m.group(1).replace(",", "")
+        if den_str:
+            den = int(den_str)
+            if den == 0:
+                return None
+            return int(num_str) / den
+    m = re.search(r"-?[\d,]+(?:\.\d+)?", s)
     if not m:
         return None
     try:
@@ -133,7 +136,7 @@ def detect_math_primitive(question: str) -> Optional[Tuple[str, dict]]:
     ql = question.strip().lower()
 
     # log
-    m = re.search(r"log base\s*(\d+)\s+of\s*(-?\d+(?:\.\d+)?)", ql)
+    m = re.search(r"log base\s*(\d+)\s+of\s*(-?\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)", ql)
     if m:
         return ("log", {"base": m.group(1), "n": m.group(2)})
     m = re.search(r"log_(\d+)\s*\(\s*(-?\d+(?:\.\d+)?)\s*\)", ql)
@@ -148,14 +151,16 @@ def detect_math_primitive(question: str) -> Optional[Tuple[str, dict]]:
     if m:
         return ("factorial", {"n": m.group(1)})
 
-    # sqrt (single and sum of two)
+    # sqrt (single and sum of two) -- also handles natural-language forms
     m = re.search(r"sqrt\(\s*\d+\s*\)\s*\+\s*sqrt\(\s*\d+\s*\)", ql)
     if m:
         a, b = re.findall(r"\d+", m.group(0))
         return ("sqrt_sum", {"a": a, "b": b})
-    m = re.search(r"square root of\s*(-?\d+(?:\.\d+)?)", ql)
+    m = re.search(
+        r"(?:the\s+)?square\s+root\s+of\s+(-?\d+(?:\.\d+)?)\s*\+\s*"
+        r"(?:the\s+)?square\s+root\s+of\s+(-?\d+(?:\.\d+)?)", ql)
     if m:
-        return ("sqrt", {"n": m.group(1)})
+        return ("sqrt_sum", {"a": m.group(1), "b": m.group(2)})
     m = re.search(r"sqrt\(\s*(-?\d+(?:\.\d+)?)\s*\)", ql)
     if m:
         return ("sqrt", {"n": m.group(1)})
@@ -176,25 +181,16 @@ def detect_math_primitive(question: str) -> Optional[Tuple[str, dict]]:
     if m:
         return ("cube", {"n": m.group(1)})
 
-    # half
-    m = re.search(r"half of\s*(-?\d+(?:\.\d+)?)", ql)
-    if m:
-        return ("half", {"n": m.group(1)})
-
-    # "one half of X" / "a quarter of X" / "one third of X" / "a fourth of X"
-    # Nested chains: "one half of one quarter of 400" -> apply outer then inner.
-    # Detect all fraction-of patterns sequentially, then apply left-to-right.
+    # Fraction-of chains: "half of 250", "one third of one half of 90", etc.
+    # Runs after factorial/sqrt/power to avoid conflicts.
     fracs = re.findall(r"(half|quarter|third|fourth|fifth)\s+of", ql)
     if fracs:
-        # The number should be the digits immediately before ? or . or end
         num_match = re.search(r"(-?\d+(?:\.\d+)?)\s*[?.]?\s*$", ql)
         if num_match:
-            n_str = num_match.group(1)
-            n_val = _eval_number(n_str)
+            n_val = _eval_number(num_match.group(1))
             if n_val is not None:
                 return ("unit_fraction_chain", {
                     "n": n_val,
-                    "raw": "".join(fracs),  # keep for logging but not used
                     "words": fracs,
                 })
 
@@ -361,13 +357,7 @@ def detect_compound_expression(question: str) -> Optional[dict]:
 def _factorial(n: float) -> Optional[str]:
     if n < 0 or n != int(n):
         return None
-    n = int(n)
-    if n > 20:
-        return None
-    r = 1
-    for i in range(2, n + 1):
-        r *= i
-    return str(r)
+    return str(math.factorial(int(n)))
 
 
 def _sqrt_value(n: float) -> Optional[float]:

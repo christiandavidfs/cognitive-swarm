@@ -63,13 +63,21 @@ def detect_string_op(question: str) -> Optional[tuple]:
     if m:
         return ("reverse", {"word": m.group(1)})
 
-    # ---- vowels: "how many vowels ... in the word 'X'" -------------------
+    # ---- vowels: "how many vowels ... in the word 'X'" OR "... in ELEPHANT?"
+    # Pattern 1: the quoted/'the word' form (existing traps).
     m = re.search(r"how many vowels .*?in the word\s+'?([A-Za-z]+)'?", ql)
     if m:
         return ("count_vowels", {"word": m.group(1)})
+    # Pattern 2: the plain-word-at-end form ("vowel(s) ... in ELEPHANT?").
+    m = re.search(r"how many vowels .*?in\s+([a-zA-Z]+)\s*[?.]?\s*$", ql)
+    if m:
+        return ("count_vowels", {"word": m.group(1)})
 
-    # ---- letters: "how many letters ... in the word 'X'" -----------------
+    # ---- letters: "how many letters ... in the word 'X'" OR "... in ELEPHANT?"
     m = re.search(r"how many letters .*?in the word\s+'?([A-Za-z]+)'?", ql)
+    if m:
+        return ("count_letters", {"word": m.group(1)})
+    m = re.search(r"how many letters .*?in\s+([a-zA-Z]+)\s*[?.]?\s*$", ql)
     if m:
         return ("count_letters", {"word": m.group(1)})
 
