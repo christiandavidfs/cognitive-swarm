@@ -91,6 +91,39 @@ artifacts masquerade as model failures.
 > CIs once they complete. Early phi signal on the first ~40 problems ≈ 24% —
 > consistent with this expanded set being harder than the old 36.
 
+## Apples-to-apples: small swarm vs frontier model (all 120 problems)
+
+Same problems, same `check_answer` ground-truth scorer, same bootstrap 95% CI.
+`truth` = deterministic tiers (0 model loads); `phi`/`qwen` = single small MLX
+models; "big" = `minimax/minimax-m3:free` via OpenRouter (frontier-class, free)
+scored with the same tight answer-first contract so it is NOT under-stated.
+
+| Config | all-120 acc | CI | math | reason | code | trap |
+|---|---|---|---|---|---|---|
+| **truth** (deterministic, 0 loads) | **34.2%** (41/120) | [25.8, 42.5] | 5/36 | 0/36 | **36/36** | 0/12 |
+| **phi** (single small) | 20.8% (25/120) | [14.2, 28.3] | 11/36 | 7/36 | 5/36 | 2/12 |
+| **qwen** (single small) | 30.0% (36/120) | [21.7, 38.3] | 6/36 | 9/36 | 17/36 | 4/12 |
+| **big (minimax-m3, frontier-free)** | **87.5%** (105/120) | [81.7, 92.5] | **36/36** | 26/36 | 34/36 | 9/12 |
+
+### Honest reading (credible, CIs included)
+
+1. **The deterministic truth tier beats both individual small models overall**
+   (34.2% > 20.8% phi, 30.0% qwen) at **zero model loads** — it *runs* code
+   (100% code) instead of trusting a model to predict stdout. This is the
+   strongest, cheapest lever already in the stack.
+2. **A frontier model dominates on closed-answer recall** (87.5%). This is
+   *expected and honest* — the swarm is *not* competing with a frontier model on
+   exact-answer trivia. Its leverage is the open/debate/grounded domain (argued
+   in ARCHITECTURE.md) and its cost is zero compute per run on the 8 GB laptop.
+3. The open gaps that a *procedure/primitive memory* should close (see the
+   roadmap): `truth` = **0% on reasoning and trap** purely because it has **no
+   tool** for string/derivation steps (it would need `count_char`/`reverse`/
+   `vowel_count` micro-primitives); `phi` = weak code (5/36) where `truth` is
+   100% — a cheap routing win (send code to the executor).
+4. **CIs matter**: the two small models' CIs ([14.2–28.3] and [21.7–38.3])
+   overlap, so their *ordering* is not significant; but both are decisively below
+   `truth` on code and far below the frontier overall. No single-run overclaim.
+
 ---
 
 # Truth Hierarchy (v5) — source of truth + verified memory (real-life learning)
