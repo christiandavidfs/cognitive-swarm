@@ -22,7 +22,7 @@ from cognitive_swarm.orchestration.truth_router import TruthRouter, demo_fact_ta
 
 def run_deterministic_pass(router, problems, label):
     t0 = time.time(); resolved = 0; used = {}
-    by_cat = {"math": [0, 0], "reasoning": [0, 0], "code": [0, 0]}
+    by_cat = {"math": [0, 0], "reasoning": [0, 0], "code": [0, 0], "trap": [0, 0]}
     for p in problems:
         r = router.resolve(p["q"])
         if r.answer is not None:

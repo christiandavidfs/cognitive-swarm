@@ -24,7 +24,7 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 
 | Approach | all-120 acc | 95% CI | code | Cost | Runs locally |
 |---|---|---|---|---|---|
-| Deterministic **truth** tier (memory + executor + calc, 0 model loads) | **34.2%** | [25.8, 42.5] | **100%** | Free | Yes |
+| Deterministic **truth** tier (memory + executor + calc + string-op, 0 loads) | **44.2%** | [35.0, 53.3] | **100%** | Free | Yes |
 | Phi-3.5 Mini alone | 20.8% | [14.2, 28.3] | 14% | Free | Yes |
 | Qwen 2.5 3B alone | 30.0% | [21.7, 38.3] | 47% | Free | Yes |
 | **Big model, `minimax-m3` (frontier-class, OpenRouter free)** | **87.5%** | [81.7, 92.5] | 94% | Free (cloud) | No |
@@ -32,9 +32,11 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 ### Main findings
 
 1. **Ground truth beats consensus.** The deterministic `truth` tier (**100% on
-   code** by *executing* it, at zero model loads) beats both individual small
-   models overall (34.2% > 20.8% / 30.0%) — running the code beats trusting a
-   model to predict stdout.
+   code** by *executing* it; **12/12 on the adversarial trap items** via
+   string-op primitives — all at zero model loads) beats the individual small
+   models overall (44.2% > 20.8% / 30.0%). Caveat: the win is concentrated in
+   the code + trap domains; on reasoning it is 0/36 and the *overall*
+   truth-vs-qwen gap is within CI overlap — the decisive edge is category-level.
 2. **A frontier model dominates on closed-answer recall** (87.5%). The swarm is
    *not* competing with a frontier model on exact-answer trivia; its leverage is
    the open, debate, and grounded domain plus zero-cost compounding memory.
@@ -234,10 +236,10 @@ cognitive_swarm/
 - [x] Add **code executor** → 100% on code (was 8% trusting models)
 - [x] Fix consensus SELECTION via **reasoned selector** (self-overturn correction)
 - [x] Big-model comparator vs **frontier model** via free OpenRouter (`minimax-m3`)
+- [x] **String-op micro-primitives** (`count_char`, `count_vowels`, `count_letters`,
+      `reverse`, `compare`) — land `truth` tier's trap **0% → 100% (12/12)** at
+      zero model loads, lifting truth overall to **44.2%** (was 34.2%)
 - [ ] Run **debate** config on the full 120 for a true small-swarm vs frontier number
-- [ ] **String-op micro-primitives** (`count_char`, `reverse`, `vowel_count`) to lift
-      the `truth` tier's 0% on trap/reasoning — the first "cache a thinking
-      primitive" win
 - [ ] **Procedure / primitive memory**: cache *reasoning processes*, not just
       answers — verified lemmas, worked step-skeletons from winning debate
       traces, and discovered correction rules (extends `verified_memory` to the

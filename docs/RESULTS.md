@@ -43,15 +43,16 @@ loads**, runs in seconds):
 
 | Set | Overall | CI | code | math | reasoning | trap |
 |---|---|---|---|---|---|---|
-| all 120 | **34.2%** (41/120) | [25.8%, 42.5%] | **100%** (36/36) | 14% (5/36) | 0% | 0% |
+| all 120 | **44.2%** (53/120) | [35.0%, 53.3%] | **100%** (36/36) | 14% (5/36) | 0% | **100%** (12/12) |
 | balanced 18 | 50% (9/18) | [27.8%, 72.2%] | 100% (8/8) | 25% (1/4) | 0% | — |
 
-**Honest reading:** the executor makes code a solved problem (100%), partially
-covers math, and the string-trap and pure-reasoning items are 0% because the
-deterministic tiers have *no tool* for letter/vowel counting and no model
-fallback in this config. These are tooling gaps, not measurement error — they
-are exactly the next cheap wins (a string-ops micro-tool; then route
-unverifiable reasoning to the debate fallback).
+**Honest reading:** the executor makes code a solved problem (100%), and the new
+**string-op micro-tool** (`count_char`, `count_vowels`, `count_letters`,
+`reverse`, `compare`) makes the adversarial trap items a solved problem too —
+**trap 0% → 100% (12/12)** at zero model loads, lifting the truth tier overall
+from 34.2% to **44.2%** (53/120). The only remaining deterministic gap is
+pure-reasoning (0/36), which has no cheap ground-truth tool and needs the
+debate fallback. These are tooling gaps, not measurement error.
 
 ## ORR (Open-Response / Robustness) track
 
@@ -100,7 +101,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 | Config | all-120 acc | CI | math | reason | code | trap |
 |---|---|---|---|---|---|---|
-| **truth** (deterministic, 0 loads) | **34.2%** (41/120) | [25.8, 42.5] | 5/36 | 0/36 | **36/36** | 0/12 |
+| **truth** (deterministic, 0 loads) | **44.2%** (53/120) | [35.0, 53.3] | 5/36 | 0/36 | **36/36** | **12/12** |
 | **phi** (single small) | 20.8% (25/120) | [14.2, 28.3] | 11/36 | 7/36 | 5/36 | 2/12 |
 | **qwen** (single small) | 30.0% (36/120) | [21.7, 38.3] | 6/36 | 9/36 | 17/36 | 4/12 |
 | **big (minimax-m3, frontier-free)** | **87.5%** (105/120) | [81.7, 92.5] | **36/36** | 26/36 | 34/36 | 9/12 |
@@ -108,21 +109,29 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 ### Honest reading (credible, CIs included)
 
 1. **The deterministic truth tier beats both individual small models overall**
-   (34.2% > 20.8% phi, 30.0% qwen) at **zero model loads** — it *runs* code
-   (100% code) instead of trusting a model to predict stdout. This is the
-   strongest, cheapest lever already in the stack.
+   (44.2% > 20.8% phi, 30.0% qwen) at **zero model loads** — by *running* code
+   (100%/36), and now by *computing* the string-op trap items (12/12). But the
+   overall win is **concentrated in the two domains it has deterministic tools
+   for**: code + trap. On reasoning it is 0/36, on math only 5/36, so a
+   code/trap-heavy mix inflates the headline — a category-weighted read is more
+   honest than the single overall number.
 2. **A frontier model dominates on closed-answer recall** (87.5%). This is
    *expected and honest* — the swarm is *not* competing with a frontier model on
    exact-answer trivia. Its leverage is the open/debate/grounded domain (argued
    in ARCHITECTURE.md) and its cost is zero compute per run on the 8 GB laptop.
 3. The open gaps that a *procedure/primitive memory* should close (see the
-   roadmap): `truth` = **0% on reasoning and trap** purely because it has **no
-   tool** for string/derivation steps (it would need `count_char`/`reverse`/
-   `vowel_count` micro-primitives); `phi` = weak code (5/36) where `truth` is
-   100% — a cheap routing win (send code to the executor).
-4. **CIs matter**: the two small models' CIs ([14.2–28.3] and [21.7–38.3])
-   overlap, so their *ordering* is not significant; but both are decisively below
-   `truth` on code and far below the frontier overall. No single-run overclaim.
+   roadmap): the string-op micro-tool already closes the trap gap (`truth` trap
+   12/12, matching `big`'s 9/12 at zero compute) and the executor closes code
+   (100%). The remaining `truth` gap is **reasoning only (0/36)** — no cheap
+   ground-truth tool for multi-step derivation; `phi` is weak on code (5/36)
+   where `truth` is 100% — a cheap routing win (send code to the executor).
+4. **CIs matter — and the *overall* truth-vs-qwen win is NOT decisive.** truth
+   [35.0–53.3] overlaps qwen [21.7–38.3] in the band [35.0, 38.3], and truth
+   [35.0–53.3] vs phi [14.2–28.3] is decisive. So as a *total*-accuracy claim,
+   "truth beats qwen" is not statistically clean; it only becomes decisive
+   *within* the code and trap categories, where the CIs (100% vs ~30–50%) do not
+   overlap. No single-run overclaim; the honest claim is "truth dominates on the
+   domains it has tools for, and is roughly tied overall with qwen."
 
 ---
 

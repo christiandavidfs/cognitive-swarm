@@ -110,6 +110,7 @@ class VerifiedMemory:
             "sources": sources,
             "disagreement": disagreement,
             "code_sig": self._code_sig(question),
+            "string_op_sig": self._string_op_sig(question),
             "verified": verified,
             "hits": (existing["hits"] + 1 if existing else 0),
         }
@@ -135,6 +136,21 @@ class VerifiedMemory:
         # 'print(2+3)' matches '{2+3}'-style rephrases consistently.
         return re.sub(r"\s+", "", code)
 
+    def _string_op_sig(self, text: str) -> Optional[str]:
+        """Signature for a question that expresses a resolvable string-op
+        (reverse/count/compare), used so near-duplicate string questions about
+        DIFFERENT words never blur together in memory.
+
+        Mirrors the code-aware guard: instead of stoplist-filtered token overlap
+        (which would wrongly merge 'spell strawberry backwards' with 'spell
+        mississippi backwards'), we require an IDENTICAL (op, targets) signature."""
+        from cognitive_swarm.tools.string_primitives import detect_string_op
+        det = detect_string_op(text)
+        if not det:
+            return None
+        op, args = det
+        return op + ":" + "|".join(str(v) for _, v in sorted(args.items()))
+
     def lookup(self, question: str) -> Optional[dict]:
         """Return the stored record (full provenance) for this question or a
         close, salient rephrase. Returns None if no strong match.
@@ -154,6 +170,16 @@ class VerifiedMemory:
             for entry in self.entries.values():
                 stored_sig = (entry.get("code_sig") or self._code_sig(entry["question"]))
                 if stored_sig and stored_sig == q_code:
+                    self.bump(question)
+                    return entry
+            return None
+
+        # String-op-aware path: identical (op, targets) signature, else no match.
+        q_so = self._string_op_sig(question)
+        if q_so is not None:
+            for entry in self.entries.values():
+                stored_so = (entry.get("string_op_sig") or self._string_op_sig(entry["question"]))
+                if stored_so and stored_so == q_so:
                     self.bump(question)
                     return entry
             return None

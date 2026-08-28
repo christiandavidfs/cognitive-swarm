@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from cognitive_swarm.tools.executor import execute as _exec_code
+from cognitive_swarm.tools.string_primitives import resolve_string_primitive as _resolve_string_primitive
 from cognitive_swarm.memory.verified_memory import VerifiedMemory
 from cognitive_swarm.orchestration.prompt_optimizer import PromptOptimizer, TaskType
 from cognitive_swarm.orchestration.corroboration import Corroborator, SourceClaim, Verdict
@@ -89,6 +90,19 @@ class TruthRouter:
                 self._verify(question, out, "executor", tier="executor")
                 return Resolution(out, 1.0, "executor", "executor",
                                   sources=[{"name": "python-interpreter", "reliability": 1.0}])
+
+        # Tier 2b: deterministic string-op primitives (reverse, count char/
+        # vowels/letters, fraction-vs-decimal compare). These are more specific
+        # than generic arithmetic, so they are checked BEFORE the calculator:
+        # e.g. "which is larger: 3/10 or 1/3" is a compare, not a division to
+        # evaluate. Cached ``thinking primitives``: resolve the classic
+        # adversarial trap items exactly at zero compute instead of re-deriving
+        # (or asking a model) each time.
+        prim = _resolve_string_primitive(question)
+        if prim is not None:
+            self._verify(question, prim, "string-op", tier="string-op")
+            return Resolution(prim, 1.0, "string-op", "string-op",
+                              sources=[{"name": "string-primitives", "reliability": 1.0}])
 
         # Tier 2: self-contained arithmetic.
         if task_type == TaskType.MATH:
