@@ -46,10 +46,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from cognitive_swarm.models.multi_backend import MultiModelBackend
 from cognitive_swarm.orchestration.prompt_optimizer import PromptOptimizer, TaskType
-from cognitive_swarm.orchestration.confidence_consensus import (
-    ConfidenceConsensusEngine,
-    Vote,
-)
+from cognitive_swarm.orchestration.confidence_consensus import Vote
+from cognitive_swarm.orchestration.reasoned_selector import ReasonedSelector
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +70,7 @@ class EmergentDebate:
     def __init__(self, answer_samples: int = 1, critique_samples: int = 1):
         self.backend = MultiModelBackend()
         self.optimizer = PromptOptimizer(use_llm=False)
-        self.consensus = ConfidenceConsensusEngine()
+        self.consensus = ReasonedSelector()
         self.answer_samples = answer_samples
         self.critique_samples = critique_samples
         self.reason_budget = 96  # for reasoning traces fed to critics

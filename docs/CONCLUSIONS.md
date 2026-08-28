@@ -114,8 +114,16 @@ when accuracy and autonomy matter more than speed.
 1. **Consensus selection discards emergent value.** The cross-critique debate
    generates a rich candidate pool (62% on the hard subset), but majority-weight
    voting returns only 38% — a confident-but-wrong majority beats a
-   novel-correct minority. **Selection is the current bottleneck**, not
-   generation.
+   novel-correct minority. **Selection is a current bottleneck**, not
+   generation. We have since introduced a **reasoned selector**
+   (`orchestration/reasoned_selector.py`) that trusts an *independent
+   self-overturn correction* (a critic that changes its own first-pass answer
+   after cross-critique) over a shallow first-pass-only majority. Unit-tested
+   on the exact emergence vote patterns it flips the two crisp novel-correct
+   cases (h-r-3 15→20, m-r-4 2→42) without regressing the already-won cases
+   (h-r-4, h-m-1). **Honest limits remain:** it cannot rescue h-m-4 (the correct
+   12 is not in the candidate pool) nor m-r-3 (a genuinely indeterminate
+   problem), which is a real capability/model limit, not a selection one.
 2. **Code output prediction is the weakest category (8%).** Even with the
    fixed consensus, program-execution problems remain the hardest. They need a
    different strategy: actually *running* code rather than asking models to
@@ -132,13 +140,15 @@ when accuracy and autonomy matter more than speed.
 
 ## 5. Recommendations
 
-- **Fix consensus SELECTION (highest leverage now).** The debate already
-  generates answers above the oracle; majority voting throws them away. Replace
-  "majority wins" with a selector that trusts a confident, well-argued minority
-  correction over a stable-but-wrong majority (e.g. prefer the answer whose
-  *critique* both models converge on, or that overturns the other's stated
-  reasoning). Unlocking candidate→system could push the swarm well past the
-  oracle.
+- **Fix consensus SELECTION (done, incremental).** The debate generates answers
+  above the oracle; majority voting threw them away. The `ReasonedSelector`
+  now favors an independent self-overturn correction over a shallow
+  first-pass-only majority (unit-tested on the exact emergence vote patterns;
+  the v3 confidence-weighted gains on the balanced 18 — used by
+  `OptimizedDebate` — are untouched because the selector is wired only into the
+  `EmergentDebate` emergence path). Remaining: a full-36-problem emergence run
+  (currently validated on the hard 8 + unit vectors) to confirm the effect
+  generalizes and to measure the resulting candidate→system gap.
 - **Run the emergence test on the full 36-problem set** (currently validated on
   an 8-problem hard subset for time); confirm the effect generalizes.
 - **Add a code executor** for the `code` category instead of mental prediction

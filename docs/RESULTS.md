@@ -98,9 +98,20 @@ critics) are used, then all candidates are pooled.
 1. **The swarm beats the oracle.** System-level 38% vs oracle 12% (3×), and the
    candidate pool 62% vs 12% (5×). The cross-critique debate generates answers
    that neither member produces alone.
-2. **Generation works; selection is the new bottleneck.** Candidate pool (62%)
+2. **Generation works; selection was the new bottleneck.** Candidate pool (62%)
    is nearly 2× the system answer (38%) — the majority-weighted consensus
-   discards novel-correct minority answers.
+   discarded novel-correct minority answers.
+
+### Selection fix: reasoned selector
+
+A `ReasonedSelector` (`orchestration/reasoned_selector.py`) now trusts an
+*independent self-overturn correction* — a critic that changes its own
+first-pass answer during cross-critique — over a shallow first-pass-only
+majority. Unit-tested against the exact vote patterns from this run it flips
+the two true-novel cases (m-r-4 2→42, h-r-3 15→20) while leaving the surfacing
+cases (h-r-4 4950, h-m-1 1275) and the v3 balanced-18 consensus (used by
+`OptimizedDebate`) unchanged. Honest limit: h-m-3/h-m-4/m-r-3 have no correct
+answer in the candidate pool, so no selector can rescue them.
 
 ### Honest breakdown of the emergence
 
