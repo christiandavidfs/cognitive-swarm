@@ -55,8 +55,20 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 | Optimization of prompts (constraints + output format) | took same small models from ~0% to ~30% |
 | Confidence-weighted consensus (v3) | **matches oracle** (61% vs 33% old on balanced 18-problem subset) |
 | Cross-critique debate (v4) | **beats oracle**: hard 8-problem subset oracle 12% → system 38%, candidate pool 62% |
-| Code executor (v5) | **100% on code** (was 8%); 12/12, deterministic, 0 model loads |
+| Code executor (v5) | **100% on code** (was 8%); deterministic, 0 model loads |
 | Memory compounding | pass 2 resolves 15/36 in 5.3ms; corroboration handles history conflicts honestly |
+| **120-problem benchmark (credibility phase)** | **truth 34.2% [25.8-42.5] / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code via executor, 0% trap/reasoning (no string-op tool yet) |
+| **Open-response robustness (ORR)** | phi 2/6, qwen 1/6: both handle absurdism; neither has a stable "self" (song Jaccard=0); phi acknowledges a distressed user, qwen answers only the factual part |
+
+## Open items / next (turn these into tasks when picked up)
+
+- Run **debate** config on the full 120 for a true small-swarm vs frontier number.
+- **String-op micro-primitives** (`count_char`, `reverse`, `vowel_count`) to lift
+  the `truth` tier's 0% on trap/reasoning — first measurably verifies the
+  "cache a thinking primitive" idea.
+- **Procedure / primitive memory**: cache reasoning *processes* (verified
+  lemmas, winning-debate step-skeletons, discovered correction rules), not just
+  answers; RAG corpus stays outside on disk.
 
 ## Operational facts (important)
 
@@ -73,10 +85,15 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
   budget (math/reasoning ~10, code ~24) to get short clean answers; extract
   preferring the START of output. Large per-category budgets produce verbose
   garbage that breaks regex extraction.
-- **Groq API** (large model Qwen 3.6 27B): key `gsk_...` NOT in env by default —
-  pass at runtime. The 27B model suffers persistent *thinking-mode* text that
-  stains answers (we measured 8%) — treat its numbers with suspicion; the local
-  swarm matched/beat it.
+- **Big-model comparison: use free OpenRouter models, NOT Groq.** Groq's
+  `qwen3.6-27b` emits a persistent *thinking-mode* block that (a) eats the token
+  budget and (b) mangles naive extraction — it was the original cause of the
+  8% under-count. Instead use `cognitive_swarm/evaluation/big_model_benchmark.py`
+  against **`minimax/minimax-m3:free`** (OpenRouter token `sk-or-...` NOT in env
+  by default; pass `OPENROUTER_API_KEY=` at runtime; never commit the token).
+  Give it a tight answer-first prompt + `ANSWER:` marker extraction so it is
+  scored fairly (verified: minimax-m3 87.5% on the 120 — its 2 balanced misses
+  are the same ones gpt-4o misses, i.e. genuine reasoning limits).
 - **Results are non-deterministic** on single runs; report "solved in any run".
   Some answers are latently known by a model but a fragile harness drops them —
   the debate's richer pipeline surfaces them.

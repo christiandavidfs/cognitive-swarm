@@ -1,41 +1,53 @@
 # Cognitive Swarm
 
-**Can multiple small language models, coordinated through structured debate, outperform a single small model?**
+**Can multiple small language models, coordinated through structured debate and
+ground-truth sources, outperform a single small model — and rival a large
+cloud model?**
 
-A research project investigating whether a "cognitive swarm" of specialized small models (1B-4B parameters) can achieve better reasoning than individual models through structured debate, critique, and consensus.
+A research project investigating whether a "cognitive swarm" of specialized
+small models (3–4B parameters) on an 8GB MacBook M1 can beat a single model of
+the same class — and beat their own oracle — through structured debate, a
+truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 
 ## Research Hypothesis
 
-> "Several small specialized language models, coordinated through an orchestration protocol, can sometimes outperform a single small model by independently solving problems, criticizing each other's reasoning, and iteratively reaching a consensus."
+> "Several small specialized language models, coordinated through an
+> orchestration protocol, can outperform a single small model by independently
+> solving problems, criticizing each other's reasoning, and iteratively
+> reaching a consensus — and, via ground-truth tools and verified memory, rival
+> far larger models at zero compute per run."
 
-## Key Findings (Leveled Benchmark — 36 problems)
+## Key Findings (credible, 120-problem benchmark with bootstrap CIs)
 
-> Full, detailed analysis with justifications: **see [docs/CONCLUSIONS.md](docs/CONCLUSIONS.md)**
+> Full detailed analysis: **see [docs/RESULTS.md](docs/RESULTS.md)** and
+> **[docs/CONCLUSIONS.md](docs/CONCLUSIONS.md)**.
 
-| Approach | Overall | Hard | Runs locally | Cost |
-|---|---|---|---|---|
-| Phi-3.5 Mini alone (optimized prompts) | 28% | 8% | Yes | Free |
-| Qwen 2.5 3B alone (optimized prompts) | 28% | 8% | Yes | Free |
-| **Debate swarm (Phi + Qwen)** | **39%** | **42%** | **Yes** | **Free** |
-| Large model, Qwen 27B (API) | 8% | 8% | No (cloud) | per call |
+| Approach | all-120 acc | 95% CI | code | Cost | Runs locally |
+|---|---|---|---|---|---|
+| Deterministic **truth** tier (memory + executor + calc, 0 model loads) | **34.2%** | [25.8, 42.5] | **100%** | Free | Yes |
+| Phi-3.5 Mini alone | 20.8% | [14.2, 28.3] | 14% | Free | Yes |
+| Qwen 2.5 3B alone | 30.0% | [21.7, 38.3] | 47% | Free | Yes |
+| **Big model, `minimax-m3` (frontier-class, OpenRouter free)** | **87.5%** | [81.7, 92.5] | 94% | Free (cloud) | No |
 
-### Main conclusion
+### Main findings
 
-**A locally-run debate between two small models outperformed a 24x larger cloud
-model (39% vs 8%) and was strongest on the hardest problems (42% vs 8%).**
-The swarm solved 7 problems neither small model could solve alone, proving
-genuine complementary value — while remaining private, free, and fully local.
+1. **Ground truth beats consensus.** The deterministic `truth` tier (**100% on
+   code** by *executing* it, at zero model loads) beats both individual small
+   models overall (34.2% > 20.8% / 30.0%) — running the code beats trusting a
+   model to predict stdout.
+2. **A frontier model dominates on closed-answer recall** (87.5%). The swarm is
+   *not* competing with a frontier model on exact-answer trivia; its leverage is
+   the open, debate, and grounded domain plus zero-cost compounding memory.
+3. **Cross-critique debate exceeds the oracle** (v4): on a hard subset the
+   candidate pool reached 62% vs oracle 12% — the swarm generates answers no
+   single member produces alone.
+4. **Consensus now reaches the oracle ceiling** (v3): confidence-weighted
+   consensus matched best-of-members (61% vs 33% old heuristic).
+5. **Selection fix (reasoned selector)**: an *independent self-overturn*
+   correction recovers novel-correct minority answers that majority voting
+   discards — closing the biggest remaining gap.
 
-### Two biggest levers discovered (both now applied)
-1. **Prompt optimization** took the same small models from ~0% to reliable
-   correct answers (constraints + explicit output format).
-2. **Consensus engine** (confidence-weighted + self-consistency) was rebuilt
-   and now **reaches the oracle ceiling** — matching the best-of-both-models on
-   a balanced subset (61% vs 33% with the old heuristic). The consensus is no
-   longer the bottleneck; remaining misses are model limits, not consensus
-   limits.
-
-### Notable Result
+### Notable result
 
 **Debate solved a problem that neither model could solve individually:**
 
@@ -45,6 +57,18 @@ Problem: What is 127 + 389?
 ├─ Qwen: 166 (failed)
 └─ Debate: 516 ✓ (CORRECT)
 ```
+
+### Open-response robustness (ORR) — small models
+
+A rubric-based track (`evaluation/orr_benchmark.py`) found both small models:
+handle absurdism ✓, but lack a **stable self** (favorite-song Jaccard = 0 across
+two asks), **over-engineer** lateral/physical problems, and differ on safety
+(phi acknowledges a distressed user; qwen coldly answers only the factual part).
+
+> **A caution, measured directly:** the large model was previously *under-counted*
+> because cloud "thinking-mode" text mangles regex extraction (the old 8% API
+> score). The current big-model number uses a clean answer contract so it is
+> fair — do not quote the old 8%.
 
 ## Architecture
 
@@ -189,25 +213,37 @@ cognitive_swarm/
 
 ## Limitations
 
-- Limited to 8GB RAM (can't load multiple models simultaneously)
-- Sequential model loading adds latency (~15-25s per problem)
-- Code output prediction is the weakest category (8%) — needs a code executor
-- Single runs are noisy (non-deterministic); accuracy reported as "solved in any run"
-- Hard one-step reasoning riddles (bridge, jugs, handshake) unsolved by all approaches
+- Limited to 8GB RAM (can't load multiple models simultaneously); sequential
+  model loading adds ~15–90s per problem on the full 120-problem set.
+- Small models score far below a frontier model on **closed-answer** recall
+  (phi 21% / qwen 30% vs 87.5%) — the swarm's value is not here.
+- The deterministic `truth` tier is **0% on reasoning and adversarial "trap"**
+  problems purely because it has no string/derivation micro-tools yet (a cheap,
+  known next win).
+- Small models lack a stable "self"/memory of preferences (ORR song-consistency
+  = 0) — relevant to identity-style open questions.
+- Results are non-deterministic on single runs; accuracy is reported as
+  "solved in any run" with bootstrap CIs, not as one lucky number.
+- Large API / frontier models with verbose "thinking-mode" output must be scored
+  with a clean answer contract or they are unfairly under-counted.
 
 ## Future Work
 
-- [x] Improve consensus engine → reached oracle ceiling (61% subset vs 33% old)
-- [x] Test emergence above the oracle → cross-critique debate **beats the oracle**
-      (hard subset: oracle 12%, swarm candidates 62%) — see docs/RESULTS.md
-- [ ] Fix consensus SELECTION (majority voting discards novel-correct minorities:
-      candidates 62% → system 38%). Highest-leverage next step.
-- [ ] Add code executor for code-category problems
-- [ ] Larger benchmark (50+ problems) and more runs per problem
-- [ ] Add more models (Gemma, Llama)
-- [ ] Implement RAG memory system
-- [ ] Test with 16GB+ RAM for simultaneous loading
-- [ ] Re-test large models with thinking-mode disabled for a fairer comparison
+- [x] Expand benchmark 36 → **120 verified problems** (math/reasoning/code + 12 trap)
+- [x] Add validation harness with **bootstrap 95% CIs** (`evaluation/validate_baseline.py`)
+- [x] Add **code executor** → 100% on code (was 8% trusting models)
+- [x] Fix consensus SELECTION via **reasoned selector** (self-overturn correction)
+- [x] Big-model comparator vs **frontier model** via free OpenRouter (`minimax-m3`)
+- [ ] Run **debate** config on the full 120 for a true small-swarm vs frontier number
+- [ ] **String-op micro-primitives** (`count_char`, `reverse`, `vowel_count`) to lift
+      the `truth` tier's 0% on trap/reasoning — the first "cache a thinking
+      primitive" win
+- [ ] **Procedure / primitive memory**: cache *reasoning processes*, not just
+      answers — verified lemmas, worked step-skeletons from winning debate
+      traces, and discovered correction rules (extends `verified_memory` to the
+      procedure level; RAG corpus stays outside on disk)
+- [ ] More repeats per config and more model families (Gemma, Llama)
+- [ ] Test with 16GB+ RAM for simultaneous model loading
 
 ## Research Question
 
