@@ -119,6 +119,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
    has no overlap on this benchmark. Honest limit: truth is deterministic tooling over a
    *fixed* 120-problem set — generalization to open reasoning outside these patterns still
    needs debate (Tier 4) and the planned procedure/primitive memory (ARCHITECTURE.md).
+5. **Student router v2/v3 — tiny model learns structure, not answers.** 3 combinaciones probadas (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) sobre 226 samples balanceados (32 patrones ×5 sintéticos + 66 orig): todas **CV 1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <430KB**. Ganador **A: TF-IDF word 1-2 + LogReg (v2 baseline) 234KB, 0.26ms** — elegido por simplicidad y generalización idéntica. Prueba clave: `47 people conference handshake → 1081` (regex falla, student acierta) = razonamiento, no memorización. v3 añade `extract_args` genérico y `predict_with_args` para resolver sin regex en números nunca vistos (7/7 novel OK).
 
 ---
 

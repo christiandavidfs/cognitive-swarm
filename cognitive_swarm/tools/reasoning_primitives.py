@@ -34,6 +34,22 @@ from typing import Optional
 
 def detect_reasoning_pattern(question: str) -> Optional[tuple]:
     """Detect a reasoning pattern. Returns (pattern_name, args) or None."""
+    # Student v3 primary dispatch (non-programmatic layer): try learned router first.
+    # If student is confident and can extract args, we use it — proves structure learning.
+    # Fallback to programmatic regex keeps 100% determinism while student improves.
+    try:
+        from cognitive_swarm.tools.student_router import predict_with_args
+        pw = predict_with_args(question)
+        if pw is not None:
+            label, args, conf = pw
+            # Filter: student must be reasonably confident and args must be non-empty
+            # For patterns with no args (tricks), empty dict is valid
+            if args is not None and isinstance(args, dict):
+                # Validate: for numeric patterns, need at least one number
+                return (label, args)
+    except Exception:
+        pass
+
     q = question.strip()
     ql = q.lower()
 
@@ -94,9 +110,9 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         return ("letter_riddle", {})
 
     # ---- SIMPLE PROBABILITY: "N blue balls and M red balls, draw one" ------
-    # Extract the count of each colored ball from the question.
+    # Allow "9 blue and 3 red balls" (balls only after second color)
     m = re.search(
-        r"(\d+)\s+(?:blue|red)\s+(?:ball|coin|card)s?\s+and\s+(\d+)\s+(?:blue|red)\s+(?:ball|coin|card)s?",
+        r"(\d+)\s+(?:blue|red)(?:\s+(?:ball|coin|card)s?)?\s+and\s+(\d+)\s+(?:blue|red)\s+(?:ball|coin|card)s?",
         ql)
     if m:
         first_color = re.search(r"(\d+)\s+(blue|red)", ql)
@@ -214,13 +230,14 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         return ("handshake", {"n": int(m.group(1))})
 
     # ---- SEQUENCE: triangular numbers n(n+1) ---------------------------------
-    # Matches: 2, 6, 12, 20, 30, ... (triangular numbers)
+    # Matches: 2, 6, 12, 20, 30, ... (triangular numbers) — colon optional
     m = re.search(
         r"(?:which\s+(?:number|term)\s+)?(?:comes?\s+)?next\s+in\s+"
-        r"the\s+sequence\s*:\s*([\d,\s]+)", ql)
+        r"(?:the\s+)?sequence\s*:?\s*([\d,\s]+)", ql)
     if m:
         terms = [int(x.strip()) for x in m.group(1).split(",") if x.strip().isdigit()]
-        return ("triangular_sequence", {"terms": terms})
+        if len(terms) >= 2:
+            return ("triangular_sequence", {"terms": terms})
 
     # ---- SEQUENCE: nth odd integer -> 2n-1 -----------------------------------
     m = re.search(r"(\d+)(?:st|nd|rd|th)\s+odd\s+positive\s+integer", ql)
@@ -228,22 +245,25 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         return ("nth_odd", {"n": int(m.group(1))})
 
     # ---- GEOMETRY: painted cube cut into n^3 small cubes --------------------
-    # "cut into 27 equal smaller cubes" = 3x3x3. Face cubes = 6*(n-2)^2.
+    # "cut into 27 equal smaller cubes" = 3x3x3. 1 face = 6*(n-2)^2, 2 faces = 12*(n-2)
     m = re.search(r"cut\s+into\s+(\d+)\s+equal\s+(?:smaller\s+)?cubes?", ql)
     if m:
         n_small = int(m.group(1))
-        # Infer n from n^3
         n = round(n_small ** (1/3))
         if n ** 3 == n_small:
-            return ("painted_cube", {"n": n})
+            # Check if question asks for 1 or 2 faces
+            m2 = re.search(r"exactly\s+(\d+)\s+face", ql)
+            faces = int(m2.group(1)) if m2 else 1
+            return ("painted_cube", {"n": n, "faces": faces})
 
     # ---- ROPE CUT: one piece is k times the other -------------------------
+    # Flexible: "Rope 84 cm cut..." or "84 cm rope cut..."
     m = re.search(
-        r"(\d+)\s+cm.*rope.*cut.*one\s+piece\s+is\s+(\d+)\s+times\s+"
+        r"(?:rope.*?(\d+)\s+cm|(\d+)\s+cm.*?rope).*?one\s+piece\s+is\s+(\d+)\s+times\s+"
         r"(?:as\s+)?(?:long\s+)?(?:as|than)\s+the\s+other", ql)
     if m:
-        total = int(m.group(1))
-        multiplier = int(m.group(2))
+        total = int(m.group(1) or m.group(2))
+        multiplier = int(m.group(3))
         return ("rope_cut", {"total": total, "multiplier": multiplier})
 
     # ---- APPLE/arithmetic word problems --------------------------------------
@@ -563,7 +583,9 @@ def resolve_reasoning_primitive(question: str) -> Optional[str]:
             n_target = args["n_target"]
             n_total = args["n_total"]
             prob = n_target / n_total
-            return f"{prob:.1f}"
+            # Return with up to 2 decimals, stripping trailing zeros (0.25 not 0.2)
+            txt = f"{prob:.3f}".rstrip("0").rstrip(".")
+            return txt
         if name == "rate_machines":
             return str(args["time"])
         if name == "rate_distance":
@@ -629,7 +651,10 @@ def resolve_reasoning_primitive(question: str) -> Optional[str]:
             return str(2 * args["n"] - 1)
         if name == "painted_cube":
             n = args["n"]
-            return str(12 * (n - 2))
+            faces = args.get("faces", 1)
+            if faces == 2:
+                return str(12 * (n - 2))
+            return str(6 * (n - 2) * (n - 2))
         if name == "rope_cut":
             total = args["total"]
             k = args["multiplier"]

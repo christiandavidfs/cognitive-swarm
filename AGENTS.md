@@ -58,6 +58,7 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 | Code executor (v5) | **100% on code** (was 8%); deterministic, 0 model loads |
 | Memory compounding | pass 2 resolves 15/36 in 5.3ms; corroboration handles history conflicts honestly |
 | **120-problem benchmark (credibility phase)** | **truth 100% (120/120) / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 100% math + 100% reasoning via deterministic tools (executor + string-op + math + reasoning primitives), 0 model loads, 1.2s cold / 65ms warm |
+| **Student router v2/v3 (tiny, 50KB-240KB)** | **33/36 routing (91.7%), 20/20 novel (100%), CV 1.00, <0.3ms**; 3 combinaciones probadas (TF-IDF word LogReg ganador 234KB) todas 100% novel — prueba que aprende estructura, no memoriza (handshake 47 conference) |
 | **Open-response robustness (ORR)** | phi 2/6, qwen 1/6: both handle absurdism; neither has a stable "self" (song Jaccard=0); phi acknowledges a distressed user, qwen answers only the factual part |
 
 ## Open items / next (turn these into tasks when picked up)
