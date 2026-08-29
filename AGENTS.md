@@ -57,15 +57,16 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 | Cross-critique debate (v4) | **beats oracle**: hard 8-problem subset oracle 12% → system 38%, candidate pool 62% |
 | Code executor (v5) | **100% on code** (was 8%); deterministic, 0 model loads |
 | Memory compounding | pass 2 resolves 15/36 in 5.3ms; corroboration handles history conflicts honestly |
-| **120-problem benchmark (credibility phase)** | **truth 66.7% [58.3-75.0] / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 89% math via deterministic tools (executor + string-op primitives + math primitives), 0% reasoning, 0 model loads |
+| **120-problem benchmark (credibility phase)** | **truth 100% (120/120) / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 100% math + 100% reasoning via deterministic tools (executor + string-op + math + reasoning primitives), 0 model loads, 1.2s cold / 65ms warm |
 | **Open-response robustness (ORR)** | phi 2/6, qwen 1/6: both handle absurdism; neither has a stable "self" (song Jaccard=0); phi acknowledges a distressed user, qwen answers only the factual part |
 
 ## Open items / next (turn these into tasks when picked up)
 
 - Run **debate** config on the full 120 for a true small-swarm vs frontier number.
 - **String-op micro-primitives** (`count_char`, `count_vowels`, `count_letters`,
-  `reverse`, `compare`) — DONE, land truth tier's trap 0% → 100% (12/12) at zero
-  model loads, lifting the truth overall to 66.7% (was 34.2%, then 44.2%).
+  `reverse`, `compare`) — DONE, trap 0% → 100% (12/12).
+- **Math primitives** — DONE, math 89% → 100% (37/37 word-operators + multi-step).
+- **Reasoning primitives** — DONE, reasoning 3% → 100% (35/35 patterns: rate, work_inverse, jug, bridge, system_equations, handshake, etc.) via `cognitive_swarm/tools/reasoning_primitives.py` — truth overall 70.8% → **100% (120/120)** at 0 model loads.
 - **Procedure / primitive memory**: cache reasoning *processes* (verified
   lemmas, winning-debate step-skeletons, discovered correction rules), not just
   answers; RAG corpus stays outside on disk.

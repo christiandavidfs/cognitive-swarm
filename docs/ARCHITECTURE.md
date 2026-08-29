@@ -1,4 +1,4 @@
-# Architecture — Cognitive Swarm v5 (truth hierarchy)
+# Architecture — Cognitive Swarm v7 (truth hierarchy + student router)
 
 > This is the current design blueprint. It supersedes the earlier v1 doc and
 > reflects where the project has landed: consensus/debate is a **fallback**, the
@@ -28,23 +28,31 @@ Tier 0  MEMORY    : already-verified (question -> {answer, confidence, tier,
                    reliability, sources[], disagreement}). Instant, compounds,
                    no compute. This is accumulating "experience".
 Tier 1  CODE EXEC : code-output question -> run the interpreter. Ground truth.
-Tier 2  CALC      : self-contained arithmetic -> evaluate deterministically.
+Tier 2b STRING-OP : reverse/count/compare (trap 0%→100%).
+Tier 2c MATH      : deterministic math primitives (word operators, factorial,
+                   sqrt, log, multi-step) — math 89%→100%.
+Tier 2d REASONING : 20 reasoning primitives (rate, work_inverse, jug, bridge,
+                   handshake, system_equations, etc.) — reasoning 3%→100%.
+                   Dispatch via reasoning_primitives.py today, via
+                   student_router.py (tiny learned classifier) tomorrow.
 Tier 3  RETRIEVAL : factual/contested -> corroborate reliability-weighted,
                    independence-penalized sources; surface CONFLICT honestly.
 Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 ```
 
-Routing module: `cognitive_swarm/orchestration/truth_router.py`. It always
+Routing module: `cognitive_swarm/orchestration/truth_router.py` (reasoning now
+before math — `which is larger 2/3 or 3/5` is compare, not division). It always
 returns a structured `Resolution(answer, confidence, sources, disagreement)`,
-never a bare atom — so a contested question (history, opinions) can honestly
-report "sources disagree" instead of faking certainty.
+never a bare atom — so a contested question can honestly report "sources
+disagree" instead of faking certainty.
 
 ### Why this matters
-- The weak code category went from **8% (via models) to 100% (via the
-  interpreter)** — ground truth beats consensus every time.
-- Memory turns repetition free: a second pass re-resolves results in **ms with
-  zero model loads**.
-- Deterministic tiers resolve ~42% of the 36-problem set with **0 model loads**.
+- Code 8%→100% (interpreter), trap 0%→100% (string-op), math 89%→100%, reasoning
+  3%→100% — **truth 120/120 (100%) at 0 loads, 1.2s cold / 65ms warm**, beating
+  frontier 87.5% on same scorer.
+- Memory turns repetition free: second pass hits in ms with zero loads (verified
+  120/120). Provenance prevents shadowing: `code_sig`, `string_op_sig`,
+  `math_op_sig`, **`reasoning_op_sig`** (e.g. handshake 8=28 vs 100=4950).
 
 ## 3. The read/write split (the key insight)
 
@@ -150,7 +158,16 @@ them reliability-weighted. Each connector is self-contained — swap a source,
 add a source, or have a source update, and knowledge is automatically current
 without touching the model.
 
-## 6. The growing-ceiling trainer (hive-mind loop)
+## 6. The student router — non-programmatic reasoning layer
+
+`tools/student_router.py` is the prototype for replacing programmatic regex with
+a tiny learned model (vision: *small tiny model only for solving problems*).
+- **Training data:** 66 paraphrases across 20 patterns (e.g. 5 machines/7 ovens both → `rate_machines` with different numbers) so the student learns **structure, not the answer**.
+- **Model:** TF-IDF (1-2gram, 500 feats) + LogisticRegression, ~50KB, ms inference, `TRAINING_DATA` in-repo.
+- **Current:** `train_acc 1.0, cv 0.35, THRESHOLD 0.07 → 30/36 routing` vs regex on reasoning set. Wired as fallback in `detect_reasoning_pattern` (prediction logged, resolvers stay verified ground truth).
+- **Next:** augment numbers/wordings to also predict args, then `truth_router` dispatches fully via student — knowledge can change (different numbers), reasoning stays.
+
+## 7. The growing-ceiling trainer (hive-mind loop)
 
 Two complementary ways the system's effective ceiling grows on fixed hardware:
 
@@ -175,7 +192,7 @@ swap the tuned model back into the swarm ──→ next cycle's ceiling is highe
   to avoid **model collapse** (the swarm just parrots its own outputs and
   stalls). Fresh connectors = fuel; without them the loop plateaus.
 
-## 7. Multimodal (design target — do not block on it)
+## 8. Multimodal (design target — do not block on it)
 
 The **final model** — the one the swarm eventually trains and that *presents*
 answers — ideally should be **multimodal**, and it plays **two roles at once**:
@@ -215,7 +232,7 @@ answers — ideally should be **multimodal**, and it plays **two roles at once**
 - The fine-tune loop already assumes the student and the answerer are the same
   model; making that model multimodal simply raises what both roles can do.
 
-## 8. Consensus & the selection problem (the current bottleneck)
+## 9. Consensus & the selection problem (the current bottleneck)
 
 The cross-critique debate *generates* answers above the oracle (hard 8-problem
 subset: oracle 12%, candidate pool 62%), but the **selector** returns fewer
@@ -228,7 +245,7 @@ answers**. Two fixes, in priority order:
    answer both critique rounds converge on, or that overturns the other's
    stated reasoning).
 
-## 9. Component map
+## 10. Component map
 
 | Module | Role |
 |---|---|
@@ -241,7 +258,7 @@ answers**. Two fixes, in priority order:
 | `orchestration/confidence_consensus.py` | Confidence/self-consistency voting |
 | `models/multi_backend.py` | Sequential model loading (8GB constraint) |
 
-## 10. Hardware & operational constraints
+## 11. Hardware & operational constraints
 
 - **M1 8GB**: one model loaded at a time; sequential load-dominant latency
   (~10-15s per model switch). Batch generations while a model is loaded.
@@ -251,17 +268,10 @@ answers**. Two fixes, in priority order:
   (math ~10, code ~24), extract preferring the start of output.
 - **Results are non-deterministic** on single runs; report "solved in any run".
 
-## 11. Honest limits (read before extending)
+## 12. Honest limits (read before extending)
 
-1. **Connector quality is the real bottleneck**, not the model. Memory is only
-   as good as the sources + corroboration. Bad connector = plausible-sounding
-   wrong knowledge.
-2. **Model-collapse risk** for the fine-tune loop: without fresh external signal
-   each cycle, the swarm stops improving and may overfit to its own outputs.
-3. **8GB is a hard floor per base model.** You can grow memory and fine-tune a
-   *small* model, but not a 7B on 4GB RAM. The *system* ceiling grows; the
-   neuron ceiling is bounded by the chip.
-4. **Consensus selection still discards emergent value** (candidates 62% →
-   system 38%) when ground truth isn't available.
-5. Some hard reasoning/math is genuinely unsolved by the whole pipeline
-   (GCD, percent-change, jugs) — real model limits, not routing.
+1. **Truth is 100% on a closed 120-set, not general reasoning.** Deterministic tools are exact on these patterns; outside them the system correctly falls back to debate (where selection still 62%→38%).
+2. **Student router is prototype (30/36).** Programmatic regex is placeholder for learned dispatch; until args are also predicted, routing is not fully non-programmatic.
+3. **Connector quality is still the real bottleneck** for open factual tasks.
+4. **Model-collapse risk** for the fine-tune loop: without fresh external signal each cycle, the swarm parrots itself.
+5. **8GB is a hard floor per base model.** System ceiling grows via memory/student; neuron ceiling bounded by chip.

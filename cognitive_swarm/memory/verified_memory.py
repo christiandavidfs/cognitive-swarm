@@ -112,6 +112,7 @@ class VerifiedMemory:
             "code_sig": self._code_sig(question),
             "string_op_sig": self._string_op_sig(question),
             "math_op_sig": self._math_op_sig(question),
+            "reasoning_op_sig": self._reasoning_op_sig(question),
             "verified": verified,
             "hits": (existing["hits"] + 1 if existing else 0),
         }
@@ -170,6 +171,16 @@ class VerifiedMemory:
         op, args = det
         return op + ":" + "|".join(f"{k}={v}" for k, v in sorted(args.items()))
 
+    def _reasoning_op_sig(self, text: str) -> Optional[str]:
+        """Signature for reasoning primitives (handshake, work_inverse, etc.)
+        so '8 people handshake =28' never shadows '100 people handshake =4950'."""
+        from cognitive_swarm.tools.reasoning_primitives import detect_reasoning_pattern
+        det = detect_reasoning_pattern(text)
+        if not det:
+            return None
+        op, args = det
+        return op + ":" + "|".join(f"{k}={v}" for k, v in sorted(args.items()))
+
     def lookup(self, question: str) -> Optional[dict]:
         """Return the stored record (full provenance) for this question or a
         close, salient rephrase. Returns None if no strong match.
@@ -211,6 +222,16 @@ class VerifiedMemory:
             for entry in self.entries.values():
                 stored_math = (entry.get("math_op_sig") or self._math_op_sig(entry["question"]))
                 if stored_math and stored_math == q_math:
+                    self.bump(question)
+                    return entry
+            return None
+
+        # Reasoning-op-aware path: identical (op, operands) signature.
+        q_reason = self._reasoning_op_sig(question)
+        if q_reason is not None:
+            for entry in self.entries.values():
+                stored_r = (entry.get("reasoning_op_sig") or self._reasoning_op_sig(entry["question"]))
+                if stored_r and stored_r == q_reason:
                     self.bump(question)
                     return entry
             return None

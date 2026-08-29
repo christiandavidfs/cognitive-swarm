@@ -46,6 +46,9 @@ from cognitive_swarm.tools.math_primitives import (
     resolve_math_primitive as _resolve_math_primitive,
     resolve_compound_expression as _resolve_compound_expression,
 )
+from cognitive_swarm.tools.reasoning_primitives import (
+    resolve_reasoning_primitive as _resolve_reasoning_primitive,
+)
 from cognitive_swarm.memory.verified_memory import VerifiedMemory
 from cognitive_swarm.orchestration.prompt_optimizer import PromptOptimizer, TaskType
 from cognitive_swarm.orchestration.corroboration import Corroborator, SourceClaim, Verdict
@@ -114,6 +117,19 @@ class TruthRouter:
             self._verify(question, prim, "string-op", tier="string-op")
             return Resolution(prim, 1.0, "string-op", "string-op",
                               sources=[{"name": "string-primitives", "reliability": 1.0}])
+
+        # Tier 2d: reasoning primitives — trick questions, letter riddles,
+        # simple probability, rate problems, handshakes, etc. These are
+        # deterministic procedures applied to a recognized pattern, not a
+        # memorized answer. They run *before* math primitives because they are
+        # more specific (e.g. "which weighs more: a pound of feathers or a
+        # pound of iron" is a logic question, not arithmetic; "which is larger:
+        # 2/3 or 3/5" is a fraction compare, not a division to evaluate).
+        rp = _resolve_reasoning_primitive(question)
+        if rp is not None:
+            self._verify(question, rp, "reasoning-primitives", tier="reasoning-primitives")
+            return Resolution(rp, 1.0, "reasoning-primitives", "reasoning-primitives",
+                              sources=[{"name": "reasoning-primitives", "reliability": 1.0}])
 
         # Tier 2c: math primitives for word operators / special forms.
         # These are intent-gated (regex patterns that only fire on explicit
