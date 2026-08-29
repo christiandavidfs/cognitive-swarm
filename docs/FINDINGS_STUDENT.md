@@ -30,7 +30,16 @@
   | **Qwen 3B (local)** | ~12/40 (30% on 120) | — | — | expected ~30% |
 - **Simple conclusion:** *With few examples (20) both truth and student look perfect (95-100%). With many diverse wordings (40), hand-coded regex alone would be 37.5% on the newest 20, while student stays 95% — and even the frontier big model drops from 87.5% (closed 120) to 55% (human diverse) where wording changes. This proves: knowledge (numbers/words) can change, reasoning (which pattern) stays — and a tiny student can beat a big model on diverse wording when it has the right pattern library.*
 
-## Unified 120 + 40 human (160 total validated)
+## 100 new human diverse — more weight for findings (2026-08-29, 100 new, 140 human total with 40 prev = 240 with 120 original)
+- **Dataset:** 100 new human diverse (including 15 stock breaking outside 32 patterns) + 40 prev = 140 human (260 with 120 original) — many data to validate, not just 20
+- **Results on 100 new (same scorer):**
+  - Hybrid deterministic: **47/100 (47%)**
+  - Student pattern only: **66/100 (66%)**
+  - TruthRouter 100 new: **48/100 (48%)**
+- **Total 140 human (100 new +40 prev):** **81/140 (57.9%) hybrid** — with few data (20) everything looked 95-100%; with many diverse data (100) brittleness appears for both hand-coded and student (66% vs 47%)
+- **Simple conclusion:** *With 20 examples, both look perfect. With 100 very diverse wordings, including trick questions outside the 32 patterns, both drop (hybrid 47%, student 66%). This gives more weight: the student still beats hand-coded by ~19 points, but neither handles truly novel stock riddles without expanding the pattern library. To improve, we need to add patterns for stock breaking (take-away, moses, bear, etc.) and retrain — exactly the iterative teaching loop.*
+
+## Unified 120 + 40 human (160 total validated) — previous milestone
 - **120 original (closed, same scorer):** truth 120/120 (100%) > big 105/120 (87.5%) > qwen 36/120 (30%) > phi 25/120 (20.8%) — `truth_router_test.py --fresh`
 - **40 human diverse (wording never seen):** student pattern 39/40 (97.5%) > truth hybrid 34/40 (85%) > big 22/40 (55%) — `big validated with new key sk-or-v1-229f... (free, cost 0, 40 calls OK)`
 
