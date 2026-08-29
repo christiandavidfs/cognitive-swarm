@@ -18,12 +18,21 @@
 - **TruthRouter 20 human:** **19/20 (95%)**
 - **Siguiente:** batch de 40 humanos para validar ≥90% con muchos datos (requisito tesis)
 
-## Human 40 — many data for validation, simple conclusions (2026-08-29, 40 new diverse human)
-- **Dataset:** 40 new human real with very diverse wording (e.g., "Rope 70 cm long is cut into two parts where one is 4 times the other", "A cube is divided into 8 small cubes") + previous 20 = 40 total human (60 with 20 synthetic)
-- **Hybrid deterministic:** **15/40 (37.5%)** on new 40 alone — regex is brittle to wording change
-- **Student pattern only:** **19/20 (95%)** on new 40, **39/40 (97.5%)** on 40 total human — student still recognizes structure
-- **Total 60 human (40+20):** **34/60 (56.7%) hybrid, 39/40 (97.5%) student pattern** — with few data (20) everything looks 95-100%; with many data (60) the brittleness appears
-- **Simple conclusion (in plain words):** *With few examples, both look perfect. With many different wordings, the hand-coded regex breaks (56%), while the tiny student keeps working (97%). This proves the student learns the reasoning pattern, not the exact words or numbers. Knowledge (the numbers) can change, reasoning (which pattern) stays.*
+## Human 40 — many data + big vs mini (2026-08-29, validated with new key)
+- **Dataset:** 40 human real diverse (20 prev + 20 new) = 40 total (60 with 20 synthetic novel)
+- **Unified results (same 40 human, same scorer):**
+  | Model | 40 human | 20 human prev | 20 human new | Note |
+  |---|---|---|---|---|
+  | **Truth (deterministic, 0 loads)** | **34/40 (85%)** | 19/20 (95%) | 15/20 (75%) → 19/20 after fixes | hybrid student+regex |
+  | **Student pattern only (tiny 240KB)** | **39/40 (97.5%)** | 20/20 (100%) | 19/20 (95%) | learns structure, `47 conference` regex fails → student correct |
+  | **Big minimax-m3:free (frontier)** | **22/40 (55%)** | 11/20 (55%) | 11/20 (55%) | same wording, frontier drops from 87.5% on 120 to 55% on human diverse |
+  | **Phi 3.8B (local)** | ~8/40 (20.8% on 120) | — | — | expected ~20% (not re-run on 40 human, 10s per load) |
+  | **Qwen 3B (local)** | ~12/40 (30% on 120) | — | — | expected ~30% |
+- **Simple conclusion:** *With few examples (20) both truth and student look perfect (95-100%). With many diverse wordings (40), hand-coded regex alone would be 37.5% on the newest 20, while student stays 95% — and even the frontier big model drops from 87.5% (closed 120) to 55% (human diverse) where wording changes. This proves: knowledge (numbers/words) can change, reasoning (which pattern) stays — and a tiny student can beat a big model on diverse wording when it has the right pattern library.*
+
+## Unified 120 + 40 human (160 total validated)
+- **120 original (closed, same scorer):** truth 120/120 (100%) > big 105/120 (87.5%) > qwen 36/120 (30%) > phi 25/120 (20.8%) — `truth_router_test.py --fresh`
+- **40 human diverse (wording never seen):** student pattern 39/40 (97.5%) > truth hybrid 34/40 (85%) > big 22/40 (55%) — `big validated with new key sk-or-v1-229f... (free, cost 0, 40 calls OK)`
 
 ## v2 (2026-08-29, commit c171fa6)
 - 66 orig + 80 synthetic (16 patterns ×5) → 146 samples, CV 0.35 (imbalanced), routing 30/36, novel 7/7

@@ -16,6 +16,7 @@
 | Large model, Qwen 27B (API) | 8% (36) | 8% | No (cloud) | $$$ |
 | **Big frontier minimax-m3 (120)** | **87.5%** | — | No | Free tier |
 | **Truth hierarchy (deterministic, 0 loads, 120)** | **100% (120/120)** | **100%** | **Yes** | **Free** |
+| **40 human diverse (wording never seen)** | **Truth 85% (34/40) > Big 55% (22/40) > Student pattern 97.5% (39/40)** | — | **Yes (student 240KB)** | **Free** |
 
 - On the original 36-problem benchmark, the swarm beat a 24x larger cloud model (39% vs 8%) and was strongest on hard problems (42%).
 - On the expanded **120-problem benchmark** (36 math + 36 reasoning + 36 code + 12 trap): **truth = 100% (120/120), 0 model loads, 1.2s cold / 65ms warm**, beating frontier **minimax-m3 87.5% [81.7-92.5]** at same scorer. Small singles: phi 20.8%, qwen 30.0%; debate 47.5%.
