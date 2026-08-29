@@ -237,6 +237,13 @@ def extract_args(question: str, pattern: str) -> Optional[dict]:
             m = re.findall(r"(\d+)\s*/\s*(\d+)", question)
             if len(m) >= 2: return {"a": int(m[0][0]), "b": int(m[0][1]), "c": int(m[1][0]), "d": int(m[1][1]), "winner": f"{m[0][0]}/{m[0][1]}" if int(m[0][0])*int(m[1][1]) > int(m[1][0])*int(m[0][1]) else f"{m[1][0]}/{m[1][1]}"}
         elif pattern == "bridge_crossing":
+            # Extract times like "1, 3, 6, 8 minutes" or "1 2 5 10 minutes"
+            mlist = re.search(r"(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*minutes?", question.lower())
+            if mlist:
+                return {"times": sorted([int(mlist.group(i)) for i in range(1,5)])}
+            times = [int(x) for x in re.findall(r"(\d+)\s*min", question.lower())]
+            if len(times) >= 4:
+                return {"times": sorted(times)[:4]}
             return {"times": [1,2,5,10]}
         elif pattern == "system_equations":
             # fallback to regex for precise honey/jam — student knows pattern, regex extracts

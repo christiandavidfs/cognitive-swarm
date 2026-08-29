@@ -110,17 +110,19 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         return ("letter_riddle", {})
 
     # ---- SIMPLE PROBABILITY: "N blue balls and M red balls, draw one" ------
-    # Allow "9 blue and 3 red balls" (balls only after second color)
+    # Allow "9 blue and 3 red balls" and "10 blue and 5 red marbles", and "probability of drawing a blue one"
     m = re.search(
-        r"(\d+)\s+(?:blue|red)(?:\s+(?:ball|coin|card)s?)?\s+and\s+(\d+)\s+(?:blue|red)\s+(?:ball|coin|card)s?",
+        r"(\d+)\s+(?:blue|red)(?:\s+(?:ball|marble|coin|card)s?)?\s+and\s+(\d+)\s+(?:blue|red)\s+(?:ball|marble|coin|card)s?",
         ql)
     if m:
         first_color = re.search(r"(\d+)\s+(blue|red)", ql)
         if first_color:
             n_blue = int(m.group(1)) if first_color.group(2) == "blue" else int(m.group(2))
             n_red = int(m.group(2)) if first_color.group(2) == "blue" else int(m.group(1))
-            if re.search(r"(?:probability|draw|chance)[^\w]*(?:it\s+is|that\s+it|of\s+(?:being\s+)?)?[^\w]*(red|blue)", ql):
-                color = re.search(r"(?:probability|draw|chance)[^\w]*(?:it\s+is|that\s+it|of\s+(?:being\s+)?)?[^\w]*(red|blue)", ql).group(1)
+            # Flexible: "probability ... blue/red" with any words in between
+            pm = re.search(r"(?:probability|draw|chance).*?(red|blue)", ql)
+            if pm:
+                color = pm.group(1)
                 n_target = n_red if color == "red" else n_blue
                 return ("simple_probability", {
                     "target_color": color,
@@ -245,22 +247,25 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         return ("nth_odd", {"n": int(m.group(1))})
 
     # ---- GEOMETRY: painted cube cut into n^3 small cubes --------------------
-    # "cut into 27 equal smaller cubes" = 3x3x3. 1 face = 6*(n-2)^2, 2 faces = 12*(n-2)
-    m = re.search(r"cut\s+into\s+(\d+)\s+equal\s+(?:smaller\s+)?cubes?", ql)
+    # "cut/divided into 27 equal smaller cubes" = 3x3x3. 1 face = 6*(n-2)^2, 2 faces = 12*(n-2)
+    m = re.search(r"(?:cut|divided)\s+into\s+(\d+)\s+equal\s+(?:smaller\s+)?cubes?", ql)
     if m:
         n_small = int(m.group(1))
         n = round(n_small ** (1/3))
         if n ** 3 == n_small:
-            # Check if question asks for 1 or 2 faces
-            m2 = re.search(r"exactly\s+(\d+)\s+face", ql)
-            faces = int(m2.group(1)) if m2 else 1
+            m2 = re.search(r"exactly\s+(\d+)\s+face", ql_norm)
+            if m2:
+                faces = int(m2.group(1))
+            else:
+                m2w = re.search(r"exactly\s+one\s+face", ql)
+                faces = 1 if m2w else 1
+                if re.search(r"exactly\s+two\s+faces?", ql): faces = 2
             return ("painted_cube", {"n": n, "faces": faces})
 
     # ---- ROPE CUT: one piece is k times the other -------------------------
-    # Flexible: "Rope 84 cm cut..." or "84 cm rope cut..."
+    # Flexible: "Rope 84 cm cut..." or "84 cm rope cut...", "as long as" optional
     m = re.search(
-        r"(?:rope.*?(\d+)\s+cm|(\d+)\s+cm.*?rope).*?one\s+piece\s+is\s+(\d+)\s+times\s+"
-        r"(?:as\s+)?(?:long\s+)?(?:as|than)\s+the\s+other", ql)
+        r"(?:rope.*?(\d+)\s+cm|(\d+)\s+cm.*?rope).*?one\s+piece\s+is\s+(\d+)\s+times(?:\s+(?:as\s+)?(?:long\s+)?(?:as|than)?)?\s+the\s+other", ql)
     if m:
         total = int(m.group(1) or m.group(2))
         multiplier = int(m.group(3))
@@ -386,9 +391,9 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
                 return ("work_inverse", {"n1": n1, "t1": t1, "n2": n2, "t2": int(t2)})
 
     # ---- TRAINS: distance problem -------------------------------------------
+    # Flexible: "600 km apart ... trains ... toward each other at 80 and 40"
     m = re.search(
-        r"(\d+)\s+km\s+apart.*travel.*(?:toward|towards)\s+each\s+other\s+"
-        r"at\s+(\d+)\s+km/?h?\s+and\s+(\d+)\s+km/?h?", ql)
+        r"(\d+)\s+km\s+apart.*?(?:trains?|they).*?(?:toward|towards)\s+each\s+other.*?(\d+)\s+km/?h?\s+and\s+(\d+)\s+km/?h?", ql)
     if m:
         dist = int(m.group(1))
         v1 = int(m.group(2))
@@ -413,9 +418,19 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
         b = int(m.group(2))
         return ("jug_impossible", {"a": a, "b": b})
 
-    # ---- BRIDGE CROSSING: 4 people, flashlight, times 1,2,5,10 -> 17 min -------
-    if re.search(r"(four|4)\s+people.*bridge.*flashlight", ql) and re.search(r"1\s+min|2\s+min|5\s+min|10\s+min", ql):
-        return ("bridge_crossing", {"times": [1, 2, 5, 10]})
+    # ---- BRIDGE CROSSING: 4 people, flashlight, times -> compute optimal
+    if re.search(r"(four|4)\s+people.*bridge.*flashlight", ql):
+        # Try comma-separated list like "1, 3, 6, 8 minutes"
+        mlist = re.search(r"(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*minutes?", ql)
+        if mlist:
+            times = sorted([int(mlist.group(i)) for i in range(1,5)])
+            return ("bridge_crossing", {"times": times})
+        times = [int(x) for x in re.findall(r"(\d+)\s*min", ql)]
+        if len(times) >= 4:
+            times = sorted(times)[:4]
+            return ("bridge_crossing", {"times": times})
+        if re.search(r"1\s+min|2\s+min|5\s+min|10\s+min", ql):
+            return ("bridge_crossing", {"times": [1, 2, 5, 10]})
 
     # ---- SYSTEM OF EQUATIONS: "X of A and Y of B cost Z" ----------------
     # "Five jars of honey and three jars of jam cost 54 cents. Four jars of honey and three jars of jam cost 42 cents. How much does one jar of honey cost?"
