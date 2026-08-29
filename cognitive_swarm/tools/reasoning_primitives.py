@@ -34,6 +34,22 @@ from typing import Optional
 
 def detect_reasoning_pattern(question: str) -> Optional[tuple]:
     """Detect a reasoning pattern. Returns (pattern_name, args) or None."""
+    # Student v3 primary dispatch (non-programmatic layer): try learned router first.
+    # If student is confident and can extract args, we use it — proves structure learning.
+    # Fallback to programmatic regex keeps 100% determinism while student improves.
+    try:
+        from cognitive_swarm.tools.student_router import predict_with_args
+        pw = predict_with_args(question)
+        if pw is not None:
+            label, args, conf = pw
+            # Filter: student must be reasonably confident and args must be non-empty
+            # For patterns with no args (tricks), empty dict is valid
+            if args is not None and isinstance(args, dict):
+                # Validate: for numeric patterns, need at least one number
+                return (label, args)
+    except Exception:
+        pass
+
     q = question.strip()
     ql = q.lower()
 
