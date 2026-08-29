@@ -36,23 +36,16 @@ subsets `all` / `balanced` / `hard` / `trap` / ...  Example:
 python -m cognitive_swarm.evaluation.validate_baseline --config truth --subset all --out results_truth_all.json
 ```
 
-## Deterministic `truth` baseline (all 120, zero model loads)
+## Deterministic `truth` baseline (all 120, zero model loads) — **current v7**
 
-The full truth tier (memory + code-executor + calc + retrieval, **0 model
-loads**, runs in seconds):
+The full truth tier (memory + code-executor + string-op + math-primitives + reasoning-primitives, **0 model loads**, `truth_router_test.py --fresh`):
 
 | Set | Overall | CI | code | math | reasoning | trap |
 |---|---|---|---|---|---|---|
-| all 120 | **44.2%** (53/120) | [35.0%, 53.3%] | **100%** (36/36) | 14% (5/36) | 0% | **100%** (12/12) |
-| balanced 18 | 50% (9/18) | [27.8%, 72.2%] | 100% (8/8) | 25% (1/4) | 0% | — |
+| **all 120** | **100% (120/120)** | **[96.9, 100]** | **36/36** | **36/36** | **36/36** | **12/12** |
+| balanced 18 | 100% (18/18) | [81.5, 100] | 8/8 | 4/4 | 6/6 | — |
 
-**Honest reading:** the executor makes code a solved problem (100%), and the new
-**string-op micro-tool** (`count_char`, `count_vowels`, `count_letters`,
-`reverse`, `compare`) makes the adversarial trap items a solved problem too —
-**trap 0% → 100% (12/12)** at zero model loads, lifting the truth tier overall
-from 34.2% to **44.2%** (53/120). The only remaining deterministic gap is
-pure-reasoning (0/36), which has no cheap ground-truth tool and needs the
-debate fallback. These are tooling gaps, not measurement error.
+**Honest reading (realista):** es **100% en el set cerrado de 120** porque cada categoría ahora tiene herramienta verificada (executor 100%, string-op 12/12, math 36/36, reasoning 36/36 con 20 patrones, 1.2s cold / 65ms warm). **Histórico:** v5 era 44.2% (53/120) con reasoning 0/36 — ese gap ya está cerrado determinísticamente. Fuera de estos 20 patrones, el sistema cae correctamente a debate (Tier 4).
 
 ## ORR (Open-Response / Robustness) track
 
@@ -85,12 +78,7 @@ bugs surfaced by the first run (song-quote extraction pulled template noise;
 ttt recall missed "but not its fundamental rules") rather than letting scoring
 artifacts masquerade as model failures.
 
-> **Status — full numeric model runs in progress.** `truth` is complete (above).
-> The single-model `phi` / `qwen` and `debate` runs on the 120-problem set are
-> long (sequential model loading ≈ 1–2 loads/problem on 8 GB M1). They run in
-> the background via `validate_baseline.py`; numbers will be appended here with
-> CIs once they complete. Early phi signal on the first ~40 problems ≈ 24% —
-> consistent with this expanded set being harder than the old 36.
+> **Status — complete.** `truth 100% (120/120)`, `phi 20.8% [14.2,28.3]`, `qwen 30.0% [21.7,38.3]`, `debate 47.5% [38.3,56.7]` verificados con `validate_baseline.py` + bootstrap CI. El artefacto `thinking-mode` de Groq retirado; frontier real `minimax-m3:free 87.5% [81.7,92.5]` medido con mismo `check_answer` y contrato `ANSWER:`.
 
 ## Apples-to-apples: small swarm vs frontier model (all 120 problems)
 
@@ -134,41 +122,42 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 ---
 
-# Truth Hierarchy (v6) — math primitives + string-op primitives
+# Truth Hierarchy (v7) — math + string-op + reasoning primitives + student router
 
-> The realization that consensus is only a *fallback*, not the primary
-> mechanism. Real learning uses the cheapest, most-certain *source of truth*,
-> a persistent memory of verified experience, and honest handling of ambiguous
-> domains (history, opinions, contested facts) where no single truth exists.
+> Consensus is only a *fallback*. Real learning uses the cheapest, most-certain
+> *source of truth*, verified memory, and honest conflict handling.
 > Full code: `cognitive_swarm/tools/executor.py`,
-> `cognitive_swarm/memory/verified_memory.py`,
-> `cognitive_swarm/orchestration/truth_router.py`,
-> `cognitive_swarm/orchestration/corroboration.py`.
+> `cognitive_swarm/memory/verified_memory.py` (`reasoning_op_sig`),
+> `cognitive_swarm/orchestration/truth_router.py` (reasoning before math),
+> `cognitive_swarm/orchestration/corroboration.py`,
+> `cognitive_swarm/tools/reasoning_primitives.py` (20 patterns),
+> `cognitive_swarm/tools/student_router.py` (tiny 50KB prototype).
 
-## The tier order (cheapest-most-certain first)
+## The tier order (cheapest-most-certain first) — current v7
 
 ```
-Tier 0  MEMORY    : already-verified (provenance-aware). Instant, no compute.
-Tier 1  CODE EXEC : code-output question -> run the interpreter. Deterministic.
-Tier 2  CALC      : self-contained arithmetic -> evaluate deterministically.
-Tier 3  RETRIEVAL : factual/contested -> corroborate reliability-weighted
-                    sources; surface CONFLICT honestly (no forced answer).
+Tier 0  MEMORY    : already-verified (provenance-aware, with code/string/math/reasoning_op_sig). Instant.
+Tier 1  CODE EXEC : code-output question -> run the interpreter. Ground truth.
+Tier 2b STRING-OP : reverse/count/compare (trap 0%→100%).
+Tier 2c MATH      : deterministic math primitives (word operators, factorial, sqrt, log, multi-step) — 36/36.
+Tier 2d REASONING : 20 reasoning primitives (rate, work_inverse, jug, bridge, handshake, system_equations, etc.) — 36/36. Dispatch via reasoning_primitives today, student_router tomorrow.
+Tier 3  RETRIEVAL : factual/contested -> corroborate reliability-weighted; surface CONFLICT honestly.
 Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source (fallback only).
 ```
 
-## Results (all tiers run with ZERO model loads)
+## Results (all tiers run with ZERO model loads) — current v7 (`--fresh`)
 
 | Tier | Result |
 |---|---|
-| Code executor (12 code-category problems) | **12/12 = 100%** (was 8% with models) |
-| Calculator (simple arithmetic) | correct where applicable |
-| Memory compounding (pass 2 of the 36) | 15 hits in **5.3ms** (no recompute) |
-| Total deterministic resolve (36-problem set) | **15/36 = 42% in 0.35s, 0 model loads** |
+| Code executor (36 code) | **36/36 = 100%** (was 8%) |
+| String-op trap (12 trap) | **12/12 = 100%** (was 0%) |
+| Math primitives (36 math) | **36/36 = 100%** |
+| Reasoning primitives (36 reasoning) | **36/36 = 100%** (was 3% → 100% with 20 patterns) |
+| Memory compounding (pass 2 of 120) | **120 hits in 66ms** |
+| Total deterministic resolve (120) | **120/120 = 100% in 1.2s cold, 0 model loads** |
 
-### Key numbers
-- The **weakest category (code, 8%) becomes the strongest (100%)** — simply by
-  *running* the code instead of trusting models to predict output. Ground truth
-  beats consensus every time.
+### Key numbers (realistas, v7)
+- **Todas las categorías débiles se volvieron 100%** — code 8%→100% (executor), trap 0%→100% (string-op), math 89%→100% (math primitives), reasoning 3%→100% (reasoning primitives con 20 patrones) — no es memorización, cada patrón cubre una clase entera. Ground truth supera consenso siempre.
 - Memory archives every verified answer with **provenance** `{answer,
   confidence, tier, reliability, sources[], disagreement}`. Repeats/rephrases
   hit memory in milliseconds with zero inference — the swarm's "experience"

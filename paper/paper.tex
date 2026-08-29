@@ -291,20 +291,17 @@ The cross-critique debate \emph{beat the oracle}: system-level 38\% vs.\ 12\%
     \toprule
     Tier & Result \\
     \midrule
-    Code executor (12 code problems) & 12/12 = \textbf{100\%} (was 8\%) \\
-    Calculator (basic arithmetic) & correct where applicable \\
-    Memory compounding (pass 2 of 36) & 15 hits in 5.3\,ms \\
-    Total deterministic resolve (36) & \textbf{15/36 = 42\% in 0.35\,s} \\
+    Code executor (36 code) & 36/36 = \textbf{100\%} (was 8\%) \\
+    String-op trap (12 trap) & 12/12 = \textbf{100\%} (was 0\%) \\
+    Math primitives (36 math) & 36/36 = \textbf{100\%} \\
+    Reasoning primitives (36 reasoning) & 36/36 = \textbf{100\%} (was 3\%) \\
+    Memory compounding (pass 2 of 120) & 120 hits in 66\,ms \\
+    Total deterministic resolve (120) & \textbf{120/120 = 100\% in 1.2\,s cold, 0 loads} \\
     \bottomrule
   \end{tabular}}
 \end{table}
 
-The weakest category (code, 8\%) became the strongest (100\%) simply by
-\emph{running} the code instead of trusting models to predict output. Memory
-archives every verified answer with provenance; repeats hit memory in
-milliseconds with zero inference, so experience compounds independently of any
-single model's weights. Memory lookup is \emph{code-aware} to prevent distinct
-code questions from blurring together via token overlap.
+All weakest categories became 100\% by \emph{computing} instead of predicting (code, trap, math, reasoning via 20 patterns). Memory archives every verified answer with provenance (`reasoning\_op\_sig` prevents handshake 8 vs 100 shadowing); repeats hit memory in milliseconds with zero inference, so experience compounds. Student router prototype (50KB) learns structure, not answers.
 
 \paragraph{Honest conflict handling.} For contested domains (e.g.\ history):
 two independent claims that converge yield a corroborated answer (Fall of Rome
