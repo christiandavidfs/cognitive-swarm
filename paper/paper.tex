@@ -38,7 +38,7 @@ subset (61\% vs.\ 61\%). Second, an \emph{iterative cross-critique debate}
 primitives reaches \textbf{100\% (120/120)} at zero loads, beating a frontier
 model. Fourth, we prototype a \emph{tiny student router} (TF-IDF+LogReg, 50KB)
 that learns to dispatch patterns — reasoning that compounds while knowledge can
-change. We show that for real learning, consensus is not the primary mechanism:
+change. \textbf{Breaking change v9:} we move from \emph{classification} (\texttt{question $\rightarrow$ pattern}) to \emph{procedure memory} (\texttt{question $\rightarrow$ trace $\rightarrow$ answer}) where the student learns to \emph{generate} verifiable reasoning steps cached in \texttt{verified\_memory}. We show that for real learning, consensus is not the primary mechanism:
 a \emph{truth hierarchy} --- verified memory $\rightarrow$ code execution
 $\rightarrow$ string-op $\rightarrow$ math $\rightarrow$ reasoning primitives
 $\rightarrow$ corroborated retrieval $\rightarrow$ debate-as-fallback --- achieves

@@ -6,8 +6,9 @@
 
 **Author:** Christian David Filippini Souto
 **Contact:** christiandavid.fs@gmail.com
-**Version:** 1.0
+**Version:** 2.0 — Breaking change v9 (procedure memory + trace generation)
 **Date:** August 2026
+> **Breaking change:** Student moves from `question → pattern` classification to `question → reasoning trace` generation. `verified_memory` now caches *procedures* (verified step skeletons), not just answers. Truth hierarchy Tier 0 now serves traces. See §7.5 and ROADMAP_STUDENT.md M1-M4.
 **Repo:** `https://github.com/christiandavidfs/cognitive-swarm`
 
 ---
@@ -316,20 +317,22 @@ current automatically, without touching the model. The Retriever interface is
 **media-agnostic** (claims can carry a media path/URI) so text-only works today
 and vision slots in later with zero rework.
 
-### 7.5 The growing-ceiling trainer (hive-mind loop)
+### 7.5 The growing-ceiling trainer (hive-mind loop) — **v9 breaking change: procedure memory**
 
 ```
 source of truth + cross-critique debate
-        │  (verified (question → answer) labels)
+        │  (verified (question → trace → answer) with step provenance)
         ▼
-verified memory ──→ immediate answers (growing, current, no model growth)
-        │
+verified memory (procedure) ──→ immediate traces + answers (growing, current, no model growth)
+        │  traces are skeletons like "handshake: n=47 → n*(n-1)/2 → 1081" or "m-r-4: diffs 4,6,8,10 → 42"
         ▼ (optional, slow)
-LoRA fine-tune the small model on verified labels ──→ raises generalization
-        │
+LoRA fine-tune student to generate traces (question → steps → answer) ──→ raises reasoning, not just routing
+        │  each step verified by executor/math (e.g., 47*46/2=1081 checked)
         ▼
-swap the tuned model back into the swarm ──→ next cycle's ceiling is higher
+swap the trace-generating student back into swarm ──→ next cycle's ceiling is higher (Tier 0 now serves traces)
 ```
+
+**Breaking change:** `verified_memory` now stores `procedure_sig` (hash of trace skeleton) + `answer`, and `student_ner` → `student_trace` (`question → trace`). This is how we approach **reasoning** (generating verifiable steps) vs. mere classification (`question → pattern`).
 
 **Memory is the cheap, instant ceiling-raiser** (no model growth). **Fine-tuning
 is the slow, compounding upgrade** that raises generalization — but it needs
