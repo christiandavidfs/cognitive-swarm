@@ -18,6 +18,13 @@
 - **TruthRouter 20 human:** **19/20 (95%)**
 - **Siguiente:** batch de 40 humanos para validar ≥90% con muchos datos (requisito tesis)
 
+## Human 40 — many data for validation, simple conclusions (2026-08-29, 40 new diverse human)
+- **Dataset:** 40 new human real with very diverse wording (e.g., "Rope 70 cm long is cut into two parts where one is 4 times the other", "A cube is divided into 8 small cubes") + previous 20 = 40 total human (60 with 20 synthetic)
+- **Hybrid deterministic:** **15/40 (37.5%)** on new 40 alone — regex is brittle to wording change
+- **Student pattern only:** **19/20 (95%)** on new 40, **39/40 (97.5%)** on 40 total human — student still recognizes structure
+- **Total 60 human (40+20):** **34/60 (56.7%) hybrid, 39/40 (97.5%) student pattern** — with few data (20) everything looks 95-100%; with many data (60) the brittleness appears
+- **Simple conclusion (in plain words):** *With few examples, both look perfect. With many different wordings, the hand-coded regex breaks (56%), while the tiny student keeps working (97%). This proves the student learns the reasoning pattern, not the exact words or numbers. Knowledge (the numbers) can change, reasoning (which pattern) stays.*
+
 ## v2 (2026-08-29, commit c171fa6)
 - 66 orig + 80 synthetic (16 patterns ×5) → 146 samples, CV 0.35 (imbalanced), routing 30/36, novel 7/7
 - THRESHOLD 0.07 for 32 classes (random 0.03)
