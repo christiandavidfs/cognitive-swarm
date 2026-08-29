@@ -433,9 +433,9 @@ as such.
    separate *solved at least once* from *solved consistently* — these are very
    different claims that are currently being conflated.
 5. **Instrument real latency, not just accuracy.** With the router adding tiers,
-   measure how much the 42% deterministic resolve saves end-to-end before any
-   model is loaded (v1 had single ~6–10 s, debate ~15 s; v4/v5 do not measure
-   this). A latency argument is a stronger deployment story than accuracy alone.
+   measure how much the **100% deterministic resolve (120/120, 1.2s cold / 65ms warm)**
+   saves end-to-end before any model is loaded (v1 single ~6–10 s, debate ~15 s; v7 now measures this).
+   A latency argument is a stronger deployment story than accuracy alone.
 6. **Model-collapse guardrail.** Beyond "needs fresh signal," add a concrete
    check: measure response diversity/entropy of the fine-tuned model on a fixed
    held-out set; if it drops below a threshold between cycles, pause the loop.
@@ -485,26 +485,30 @@ python cognitive_swarm/evaluation/truth_router_test.py --fresh
 
 ### Appendix B — Data summary tables
 
-Consolidated accuracy by mode (`docs/RESULTS.md`, `docs/benchmark_findings.md`):
+**Historical baseline (36-problem set, v2):**
 
-| mode | overall | easy | medium | hard | math | reas | code |
+| mode (36) | overall | easy | medium | hard | math | reas | code |
 |---|---|---|---|---|---|---|---|
 | phi | 28% | 67% | 8% | 8% | 42% | 25% | 17% |
 | qwen | 28% | 33% | 42% | 8% | 17% | 33% | 33% |
 | debate | 39% | 42% | 33% | 42% | 67% | 42% | 8% |
-| api | 8% | 8% | 8% | 8% | 8% | 0% | 17% |
+| api (Qwen 27B Groq, retired) | 8% | 8% | 8% | 8% | 8% | 0% | 17% |
 
-Value-add: debate solved 7/36 problems neither single solved; union (oracle)
-17/36 = 47%; debate 14/36 = 39%.
+Value-add (36): debate solved 7/36 neither single solved; union (oracle) 17/36 = 47%; debate 14/36 = 39%.
+Emergence (hard 8): oracle 12%, system 38%, pool 62% (m-r-4→42, h-r-3→20 novel).
+Consensus (18 balanced): old 33% → new 61% = oracle 61%.
 
-Emergence (hard 8-problem subset): oracle 12%, system 38%, candidate pool 62%.
-True novel generation: m-r-4 → 42, h-r-3 → 20. Surfacing: h-r-4 → 4950,
-h-m-1 → 1275.
+**Current expanded benchmark (120-problem set, v7, `truth_router_test.py --fresh`):**
 
-Truth hierarchy: code 12/12 = 100% (was 8%); memory 15/36 in 5.3 ms;
-deterministic 15/36 = 42% in 0.35 s, 0 model loads.
+| mode (120) | overall | math | reasoning | code | trap | CI |
+|---|---|---|---|---|---|---|
+| phi | 20.8% (25/120) | 11/36 | 7/36 | 5/36 | 2/12 | [14.2, 28.3] |
+| qwen | 30.0% (36/120) | 6/36 | 9/36 | 17/36 | 4/12 | [21.7, 38.3] |
+| debate | 47.5% (57/120) | 18/36 | 15/36 | 18/36 | 6/12 | [38.3, 56.7] |
+| big minimax-m3:free | 87.5% (105/120) | 36/36 | 26/36 | 34/36 | 9/12 | [81.7, 92.5] |
+| **truth hierarchy (deterministic, 0 loads)** | **100% (120/120)** | **36/36** | **36/36** | **36/36** | **12/12** | [96.9, 100] |
 
-Consensus (18-problem subset): old 33% → new 61% = oracle 61%.
+Truth: code 36/36, trap 12/12, math 36/36, reasoning 36/36 → 120/120 in 1.2s cold / 65ms warm, 0 model loads. Memory `reasoning_op_sig` prevents shadowing (handshake 8=28 vs 100=4950).
 
 ### Appendix C — Problems referenced
 
