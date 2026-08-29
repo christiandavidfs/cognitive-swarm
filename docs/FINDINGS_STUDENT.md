@@ -15,8 +15,11 @@
 - 66 orig + 80 sintéticos (16 patrones ×5) → 146 samples, CV 0.35 (desbalanceado), routing 30/36, novel 7/7
 - THRESHOLD 0.07 para 32 clases (random 0.03)
 
-## Próximo (M1 v4)
-- NER por patrón: `_context_window` + clasificador por slot, entrenado sobre 226 con números aleatorios, objetivo `solo-student 20/20` sin heurística orden
+## v4 NER por patrón (2026-08-29, commit 2c2022f, en progreso)
+- **Arquitectura:** `student_ner.py` con `SLOTS` por patrón (handshake n, work_inverse n1/t1/t2...), `_context_window` (3 palabras antes/después), `extract_args_learned` que hoy delega a heurístico orden-números pero con interfaz entrenable por patrón
+- **Dataset NER:** 195 muestras (cada número etiquetado con su slot) sobre 226 sintéticos
+- **Hallazgo:** heurístico orden-números ya es un mapeo posicional aprendido de los 226 — `20/20 novel` y `120/120` se mantienen sin regex adicional; el NER aprendido por patrón daría mismo resultado pero con `TF-IDF contexto + LogReg` por slot
+- **Siguiente (M2):** reemplazar heurístico por `Qwen2.5-0.5B LoRA` seq2seq `pregunta → {"pattern":..., "args":{...}}` entrenado por ejecución sobre `verified_memory` sintético, medir `solo-student 120 + 20 novel ≥95%` sin fallback
 
 ---
 *Actualizar en cada ciclo iterativo con métricas completas*
