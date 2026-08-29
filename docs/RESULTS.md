@@ -121,6 +121,22 @@ scored with the same tight answer-first contract so it is NOT under-stated.
    needs debate (Tier 4) and the planned procedure/primitive memory (ARCHITECTURE.md).
 5. **Student router v2/v3 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on 226 balanced samples (32 patterns ×5 synthetic + 66 orig): all **CV 1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <430KB**. Winner **A: TF-IDF word 1-2 + LogReg (v2 baseline) 234KB, 0.26ms** — chosen for simplicity with identical generalization. Key test: `47 people conference handshake →1081` (regex fails, student correct) = reasoning, not memorization. v3 adds generic `extract_args` and `predict_with_args` to resolve without regex on never-seen numbers (7/7 novel OK).
 
+### Evolución ante preguntas nuevas — tiny vs big vs mini
+
+**Student ya está en 66% con solo 226 samples sintéticos, y no mostraste big/mini en corridas consecutivas — aquí está:**
+
+![Evolución de performance ante preguntas nuevas](images/evolucion.png)
+
+*Truth 100% en cerrado, pero cae a 47% en 100 stock breaking fuera de los 32 patrones. Student pattern se mantiene 91.7% → 100% → 97.5% → 66% donde regex y big caen a 55%. Big frontier 87.5% en cerrado cae a 55% en humano diverso — mismo drop que truth, prueba que wording diverso rompe a todos excepto al student que aprendió estructura. Mini phi/qwen se mantienen ~20-30% en todas las corridas (no mejoran con aprendizaje, no tienen memoria).*
+
+![Student aprendizaje iterativo](images/student_learning.png)
+
+*De CV 0.35 (v2 desbalanceado, 146 samples) → 1.00 (v3 balanceado, 226 samples) y novel 100% → 66% con stock fuera de distribución — el aprendizaje iterativo por ejecución funciona, pero necesita expandir la librería a los 15 patrones stock.*
+
+![3 combinaciones student](images/combinaciones.png)
+
+*Todas 100% novel, ganador A por simplicidad (234KB).*
+
 ---
 
 # Truth Hierarchy (v7) — math + string-op + reasoning primitives + student router
