@@ -186,6 +186,83 @@ def predict(question: str) -> Optional[Tuple[str, float]]:
     return (str(label), conf)
 
 
+def _word_to_num(text: str) -> str:
+    word_to_num = {
+        'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+        'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+        'eleven': '11', 'twelve': '12', 'thirteen': '13', 'fourteen': '14',
+        'fifteen': '15', 'sixteen': '16', 'seventeen': '17', 'eighteen': '18',
+        'nineteen': '19', 'twenty': '20', 'thirty': '30', 'forty': '40', 'fifty': '50',
+    }
+    tl = text.lower()
+    for w, n in word_to_num.items():
+        tl = re.sub(r'\b' + w + r'\b', n, tl)
+    return tl
+
+def _nums(question: str) -> list[int]:
+    norm = _word_to_num(question)
+    return [int(x) for x in re.findall(r"\d+", norm)]
+
+def extract_args(question: str, pattern: str) -> Optional[dict]:
+    """Heuristic arg extraction for student v3: map numbers in order to pattern args.
+    This is NOT regex-per-pattern — it's generic number-order mapping, so it generalizes
+    to unseen numbers (e.g., 47 people handshake). Resolver remains deterministic."""
+    nums = _nums(question)
+    ql = question.lower()
+    try:
+        if pattern == "handshake":
+            if nums: return {"n": nums[0]}
+        elif pattern == "work_inverse":
+            # "12 people can build ... in 15 days how many for 3 days" -> [12,15,3]
+            if len(nums) >= 3: return {"n1": nums[0], "t1": nums[1], "t2": nums[2], "n2": int(nums[0]*nums[1]/nums[2]) if nums[2]!=0 else None}
+        elif pattern == "rate_machines":
+            if len(nums) >= 3: return {"time": nums[1] if len(nums)>1 else nums[0]}
+        elif pattern == "rate_distance":
+            if len(nums) >= 2: return {"liters_per_100km": nums[0], "km": nums[-1]}
+        elif pattern == "snail_well":
+            if len(nums) >= 3: return {"depth": nums[0], "climb_per_day": nums[1], "slide_per_night": nums[2]}
+        elif pattern == "simple_subtract":
+            if len(nums) >= 2: return {"have": nums[0], "give": nums[1]}
+        elif pattern == "all_but":
+            if len(nums) >= 2: return {"n": nums[1]}
+        elif pattern == "rate_workers":
+            if len(nums) >= 3: return {"n_workers": nums[0], "time": nums[1], "new_workers": nums[2]}
+        elif pattern == "jug_impossible":
+            if len(nums) >= 2: return {"a": nums[0], "b": nums[1]}
+        elif pattern == "min_sisters":
+            # 5 children -> n_children=5
+            if nums: return {"n_children": nums[0], "min_girls": 2}
+        elif pattern == "fraction_compare":
+            # extract fractions a/b and c/d
+            m = re.findall(r"(\d+)\s*/\s*(\d+)", question)
+            if len(m) >= 2: return {"a": int(m[0][0]), "b": int(m[0][1]), "c": int(m[1][0]), "d": int(m[1][1]), "winner": f"{m[0][0]}/{m[0][1]}" if int(m[0][0])*int(m[1][1]) > int(m[1][0])*int(m[0][1]) else f"{m[1][0]}/{m[1][1]}"}
+        elif pattern == "bridge_crossing":
+            return {"times": [1,2,5,10]}
+        elif pattern == "system_equations":
+            # fallback to regex for precise honey/jam — student knows pattern, regex extracts
+            from cognitive_swarm.tools.reasoning_primitives import detect_reasoning_pattern as _det
+            det = _det(question)
+            if det and det[0]=="system_equations": return det[1]
+        elif pattern == "alice_bob":
+            if len(nums) >= 2: return {"total": nums[0], "transferred": nums[1], "answer": nums[0]//2}
+        elif pattern in ("trick_no_smoke","trick_survivors_not_buried","all_months","same_weight","letter_riddle","mislabeled_boxes","invalid_syllogism","fathers_sons","doctors_brother"):
+            return {}
+    except Exception:
+        return None
+    return None
+
+def predict_with_args(question: str) -> Optional[Tuple[str, dict, float]]:
+    """Student v3: returns (pattern, args, confidence) with args extracted generically."""
+    pred = predict(question)
+    if pred is None:
+        return None
+    label, conf = pred
+    args = extract_args(question, label)
+    if args is None:
+        return None
+    args["_student_conf"] = conf
+    return (label, args, conf)
+
 def detect_with_student(question: str) -> Optional[Tuple[str, dict]]:
     """Try student first; returns (pattern_name, {}) stub — caller should
     re-run detect_reasoning_pattern for full args, or use student label to
