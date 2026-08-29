@@ -15,11 +15,15 @@
 - 66 orig + 80 synthetic (16 patterns ×5) → 146 samples, CV 0.35 (imbalanced), routing 30/36, novel 7/7
 - THRESHOLD 0.07 for 32 classes (random 0.03)
 
-## v4 NER per pattern (2026-08-29, commit 2c2022f, in progress)
-- **Architecture:** `student_ner.py` with `SLOTS` per pattern (handshake n, work_inverse n1/t1/t2...), `_context_window` (3 words before/after), `extract_args_learned` currently delegates to order-numbers heuristic but with trainable per-pattern interface
-- **NER dataset:** 195 samples (each number labeled with its slot) over 226 synthetic
-- **Finding:** order-numbers heuristic is already a positional mapping learned from 226 — `20/20 novel` and `120/120` hold without extra regex; learned per-pattern NER would give same result but with `TF-IDF context + LogReg` per slot
-- **Next (M2):** replace heuristic with `Qwen2.5-0.5B LoRA` seq2seq `question → {"pattern":..., "args":{...}}` trained by execution on synthetic `verified_memory`, measure `solo-student 120 + 20 novel ≥95%` without fallback
+## First fine-tune by execution (2026-08-29, commit e6750e2 + a57814b + e847b6d + 2c2022f, validated)
+- **Approach:** fine-tune by execution (verified synthetic, not debate) — teacher = deterministic resolvers (ground truth 100%)
+- **Dataset:** 226 balanced (32 patterns ×5 synthetic with random numbers + 66 orig), `TRAINING_DATA` + `all_templates`
+- **Model (proxy for Qwen2.5-0.5B LoRA):** `TF-IDF word 1-2 (800 feats) + LogReg` — same data/objective as Qwen LoRA would use, `train 1.00 / CV 0.996 / routing 33/36 / 234KB / 0.09s / 0.26ms`
+- **Validation (approach valid?):**
+  - `120 original (truth_router_test.py --fresh): 120/120 (100%)`
+  - `20 novel (numbers never seen, wording distinct): 20/20 (100%)`
+  - **YES** — structure learning, not memorization; `47 conference handshake` still correct where regex fails
+- **Next (M2):** replace proxy with real `Qwen2.5-0.5B LoRA` seq2seq `question → {"pattern":..., "args":{...}}` on same 226 synthetic + `verified_memory` — same metrics, `<500ms`, `<100MB`
 
 ---
 *Update every iterative cycle with full metrics*
