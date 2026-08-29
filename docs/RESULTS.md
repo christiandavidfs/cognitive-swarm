@@ -1,5 +1,7 @@
 # Research Results
 
+> **Breaking change v9 (procedure memory):** Student moves from `question → pattern` classification to `question → trace → answer` generation. `verified_memory` now caches *procedures* (verified step skeletons), not just answers. See `docs/ROADMAP_STUDENT.md` M1-M4 and `FINDINGS_STUDENT.md`.
+
 ## Research Question
 
 **Can structured interaction between multiple weak models create stronger reasoning than a single weak model?**
