@@ -65,5 +65,13 @@
   - `120 original: 119/120 (99.2%)` (one rounding edge), `20 novel: 19/20 (95%)`, `traces verifiable: 19/20`, `100 new diverse: 47/80 (58.8%)` (80 not 100 due to 15 stock outside 32)
   - **Approach valid for Qwen:** same 226+100 with Gold traces, LoRA `r=8` would achieve same `19/20` traces verifiable, `<500ms`, `<100MB`
 
+## Batch60 — take-away fix, condición A (2026-08-30, commit feat/student-v3-args)
+- **Hallazgo honesto — bug determinístico, no aprendizaje:** el patrón `stock_take_away` ("If you have 5 apples and you take away 2, how many do you have?" → `2`) tenía **doble bug** en `reasoning_primitives.py:95`:
+  1. `re.search(r"take\s+away\s+(\d+)", ql) and "how\s+many.*you\s+have" in ql` — segundo operando era **substring literal con backslashes**, nunca matcheaba → caía al student que lo robaba como `simple_subtract` (daba `3,1,0` en vez de `2,4,5`).
+  2. Incluso corregido, si el matcher va DESPUÉS del student, el student (conf ~0.3) lo clasifica como `simple_subtract` antes que el regex. El take-away es una **regla estructural determinística** que debe vencer al clasificador débil.
+- **Fix condición A (sin reentrenar student, pkl committed):** mover `stock_take_away` **antes del student** con `re.search` corregido + handler `resolve → str(args["taken"])`. **60/60 (100%)** en `batch60_final.json` (antes 54/60, 6 fallos todos take-away). Cero regresión: `120 benchmark 119/120` (mismo que committed, 1 fallo pre-existente en reasoning), `20 novel 18/20` (mismo que committed, 2 paraphrases pre-existentes).
+- **Lección para la tesis:** el bug ilustra la fragilidad del hand-coded (un `in` vs `re.search` rompe 10% del batch) — exactamente lo que el student pretende superar. El take-away hoy se resuelve por regex determinístico, NO porque el student lo aprendiera; documentamos condición A vs condición B (reentrenar student con clase `stock_take_away` desbalancea 29/32 clases con 2 samples → olvido catastrófico en `same_weight`/`min_sisters`).
+- **Próximo:** batch 100→200 humano; condición B queda como experimento controlado (añadir clase take_away + rebalancear a ≥4 samples/clase) y la comparativa **dual-router TF-IDF vs Qwen** sobre mismas pruebas (ver ROADMAP M2 dual).
+
 ---
 *Update every iterative cycle with full metrics*

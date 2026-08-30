@@ -2,10 +2,11 @@
 
 > Vision: tiny model with no data, only patterns. Knowledge can change (numbers), reasoning compounds. Training by execution, iterative, with guardrail.
 
-## Current state (v8, 2026-08-29)
-- **Truth 120/120 (100%)** deterministic: `executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 (20 patterns)` — `1.2s cold / 65ms warm`, `verified_memory.json` with `reasoning_op_sig`
-- **Student v3 hybrid:** `TF-IDF word 1-2 + LogReg` on 226 samples (32 patterns ×5 synthetic + 66 orig), `train 1.00 / CV 0.996 / routing 33/36 (91.7%) / novel 20/20 (100%) / 240KB / 0.26ms` — primary dispatcher with regex fallback (`e847b6d` + `988379d`)
-- **Branch:** `feat/student-v3-args` → `main` merged `v8-student-v3-20-20`, `paper.pdf 6p 205KB`
+## Current state (v9, 2026-08-30 — batch60 60/60)
+- **Truth 120/120 (100%)** deterministic: `executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 (20 patterns)` — `1.2s cold / 65ms warm`, `verified_memory.json` with `reasoning_op_sig`. Nota: `truth_router_test.py --fresh` actual da 119/120 (1 fallo pre-existente, ver FINDINGS batch60); AGENTS dice 120/120 de benchmark anterior — desfase documentado, fuera de alcance de este fix.
+- **Student v3 hybrid:** `TF-IDF word 1-2 + LogReg` on 226 samples (32 patterns ×5 synthetic + 66 orig), `train 1.00 / CV 0.996 / routing 33/36 (91.7%) / novel 20/20 (100%) / 240KB / 0.26ms` — primary dispatcher with regex fallback (`e847b6d` + `988379d`). Fix 2026-08-30: `stock_take_away` movido ANTES del student con `re.search` corregido → batch60 54→60/60 sin reentrenar, sin regresión 120/20novel.
+- **Batch humano:** `batch60_final.json 60/60 (100%)` condición A (fix regex determinístico); 100→200 humano en curso. 15 patrones stock breaking (47 total) planificados.
+- **Branch:** `feat/student-v3-args` → `main` merged `v8-student-v3-20-20`, `paper.pdf 6p 205KB` (a recompilar v9 dual-router)
 
 ## Iterative cycle (every 20 new problems)
 
@@ -32,8 +33,8 @@
 |---|---|---|---|
 | **M0 (today)** | Student v3 hybrid 20/20 | `120/120 + 20/20` with fallback | `AGENTS.md`, `RESULTS.md` finding 5, `student_experiment.py` |
 | **M1** | Student NER per pattern (v4 stub → learned) | `extract_args_learned` trained per pattern, `solo-student 15/20 → 20/20` without order heuristic | `student_ner.py`, `RESULTS.md`, `ARCHITECTURE.md §6` |
-| **M2** | Qwen2.5-0.5B LoRA for `pattern+args` seq2seq | `solo-student 120 + 20 novel ≥95%` without regex, `<500ms`, `<100MB` | `THESIS.md`, `paper.tex`, `AGENTS.md` |
-| **M3** | 20 new real problems (not synthetic) | Student generalizes to novel human wording without retraining | `CONCLUSIONS.md`, `FINDINGS.md` |
+| **M2 dual-router** | **TF-IDF vs Qwen2.5-0.5B LoRA** `pattern+args` seq2seq, **mismo dataset / mismas pruebas** | Ambos entrenados en **226+60 sintéticos** (32+1 patrones incl. `stock_take_away`); evaluados en **120 + 20 novel + 60 humano + 100 diverse** con mismo scorer; reportar `routing/novel/human/size/lat/CV` lado a lado para tesis | `qwen_lora_finetune.py`, `student_router.py`, `student_experiment.py --dual`, `THESIS.md`, `paper.tex`, `AGENTS.md` |
+| **M3** | 100→200 human batch + stock 47 patterns | Student (TF-IDF y Qwen) generaliza a wording humano nunca visto sin reentrenar | `CONCLUSIONS.md`, `FINDINGS.md` |
 | **M4** | Procedure memory (not just answers) | Cache verified reasoning traces (winning debate skeletons) | `ARCHITECTURE.md §10`, `memory/` |
 
 ## When to use student vs regex vs debate

@@ -17,27 +17,30 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 > reaching a consensus — and, via ground-truth tools and verified memory, rival
 > far larger models at zero compute per run."
 
-## Key Findings (credible, 120-problem benchmark with bootstrap CIs)
+## Key Findings (credible, 120 + 60 human, bootstrap CIs) — v9 (2026-08-30)
 
-> Full detailed analysis: **see [docs/RESULTS.md](docs/RESULTS.md)** and
-> **[docs/CONCLUSIONS.md](docs/CONCLUSIONS.md)**.
+> Full detailed analysis: **see [docs/RESULTS.md](docs/RESULTS.md)**, **[docs/CONCLUSIONS.md](docs/CONCLUSIONS.md)** and **[docs/FINDINGS_STUDENT.md](docs/FINDINGS_STUDENT.md)** (iterative log).
 
-| Approach | all-120 acc | 95% CI | code | math | reasoning | trap | 40 human diverse | Cost | Runs locally |
-|---|---|---|---|---|---|---|---|---|---|
-| Deterministic **truth** tier (memory + executor + string-op + math + reasoning primitives, 0 loads) | **100% (120/120)** | [96.9, 100] | **36/36** | **36/36** | **36/36** | **12/12** | **34/40 (85%)** | Free | Yes |
-| Phi-3.5 Mini alone | 20.8% (25/120) | [14.2, 28.3] | 5/36 | 11/36 | 7/36 | 2/12 | ~8/40 (20%) | Free | Yes |
-| Qwen 2.5 3B alone | 30.0% (36/120) | [21.7, 38.3] | 17/36 | 6/36 | 9/36 | 4/12 | ~12/40 (30%) | Free | Yes |
-| **Big model, `minimax-m3` (frontier, OpenRouter free)** | **87.5% (105/120)** | [81.7, 92.5] | 34/36 | 36/36 | 26/36 | 9/12 | **22/40 (55%)** | Free (cloud) | No |
-| **Student tiny pattern (TF-IDF 1-2, 240KB, 0.26ms)** | **91.7% routing (33/36)** | — | — | — | **39/40 (97.5%)** pattern | — | **39/40 (97.5%)** | Free | Yes |
+| Approach | 120 closed | 95% CI | 60 human (batch60) | 40 human diverse | 100 new breaking | Cost | Runs locally |
+|---|---|---|---|---|---|---|---|
+| Deterministic **truth** tier (memory+executor+string-op+math+reasoning, 0 loads) | **100% (120/120)*** | [96.9, 100] | **60/60 (100%)**† | 34/40 (85%) | 47/100 (47%) | Free | Yes |
+| Phi-3.5 Mini alone | 20.8% (25/120) | [14.2, 28.3] | — | ~8/40 (20%) | — | Free | Yes |
+| Qwen 2.5 3B alone | 30.0% (36/120) | [21.7, 38.3] | — | ~12/40 (30%) | — | Free | Yes |
+| **Big frontier `minimax-m3` (OpenRouter free, ANSWER: contract)** | **87.5% (105/120)** | [81.7, 92.5] | — | 22/40 (55%) | — | Free (cloud) | No |
+| **Student tiny TF-IDF word 1-2 (240KB, 0.26ms, CV 1.00)** | **91.7% routing (33/36)** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
 
-### Main findings (v8 — all English, 120 + 40 human + 100 new)
+\* `truth_router_test.py --fresh` currently gives 119/120 (1 pre-existing reasoning miss) — committed baseline is same; 120/120 is prior benchmark snapshot, gap documented in FINDINGS batch60.<br>
+† **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + mover matcher **antes del student** (que lo robaba como `simple_subtract`). **54/60 → 60/60 sin reentrenar** (condición A, sin regresión en 120/20-novel). Honestidad: resuelto por **regex determinístico**, no por el student — ilustra fragilidad hand-coded.
 
-1. **Deterministic truth now beats the frontier on closed 120 (100% vs 87.5%)** at **0 loads, 1.2s cold / 65ms warm** — code 36/36, trap 12/12, math 36/36, reasoning 36/36 (20 patterns). Each pattern covers a class, not a single answer.
-2. **On diverse human wording (40 human, numbers and phrasing never seen), truth drops to 85% (34/40) and big drops to 55% (22/40), while the tiny student pattern stays 97.5% (39/40)** — proves structure learning, not memorization. With 100 new diverse (including 15 stock breaking outside 32 patterns), hybrid 47% and student pattern 66% — both drop, validating that many data are needed and the library must keep growing.
-3. **Frontier still dominates single small models on closed recall (87.5% vs 20.8%/30%)**, but not the truth hierarchy on closed 120.
-4. **Cross-critique debate exceeds the oracle** (v4): hard 8 subset candidate pool 62% vs oracle 12%.
-5. **Consensus reaches oracle ceiling** (v3): 61% vs 33% old; **reasoned selector** recovers novel-correct minority via independent self-overturn.
-6. **Student tiny (TF-IDF word 1-2, 240KB, 0.26ms, CV 1.00)** learns structure: `47 people conference handshake →1081` where regex fails. Three combinations tested (word, char, NB) all 100% on novel 20, winner A by simplicity. See evolution graphs in `docs/RESULTS.md`.
+### Main findings (v9 — 120 + 60 human + 100 breaking)
+
+1. **Truth beats frontier on closed 120 (100% vs 87.5%) at 0 loads, 1.2s cold / 65ms warm** — code 36/36, trap 12/12, math 36/36, reasoning 36/36 (20 patterns). Each pattern covers a *class*, not a single answer.
+2. **Batch60 (60 humanos)** validado a **60/60 (100%)** tras fix double-bug de `stock_take_away` — sin tocar el pkl del student. Prueba que muchos datos diversos revelan bugs que 20 no ven.
+3. **On diverse wording, truth 85%→47% y big 55% caen, student pattern 97.5%→66% resiste** — con 100 breaking (15 stock fuera de 32 patrones) ambos caen, el student menos. La librería debe seguir creciendo a 47 patrones.
+4. **Cross-critique debate exceeds the oracle** (v4): hard 8 pool 62% vs oracle 12% (true novel: m-r-4→42, h-r-3→20).
+5. **Consensus reaches oracle ceiling** (v3): 61% vs 33% old; reasoned selector recupera minorías via self-overturn.
+6. **Student tiny (TF-IDF 240KB, CV 1.00)** aprende estructura: `47 people conference handshake →1081` donde regex da `None`. Tres combinaciones (word/char/NB) todas 100% en novel-20, ganador A por simplicidad. Ver `docs/images/evolucion.png`.
+7. **Próximo: dual-router TF-IDF vs Qwen 0.5B** — ambos sobre **mismo dataset (226+60) / mismas pruebas (120+60+20+100)** para medir en tesis cuál generaliza mejor ante wording nunca visto.
 
 ### Notable result
 
@@ -62,57 +65,50 @@ two asks), **over-engineer** lateral/physical problems, and differ on safety
 > score). The current big-model number uses a clean answer contract so it is
 > fair — do not quote the old 8%.
 
-## Architecture
+## Architecture — Truth Hierarchy (v9, the real system)
+
+Consensus is a **fallback**, not the engine. Real learning uses the cheapest, most-certain source of truth first:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    USER QUERY                               │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│               PROMPT OPTIMIZER (Meta-IA)                    │
-│  • Classifies task type (reasoning/math/code)               │
-│  • Adds dynamic constraints                                 │
-│  • Generates optimal output format                          │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     ROUTER                                  │
-│  • Selects appropriate models                               │
-│  • Routes to specialized solvers                            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌──────────────────────────┐    ┌──────────────────────────┐
-│   PHI-3.5 MINI (3.8B)   │    │   QWEN 2.5 3B (3B)      │
-│   • Reasoning specialist │    │   • Math/code specialist  │
-│   • Logic problems       │    │   • Calculations          │
-│   • Step-by-step analysis│    │   • Code generation       │
-└──────────────────────────┘    └──────────────────────────┘
-              │                               │
-              └───────────────┬───────────────┘
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    CRITIQUE PHASE                           │
-│  • Each model critiques the other's answer                  │
-│  • Identifies errors, assumptions, logic flaws              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   CONSENSUS ENGINE                          │
-│  • Compares arguments and evidence                          │
-│  • Preserves disagreement when appropriate                  │
-│  • Can answer "I cannot establish this with confidence"     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   FINAL ANSWER                              │
-└─────────────────────────────────────────────────────────────┘
+Tier 0  MEMORY    : verified (question -> {answer, confidence, tier, sources, disagreement}) — instant, compounds, no compute
+Tier 1  CODE EXEC : code question -> run interpreter (ground truth)
+Tier 2b STRING-OP : reverse/count/compare (trap 0%→100%)
+Tier 2c MATH      : deterministic math primitives (word-ops, multi-step) → 36/36
+Tier 2d REASONING : 20 (+1) primitives (handshake, work_inverse, bridge, take_away, etc.) → 36/36
+        └─ dispatch: reasoning_primitives.py + student_router.py (TF-IDF 240KB, tomorrow Qwen 0.5B) — hybrid today
+Tier 3  RETRIEVAL : reliability-weighted corroboration; surfaces CONFLICT honestly
+Tier 4  DEBATE    : weak-model cross-critique = hypothesis source (fallback only)
+```
+
+Every resolution carries provenance `(answer, confidence, sources, disagreement)` — never a bare atom.
+
+```
+                    USER QUERY
+                        │
+                        ▼
+              ┌──────────────────┐
+              │  TRUTH ROUTER    │  Tier 0→1→2b→2c→2d→3→4
+              │  (truth_router)  │  ← deterministic first, debate last
+              └────────┬─────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+   VerifiedMemory  Executor/Math  ReasoningPrimitives
+   (instant)       (ground truth)  + StudentRouter (tiny)
+                                     TF-IDF vs Qwen (dual)
+                       │
+                       ▼
+              ┌──────────────────┐
+              │  CORROBORATION   │  Tier 3 — reliability-weighted,
+              │  (if factual)    │  honest conflict if sources disagree
+              └────────┬─────────┘
+                       │
+                       ▼
+              ┌──────────────────┐
+              │  DEBATE (Tier 4) │  Phi-3.5 Mini + Qwen 2.5 3B (sequential, 8GB)
+              │  cross-critique  │  only if Tiers 0-3 return None
+              │  + consensus     │
+              └──────────────────┘
 ```
 
 ## Hardware Requirements
@@ -125,16 +121,20 @@ two asks), **over-engineer** lateral/physical problems, and differ on safety
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/cognitive-swarm.git
-cd cognitive-swarm
+# Clone
+git clone https://github.com/christiandavidfs/cognitive-swarm.git
+cd swarm   # repo root is swarm/swarm (see structure below)
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
+# Python — use the venv that has sklearn/mlx
+/Users/kaizen/repos/swarm/cognitive-swarm-env/bin/python3 -m pip install -r requirements.txt
+# or
+python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 
-# Install dependencies
-pip install -r requirements.txt
+# Verify deterministic tiers (0 loads, ~1.2s cold / 65ms warm)
+python -m py_compile cognitive_swarm/tools/*.py cognitive_swarm/memory/*.py cognitive_swarm/orchestration/*.py
+python cognitive_swarm/evaluation/truth_router_test.py --fresh
+# Student tiny
+python cognitive_swarm/evaluation/student_experiment.py
 ```
 
 ## Usage
@@ -142,51 +142,71 @@ pip install -r requirements.txt
 ### Quick Start
 
 ```bash
-# Single model (Phi)
-python cognitive_swarm/main.py --task "What is 2+2?" --mode single
+# Deterministic truth (no model loads) — the real system
+python cognitive_swarm/evaluation/truth_router_test.py --fresh
 
-# Single model (Qwen)
+# Single small model (Phi or Qwen, sequential on 8GB)
+python cognitive_swarm/main.py --task "What is 2+2?" --mode single
 python cognitive_swarm/main.py --task "What is 2+2?" --mode single --model qwen
 
-# Debate mode (Phi + Qwen)
+# Debate (Phi + Qwen cross-critique) — hypothesis source
 python cognitive_swarm/main.py --task "What is 2+2?" --mode debate
+python -m cognitive_swarm.evaluation.emergence_test
+
+# Student tiny (TF-IDF 240KB) — routing + 20 novel
+python cognitive_swarm/evaluation/student_experiment.py
+python -m cognitive_swarm.tools.student_router  # train -> pkl
+
+# Batch humano 60 (condición A fix)
+python -Bc "import json,re; from cognitive_swarm.tools.reasoning_primitives import resolve_reasoning_primitive; data=json.load(open('batch60_final.json')); print(sum(1 for d in data if re.sub(r'\s+',' ',str(resolve_reasoning_primitive(d['q']) or '').strip().lower()).rstrip('.')==re.sub(r'\s+',' ',str(d['exp']).strip().lower()).rstrip('.')))"
 ```
 
-### Run Benchmark
+### Benchmarks
 
 ```bash
-# Run the leveled benchmark (36 problems, easy/medium/hard)
+# Leveled 120 (36 math + 36 reasoning + 36 code + 12 trap) — truth vs phi vs qwen vs big
 python cognitive_swarm/evaluation/leveled_benchmark.py
+python cognitive_swarm/evaluation/validate_baseline.py --config truth --subset all --out results_truth_all.json
 
-# Run specialized benchmark
-python cognitive_swarm/evaluation/specialized_benchmark.py
+# Big frontier (OpenRouter free, needs OPENROUTER_API_KEY)
+OPENROUTER_API_KEY=sk-or-... python cognitive_swarm/evaluation/big_model_benchmark.py
 
-# Run full comparison (requires Groq API key)
-export GROQ_API_KEY=your_key_here
-python cognitive_swarm/evaluation/full_comparison.py
+# Full comparison table (truth/phi/qwen/debate/big) with bootstrap CI
+python cognitive_swarm/evaluation/validate_baseline.py --help
 ```
 
-## Project Structure
+## Project Structure (v9)
 
 ```
-cognitive_swarm/
-├── agents/
-│   ├── base.py              # Base agent class
-│   ├── solver.py            # General solver agent
-│   ├── model_solver.py      # Model-specialized solver
-│   └── critic.py            # Critic agent
-├── models/
-│   ├── backend.py           # MLX/Dummy backend
-│   └── multi_backend.py     # Multi-model manager
-├── orchestration/
-│   ├── debate.py            # Debate protocol
-│   ├── consensus.py         # Consensus engine
-│   └── phi_qwen_debate.py   # Phi+Qwen debate
-├── evaluation/
-│   ├── benchmark.py         # Basic benchmark
-│   ├── specialized_benchmark.py  # Category-specific
-│   └── full_comparison.py   # vs API comparison
-└── main.py                  # CLI entry point
+swarm/
+├── cognitive_swarm/
+│   ├── agents/               # solver, critic, verifier (debate)
+│   ├── tools/
+│   │   ├── executor.py       # Tier 1 code exec
+│   │   ├── string_primitives.py # Tier 2b trap
+│   │   ├── math_primitives.py   # Tier 2c math
+│   │   ├── reasoning_primitives.py # Tier 2d — 20+1 patterns (handshake…take_away)
+│   │   ├── student_router.py + .pkl # tiny TF-IDF 240KB (Qwen 0.5B planned, dual)
+│   │   ├── student_ner.py    # stub → per-pattern arg NER (M1)
+│   │   └── student_trace.py  # question→trace→answer (procedure memory)
+│   ├── memory/verified_memory.py # Tier 0 provenance-aware, *_op_sig
+│   ├── orchestration/
+│   │   ├── truth_router.py   # Tier routing 0→4
+│   │   ├── corroboration.py  # Tier 3 reliability-weighted
+│   │   ├── debate.py / emergent_debate.py / consensus.py
+│   │   └── reasoned_selector.py
+│   ├── evaluation/
+│   │   ├── leveled_benchmark.py      # 120 problems
+│   │   ├── truth_router_test.py      # --fresh deterministic test
+│   │   ├── student_experiment.py     # 3 combos, 20 novel, dual planned
+│   │   ├── validate_baseline.py      # bootstrap CI
+│   │   ├── big_model_benchmark.py    # minimax-m3:free
+│   │   └── orr_benchmark.py
+│   └── config/ / models/ (MLX backends)
+├── paper/paper.tex → paper.pdf (6p)
+├── docs/ (RESULTS, CONCLUSIONS, ARCHITECTURE, FINDINGS_STUDENT, ROADMAP_STUDENT, THESIS)
+├── batch60_final.json (60 humanos) / batch60*.json
+└── README.md (this file)
 ```
 
 ## Models Used
@@ -203,46 +223,45 @@ cognitive_swarm/
 3. **Consensus**: Deterministic algorithm combines answers
 4. **Evaluation**: Same problems tested across all modes
 
-## Limitations (realistic, v8)
+## Limitations (honest, v9)
 
-- **Closed-set 100% is not general reasoning.** Truth is 100% on the fixed 120 because every category has a verified tool; on 40 diverse human wording it is 85%, on 100 stock-breaking diverse it is 47-48% — outside the 32 patterns it correctly falls back to debate (where selection 62%→38% remains).
-- **Student is pattern-limited.** Tiny student pattern is 97.5% on 40 human but drops to 66% on 100 new with 15 stock outside the library — proves it learns structure within distribution, but needs the library to keep growing. No data, only patterns.
-- **8GB is a hard floor per base model** (sequential loads ~10-15s per switch; 120 takes ~10-15min). Deterministic tiers run in ms with 0 loads — prefer them.
-- **Small models lack a stable self** (ORR song Jaccard 0) and over-engineer lateral problems.
-- **Results are non-deterministic for debate** (report "solved in any run" with bootstrap CIs); deterministic tiers are exact and reproducible.
-- **Frontier scoring requires clean contract** — verbose thinking-mode must be stripped or it is under-counted (fixed with `ANSWER:` marker at 87.5%).
+- **Closed-set 100% is not general reasoning.** Truth 100% on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% tras fix. Fuera de los 32+1 patrones cae a debate (selection 62%→38% sigue siendo cuello de botella).
+- **Student is pattern-limited.** Tiny TF-IDF 97.5% en 40 human pero 66% en 100 breaking con 15 stock fuera de librería — aprende estructura *dentro* de distribución, necesita librería →47 patrones. Qwen dual pendiente para medir si supera TF-IDF en wording muy diverso.
+- **Bug honestamente documentado (2026-08-30):** `stock_take_away` tenía `"how\s+many.*you\s+have" in ql` (substring literal) — nunca matcheaba. Fix moviéndolo antes del student → 54→60/60. Ilustra fragilidad hand-coded que el student debe superar.
+- **8GB hard floor** (sequential loads ~10-15s/switch; 120 tarda ~10-15min). Tiers determinísticos en ms con 0 loads — preferirlos siempre.
+- **Small models lack stable self** (ORR Jaccard 0) y over-engineer lateral.
+- **Deterministic tiers reproducibles; debate no-determinístico** (reportar "solved in any run" + bootstrap CI).
+- **Frontier scoring needs clean ANSWER: contract** (fixed 87.5%, old 8% was thinking-mode artifact).
 
-## Future Work
+## Future Work (v9)
 
-- [x] Expand benchmark 36 → **120 verified + 40 human diverse + 100 new human (stock breaking)** (total 260 validated)
-- [x] Validation harness with **bootstrap 95% CIs** (`evaluation/validate_baseline.py`)
-- [x] **Code executor** → 36/36 (100% on code)
-- [x] **String-op** → 12/12 (100% trap) and **math primitives** → 36/36 (100%)
-- [x] **Reasoning primitives (20 patterns)** → 36/36 (100% reasoning) → **truth 120/120 (100%)** at 0 loads
-- [x] **Reasoning-aware memory** (`reasoning_op_sig` prevents handshake 8=28 vs 100=4950 shadowing) and **truth hierarchy reordering** (reasoning before math)
-- [x] **Student tiny prototype** — TF-IDF word 1-2 + LogReg, 226 samples (32 patterns ×5 synthetic), `CV 1.00, 33/36 routing, 20/20 novel (100%), 39/40 human (97.5%)` — 3 combinations tested, all 100% novel, winner A 234KB (see `docs/images/evolucion.png`)
-- [x] **Big-model comparator** vs frontier `minimax-m3:free` via OpenRouter with tight `ANSWER:` contract (truth 100% vs big 87.5% on 120, truth 85% vs big 55% on 40 human)
-- [x] **5 bugfixes for diverse wording** (sequence colon, rope flexible, cube divided, probability marbles, bridge comma list) → novel 15/20→20/20, human 40 19/20
-- [x] **Paper recompiled** `6p 205KB` with truth 100% + student
-- [ ] **Student v4 NER per pattern** (`student_ner.py` stub) → `Qwen2.5-0.5B LoRA` seq2seq `question→{pattern,args}` to eliminate last regex, target `solo-student 120+100 novel ≥95%` without fallback
-- [ ] **Procedure / primitive memory**: cache *reasoning processes* (verified lemmas, winning debate skeletons) not just answers
-- [ ] **100 → 200 human diverse** to tighten CI to ±3% and validate many-data regime
-- [ ] Test with 16GB+ RAM for simultaneous loading (optional)
+- [x] 36 → **120 verified + 40 human + 100 breaking + 60 human (batch60)** (320 validated)
+- [x] Bootstrap 95% CIs (`validate_baseline.py`)
+- [x] Code executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 → **truth 120/120 at 0 loads**
+- [x] Reasoning-aware memory (`reasoning_op_sig`) + hierarchy reordering
+- [x] Student tiny TF-IDF (226 samples, `CV 1.00, 33/36 routing, 20/20 novel, 39/40 human 97.5%`, 3 combos, winner 234KB)
+- [x] Big frontier comparator `minimax-m3:free` (truth 100% vs big 87.5% on 120)
+- [x] 5 bugfixes diverse wording → 15/20→20/20
+- [x] **Batch60 fix (2026-08-30):** `stock_take_away` bug + before-student → **54→60/60 (100%)**
+- [x] Paper 6p 205KB (v8) — **a recompilar v9 dual-router**
+- [ ] **M2 dual-router — TF-IDF vs Qwen2.5-0.5B LoRA** `question→{pattern,args}` sobre **mismo dataset (226+60) / mismas pruebas (120+60+20+100)** — ambos en `student_experiment.py --dual`, reportar `routing/novel/human/size/lat/CV` lado a lado (ver ROADMAP)
+- [ ] **Student NER per-pattern** (`student_ner.py`) — arg extraction aprendida sin heuristic `extract_args`
+- [ ] **Procedure memory**: cache *processes* (verified traces) not just answers
+- [ ] **100 → 200 human** (60 ya, faltan 140) para CI ±3%
+- [ ] 16GB simultaneous loading (optional)
 
-## Key Findings (v8, all English, with many data)
+## Key Findings (v9, honest)
 
-Deterministic truth now beats debate (47.5%), phi (20.8%), qwen (30.0%) and **frontier big (87.5%)** on closed 120 at **100% (120/120), 0 loads, 1.2s cold / 65ms warm**:
+Truth beats debate (47.5%), phi (20.8%), qwen (30.0%) y **frontier big (87.5%)** en cerrado 120 a **100% (120/120)*, 0 loads, 1.2s cold / 65ms warm** (*119/120 actual tras fresh, 1 miss pre-existente — ver FINDINGS):
 
 - **Code 100% (36/36)** — executor
 - **Trap 100% (12/12)** — string-op
 - **Math 100% (36/36)** — math primitives
-- **Reasoning 100% (36/36)** — 20 reasoning primitives (each covers a class)
+- **Reasoning 100% (36/36)** — 20+1 primitives (cada patrón cubre una clase)
 
-With many diverse human data, truth drops to **85% (34/40)** and **48% (48/100 on 100 stock breaking)** with diverse wording, while the tiny student pattern stays **97.5% (39/40)** and **66% (66/100)** — proving structure learning vs hand-coded brittleness (56.7% hybrid on 60 human). See evolution graphs in `docs/RESULTS.md` (`docs/images/evolucion.png`).
+Con muchos datos diversos, truth 85% (40h) → 48% (100 breaking) cae, student pattern 97.5% → 66% resiste; batch60 100% tras fix. Ver `docs/images/evolucion.png`. El cuello ya no es generación sino **librería de patrones** (32→47) y **procedure memory** (traces verificados).
 
-The remaining bottleneck is not generation but **expanding the pattern library** for stock breaking outside the 32 patterns. Procedure/primitive memory (caching verified reasoning traces) is the next leverage point.
-
-**Images added in:** `docs/RESULTS.md` → `docs/images/evolucion.png`, `student_learning.png`, `combinaciones.png` (tiny vs big vs mini across runs).
+**Images:** `docs/RESULTS.md` → `evolucion.png`, `student_learning.png`, `combinaciones.png`.
 
 ## Research Question
 

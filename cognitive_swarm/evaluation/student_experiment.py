@@ -164,3 +164,10 @@ print(f"\nWinner: {winner['name']} score {winner['score']:.3f}")
 import json
 Path("/tmp/student_exp.json").write_text(json.dumps(results, indent=2))
 print("saved /tmp/student_exp.json")
+# --- Dual-router note (v9) ---
+# M2 dual-router (TF-IDF vs Qwen 0.5B LoRA) will reuse this harness with --dual:
+# both routers trained on same 231 samples (33 patterns incl. stock_take_away, ≥4/clase)
+# and evaluated on same suites (120 closed + 20 novel + 60 human + 100 breaking).
+# See docs/DUAL_ROUTER_BENCHMARK.md for design; qwen_router.py + qwen_lora_finetune.py
+# will expose same predict(question)->(pattern,conf) interface for apples-to-apples.
+# Until Qwen weights are trained, this file reports TF-IDF baseline; Qwen column = proxy/not-trained.

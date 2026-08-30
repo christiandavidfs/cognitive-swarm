@@ -374,15 +374,13 @@ highest-leverage step: it is what separates a designed truth hierarchy from a
 working one, since everything else --- selection, the benchmark, fine-tuning ---
 depends on at least one live external source validating the design end to end.
 
-\section*{Honest Limits}
+\section*{Honest Limits (v9, 2026-08-30)}
 \begin{itemize}
-  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) because every
-        category now has a verified tool; outside these 20 pattern classes the
-        system correctly falls back to debate (where selection still 62\%$\rightarrow$38\%).
-  \item \textbf{Student router is prototype:} TF-IDF+LogReg 30/36 routing; programmatic regex still extracts args. Fully learned dispatch needs arg prediction.
-  \item \textbf{API artifact fixed:} frontier scored via tight \texttt{ANSWER:} contract on OpenRouter minimax-m3; 87.5\% is clean, yet loses to truth on this fixed set.
-  \item \textbf{8\,GB is a hard model floor} per base model; the system ceiling
-        grows via memory/student, the neuron ceiling is bounded by the chip.
+  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) on the closed set because every category has a verified tool; on 60 human it is now 60/60 after a deterministic fix, on 40 diverse 85\% and on 100 breaking 47\% — outside the 32+1 patterns the system correctly falls back to debate (selection 62\%$\rightarrow$38\% persists). Current \texttt{truth\_router\_test.py --fresh} gives 119/120 (1 pre-existing reasoning miss).
+  \item \textbf{Hand-coded brittleness (new, 2026-08-30):} \texttt{stock\_take\_away} had a double bug: \texttt{"how\textbackslash s+many.*you\textbackslash s+have" in ql} (literal substring, never matched) and firing \emph{after} the student which misclassifies it as \texttt{simple\_subtract}. Fix: fire \emph{before} the student with \texttt{re.search} $\rightarrow$ batch60 54/60$\rightarrow$60/60. This illustrates exactly the fragility the student must supersede.
+  \item \textbf{Student router is prototype:} TF-IDF+LogReg 33/36 routing; programmatic regex still extracts args. Fully learned dispatch (Qwen 0.5B LoRA) is the next comparison: \textbf{both routers will be kept and benchmarked side-by-side} on the same 120+60+20+100 suite to show which generalizes better to unseen wording (see ROADMAP M2 dual-router).
+  \item \textbf{API artifact fixed:} frontier scored via tight \texttt{ANSWER:} contract on OpenRouter minimax-m3; 87.5\% is clean, yet loses to truth on the closed set.
+  \item \textbf{8\,GB is a hard model floor} per base model; the system ceiling grows via memory/student, the neuron ceiling is bounded by the chip.
 \end{itemize}
 
 \bibliographystyle{plain}

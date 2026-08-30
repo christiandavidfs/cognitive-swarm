@@ -34,6 +34,14 @@ from typing import Optional
 
 def detect_reasoning_pattern(question: str) -> Optional[tuple]:
     """Detect a reasoning pattern. Returns (pattern_name, args) or None."""
+    # take-away MUST fire before the student: the student misreads
+    # "you have N X and take away M ... how many do you have" as simple_subtract
+    # (give-away), returning N-M. The stock riddle returns M (the ones you took).
+    # This exact structural rule is deterministic and beats the weak classifier here.
+    _ql0 = question.lower()
+    if re.search(r"take\s+away\s+(\d+)", _ql0) and re.search(r"how\s+many.*you\s+have", _ql0):
+        _m = re.search(r"take\s+away\s+(\d+)", _ql0)
+        if _m: return ("stock_take_away", {"taken": int(_m.group(1))})
     # Student v3 primary dispatch (non-programmatic layer): try learned router first.
     # If student is confident and can extract args, we use it — proves structure learning.
     # Fallback to programmatic regex keeps 100% determinism while student improves.
@@ -84,9 +92,6 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
 
     # ---- STOCK BREAKING (15 patterns that break AI reasoning) ------------------
     # These are added for the 100→200 human batch to expand library from 32 to 47 patterns
-    if re.search(r"take\s+away\s+(\d+)", ql) and "how\s+many.*you\s+have" in ql:
-        m = re.search(r"take\s+away\s+(\d+)", ql)
-        if m: return ("stock_take_away", {"taken": int(m.group(1))})
     if "moses" in ql and "ark" in ql:
         return ("stock_moses", {})
     if "house" in ql and "all" in ql and "walls" in ql and "south" in ql and "bear" in ql:
@@ -613,6 +618,8 @@ def resolve_reasoning_primitive(question: str) -> Optional[str]:
     name, args = det
 
     try:
+        if name == "stock_take_away":
+            return str(args["taken"])
         if name == "trick_no_smoke":
             return "no smoke"
         if name == "trick_survivors_not_buried":
