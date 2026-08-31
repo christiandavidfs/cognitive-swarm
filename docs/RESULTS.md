@@ -121,11 +121,11 @@ scored with the same tight answer-first contract so it is NOT under-stated.
    has no overlap on this benchmark. Honest limit: truth is deterministic tooling over a
    *fixed* 120-problem set — generalization to open reasoning outside these patterns still
    needs debate (Tier 4) and the planned procedure/primitive memory (ARCHITECTURE.md).
-5. **Student router v2/v3 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on 226 balanced samples (32 patterns ×5 synthetic + 66 orig): all **CV 1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <430KB**. Winner **A: TF-IDF word 1-2 + LogReg (v2 baseline) 234KB, 0.26ms** — chosen for simplicity with identical generalization. Key test: `47 people conference handshake →1081` (regex fails, student correct) = reasoning, not memorization. v3 adds generic `extract_args` and `predict_with_args` to resolve without regex on never-seen numbers (7/7 novel OK).
+5. **Student router v3-v4 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on **297 samples (33×4 TRAINING 132 + 33×5 synthetic 165)**: **CV 0.962-1.00, train 1.00, routing 31-32/36, novel 20/20 (100%), <0.3ms, <440KB**. Winner **A: TF-IDF word 1-2 + LogReg 800 feats 240KB, 0.26ms** — chosen for simplicity. Key test: `47 people conference handshake →1081` and `kilogram steel` (regex fails, student correct) = reasoning, not memorization. v4 adds `stock_take_away` as 33rd class + `extract_args` with disambiguation (`give away` vs `take away`).
 
 ### Evolución ante preguntas nuevas — tiny vs big vs mini
 
-**Student ya está en 66% con solo 226 samples sintéticos, y no mostraste big/mini en corridas consecutivas — aquí está:**
+**Student already at 66% with only 297 samples (132 TRAINING +165 synthetic), and big/mini on 100 breaking — here:**
 
 ![Evolución de performance ante preguntas nuevas](images/evolucion.png)
 
@@ -133,7 +133,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 ![Student aprendizaje iterativo](images/student_learning.png)
 
-*De CV 0.35 (v2 desbalanceado, 146 samples) → 1.00 (v3 balanceado, 226 samples) y novel 100% → 66% con stock fuera de distribución — el aprendizaje iterativo por ejecución funciona, pero necesita expandir la librería a los 15 patrones stock.*
+*From CV 0.35 (v2 imbalanced, 146 samples) → 0.962 (v4 rebalanced, 297 samples /33×4) and novel 100% → 66% with stock outside distribution — iterative learning-by-execution works, but needs to expand library to 47 patterns.*
 
 ![3 combinaciones student](images/combinaciones.png)
 

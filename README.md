@@ -27,7 +27,7 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 | Phi-3.5 Mini alone | 20.8% (25/120) | [14.2, 28.3] | — | ~8/40 (20%) | — | Free | Yes |
 | Qwen 2.5 3B alone | 30.0% (36/120) | [21.7, 38.3] | — | ~12/40 (30%) | — | Free | Yes |
 | **Big frontier `minimax-m3` (OpenRouter free, ANSWER: contract)** | **87.5% (105/120)** | [81.7, 92.5] | — | 22/40 (55%) | — | Free (cloud) | No |
-| **Student tiny TF-IDF word 1-2 (240KB, 0.26ms, CV 1.00)** | **91.7% routing (33/36)** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
+| **Student tiny TF-IDF word 1-2 (247KB, 800 feats, CV 0.962)** | **31-32/36 routing** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
 
 \* `truth_router_test.py --fresh` currently 119/120 (1 pre-existing reasoning miss) — same as committed baseline; 120/120 is prior snapshot, gap documented in FINDINGS batch60.<br>
 † **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + move matcher **before student** (stole as `simple_subtract`). **54/60 → 60/60 no retrain** (condition A, no regression on 120/20-novel). Honest: solved by **deterministic regex**, not student — illustrates hand-coded brittleness.
@@ -225,8 +225,8 @@ swarm/
 
 ## Limitations (honest, v9)
 
-- **Closed-set 100% is not general reasoning.** Truth 100% on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% tras fix. Fuera de los 32+1 patrones cae a debate (selection 62%→38% sigue siendo cuello de botella).
-- **Student is pattern-limited.** Tiny TF-IDF 97.5% en 40 human pero 66% en 100 breaking con 15 stock fuera de librería — aprende estructura *dentro* de distribución, necesita librería →47 patrones. Qwen dual pendiente para medir si supera TF-IDF en wording muy diverso.
+- **Closed-set 100% is not general reasoning.** Truth 100%* on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% after fix. Outside the 33 patterns falls back to debate (selection 62%→38% still bottleneck). *119/120 actual fresh.
+- **Student is pattern-limited.** Tiny TF-IDF 97.5% on 40 human but 66% on 100 breaking with 15 stock outside library — learns structure *within* distribution, needs library →47 patterns. Qwen dual pending to measure if it beats TF-IDF on very diverse wording.
 - **Bug honestamente documentado (2026-08-30):** `stock_take_away` tenía `"how\s+many.*you\s+have" in ql` (substring literal) — nunca matcheaba. Fix moviéndolo antes del student → 54→60/60. Ilustra fragilidad hand-coded que el student debe superar.
 - **8GB hard floor** (sequential loads ~10-15s/switch; 120 tarda ~10-15min). Tiers determinísticos en ms con 0 loads — preferirlos siempre.
 - **Small models lack stable self** (ORR Jaccard 0) y over-engineer lateral.
@@ -239,7 +239,7 @@ swarm/
 - [x] Bootstrap 95% CIs (`validate_baseline.py`)
 - [x] Code executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 → **truth 120/120 at 0 loads**
 - [x] Reasoning-aware memory (`reasoning_op_sig`) + hierarchy reordering
-- [x] Student tiny TF-IDF (226 samples, `CV 1.00, 33/36 routing, 20/20 novel, 39/40 human 97.5%`, 3 combos, winner 234KB)
+- [x] Student tiny TF-IDF (132 TRAINING 33×4 +165 synthetic =297, `CV 0.962, 31-32/36 routing, 20/20 novel, 39/40 human 97.5%`, 3 combos, winner 247KB)
 - [x] Big frontier comparator `minimax-m3:free` (truth 100% vs big 87.5% on 120)
 - [x] 5 bugfixes diverse wording → 15/20→20/20
 - [x] **Batch60 fix (2026-08-30):** `stock_take_away` bug + before-student → **54→60/60 (100%)**

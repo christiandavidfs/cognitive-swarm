@@ -241,8 +241,7 @@ The weakest categories became the strongest by *computing* instead of predicting
 Memory is now **code/string/math/reasoning-aware** (identical `*_op_sig` required)
 to prevent distinct questions from blurring (e.g. handshake 8=28 vs 100=4950).
 
-Prototype **student router** (`tools/student_router.py`, TF-IDF+LogReg 50KB, 226
-samples, 33/36 routing, CV 0.996) learns *structure* not answers — e.g. `47 people
+Prototype **student router** (`tools/student_router.py`, TF-IDF+LogReg 240KB, 800 feats, 132 TRAINING +165 synthetic =297 samples /33 classes, 31-32/36 routing, CV 0.962) learns *structure* not answers — e.g. `47 people
 conference handshake` correctly → `handshake` while regex misses (generalization).
 
 **Honest conflict handling (history example).**

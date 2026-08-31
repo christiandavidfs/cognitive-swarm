@@ -4,7 +4,7 @@
 
 ## Current state (v9, 2026-08-30 — batch60 60/60)
 - **Truth 120/120 (100%)** deterministic: `executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 (20 patterns)` — `1.2s cold / 65ms warm`, `verified_memory.json` with `reasoning_op_sig`. Nota: `truth_router_test.py --fresh` actual da 119/120 (1 fallo pre-existente, ver FINDINGS batch60); AGENTS dice 120/120 de benchmark anterior — desfase documentado, fuera de alcance de este fix.
-- **Student v3 hybrid:** `TF-IDF word 1-2 + LogReg` on 226 samples (32 patterns ×5 synthetic + 66 orig), `train 1.00 / CV 0.996 / routing 33/36 (91.7%) / novel 20/20 (100%) / 240KB / 0.26ms` — primary dispatcher with regex fallback (`e847b6d` + `988379d`). Fix 2026-08-30: `stock_take_away` movido ANTES del student con `re.search` corregido → batch60 54→60/60 sin reentrenar, sin regresión 120/20novel.
+- **Student v4 hybrid:** `TF-IDF word 1-2 + LogReg 800 feats` on **132 TRAINING (33×4) +165 synthetic =297**, `train 1.00 / CV 0.962 / routing 31-32/36 / novel 20/20 (100%) / 247KB / 0.26ms` — primary dispatcher with hybrid (`stock_take_away` before student, regex fallback). Fix 2026-08-30: `stock_take_away` before student + rebalanced 33×4 (was 32×2) → batch60 54→60/60, e-r-11 disambiguated, no regression.
 - **Human batch:** `batch60_final.json 60/60 (100%)` condition A (deterministic regex fix); 100→200 human in progress. 15 stock breaking patterns (47 total) planned.
 - **Branch:** `feat/student-v3-args` → `main` merged `v8-student-v3-20-20`, `paper.pdf 6p 205KB` (a recompilar v9 dual-router)
 

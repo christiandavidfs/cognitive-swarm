@@ -162,10 +162,10 @@ without touching the model.
 
 `tools/student_router.py` is the prototype for replacing programmatic regex with
 a tiny learned model (vision: *small tiny model only for solving problems*).
-- **Training data:** 66 paraphrases across 20 patterns (e.g. 5 machines/7 ovens both → `rate_machines` with different numbers) so the student learns **structure, not the answer**.
-- **Model:** TF-IDF (1-2gram, 500 feats) + LogisticRegression, ~50KB, ms inference, `TRAINING_DATA` in-repo.
-- **Current:** `train_acc 1.0, cv 0.35, THRESHOLD 0.07 → 30/36 routing` vs regex on reasoning set. Wired as fallback in `detect_reasoning_pattern` (prediction logged, resolvers stay verified ground truth).
-- **Next:** augment numbers/wordings to also predict args, then `truth_router` dispatches fully via student — knowledge can change (different numbers), reasoning stays.
+- **Training data:** 132 paraphrases across 33 patterns ×4 (e.g. 5 machines/7 ovens both → `rate_machines` with different numbers, +`stock_take_away` 4) so the student learns **structure, not the answer**. With synthetic 5/class via `all_templates`: 297 total (132+165).
+- **Model:** TF-IDF (1-2gram, 800 feats) + LogisticRegression, ~240KB, 0.26ms inference, `TRAINING_DATA` in-repo.
+- **Current:** `train_acc 1.0, CV 0.962, THRESHOLD 0.07 → 31-32/36 routing` vs regex on reasoning set (20/20 novel, 60/60 batch60). Wired as hybrid in `detect_reasoning_pattern` (deterministic `stock_take_away` before student, resolvers stay verified ground truth).
+- **Next:** Qwen2.5-0.5B LoRA (`qwen_router.py`) on same 297, same `predict` interface — dual benchmark TF-IDF vs Qwen — then `truth_router` dispatches fully via student — knowledge can change (different numbers), reasoning stays.
 
 ## 7. The growing-ceiling trainer (hive-mind loop)
 
