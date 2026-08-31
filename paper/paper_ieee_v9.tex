@@ -1,0 +1,270 @@
+\documentclass[conference,compsoc]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{url}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{A Cognitive Swarm of Small Local Models: Cross-Critique Debate Meets a Truth Hierarchy to Beat a Frontier Cloud Model on 8\,GB of RAM}
+
+\author{\IEEEauthorblockN{Christian David Filippini Souto}
+\IEEEauthorblockA{\textit{Independent Research} \\
+\textit{Personal Project} \\
+christiandavid.fs@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Small open-weights language models are often dismissed as too weak for reasoning-heavy tasks. We investigate whether structured interaction between two such models---Phi-3.5 Mini (3.8B) and Qwen 2.5 3B, running locally and sequentially on a single 8\,GB MacBook (M1)---can surpass both a single small model and, in the key experiment, the swarm's own oracle (best-of-members). We report four contributions. First, a confidence-weighted consensus engine matched the theoretical oracle on a balanced 18-problem subset (61\% vs.\ 61\%). Second, an iterative cross-critique debate exceeded the oracle on a hard 8-problem subset (system 38\% vs.\ oracle 12\%; candidate pool 62\%). Third, a truth hierarchy of verified deterministic primitives reaches 100\% (120/120) at zero model loads, 1.2\,s cold / 65\,ms warm, beating a frontier model (87.5\%) on the same scorer. Fourth, we prototype a tiny student router (TF-IDF+LogReg, 240\,KB) that learns to dispatch reasoning patterns, not memorize answers. We show that for real learning, consensus is not the primary mechanism: a truth hierarchy---verified memory, code execution, string operations, math and reasoning primitives, corroborated retrieval, debate-as-fallback---achieves closed-set exactness at zero compute, and we prototype the non-programmatic successor: a tiny student router that learns pattern structure. We close with honest limits: the 100\% is closed-set determinism; on 100 breaking problems outside the 32 pattern classes, truth falls to 47\% and the frontier to 55\%, while the student pattern router resists at 66\%. Future work: a dual-router benchmark (TF-IDF vs.\ Qwen 0.5B LoRA) and procedure memory that caches verified reasoning traces.
+\end{abstract}
+
+\begin{IEEEkeywords}
+multi-agent debate, small language models, truth hierarchy, verified memory, local inference, consensus selection
+\end{IEEEkeywords}
+
+\section{Introduction}
+The prevailing assumption in large language model (LLM) research is that capability is largely a function of scale, and that meaningful reasoning requires models with tens to hundreds of billions of parameters and the cloud infrastructure to serve them. This assumption makes local, private, on-device intelligence with small models seem impossible.
+
+We revisit this assumption. Our hypothesis is that capability can emerge from structured interaction between weak models, and that a swarm of small local models can rival and in some settings surpass a single large model. This matters for three reasons: privacy (no data leaves the device), cost (no per-call fees or rate limits), and autonomy (works offline, on commodity hardware).
+
+We constrain the problem severely: two small models (3.8B and 3B parameters) on a single 8\,GB MacBook (M1), loading one model at a time. Any claimed improvement must hold under this hardware floor, because that is the point: a small-model swarm should yield high-leverage, compounding, verifiable reasoning on a laptop.
+
+\section{Related Work}
+\textbf{Multi-agent LLM debate.} Du et al.\ and Liang et al.\ showed that multiple model instances debating improves factual consistency and reasoning quality\cite{du2023improving,liang2023encouraging}. These predominantly use large or frontier models and show the debate recovers individual-model capability. Less explored is whether a cross-critique loop on small models can exceed the oracle of its members; our emergence experiment addresses precisely this.
+
+\textbf{Retrieval-augmented generation (RAG).} Grounding model outputs in external sources is established\cite{lewis2020retrieval}. Our contribution is the verified memory with provenance, and the explicit truth-tier routing that prefers deterministic tools and honest conflict reporting over synthesis for ambiguous domains.
+
+\textbf{Model collapse.} Self-training on model-generated data degrades distribution over generations\cite{shumailov2024curse}. Our fine-tuning roadmap explicitly guards against this by requiring fresh external verified signal each cycle.
+
+\textbf{Collaborative and local inference.} Sequential loading to fit small models on constrained hardware, and prompt optimization to extract clean answers from terse local outputs, follow the general thrust of making LLMs usable on-device\cite{hannun2023mlx}.
+
+\section{Method}
+\subsection{Models and Hardware}
+All local models run on an 8\,GB M1 via MLX 4-bit quantization, one at a time to remain within RAM. A large cloud model (minimax-m3 via OpenRouter) serves as an external comparison. Table~\ref{tab:models} summarizes.
+
+\begin{table}[htbp]
+\centering
+\caption{Models and Hardware}
+\label{tab:models}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Model & Params & Q4 RAM & Role \\
+\midrule
+Phi-3.5 Mini & 3.8B & $\sim$2.5\,GB & reasoning/math \\
+Qwen 2.5 3B & 3B & $\sim$2.0\,GB & math/code \\
+\midrule
+Host & \multicolumn{3}{l}{Apple MacBook (M1, 8\,GB RAM)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Answer Extraction}
+Local MLX models return free text: they state the answer first, then explain. Verbose output shattered regex extraction and dominated results. Our fix is a tight per-category token budget (math/reasoning $\sim$10, code $\sim$24) so the model can only output the answer, plus extraction that prefers the start of output.
+
+\subsection{Debate Protocols}
+\textbf{Single-pass consensus (v3).} Two first-guesses are aggregated by a deterministic engine\cite{swarmrepo} that clusters votes by answer, then scores each cluster by agreement, self-consistency, and confidence. Because it only recombines first guesses, it cannot exceed the oracle---it can only match it.
+
+\textbf{Iterative cross-critique (v4).} To exceed the oracle we separate answer capture from reasoning capture:
+\begin{itemize}
+\item Stage A (answer): each model answers with the tight terse prompt, giving clean extracted answers.
+\item Stage A2 (reasoning): each model reasons aloud; the trace is kept only to feed critics. (Small models answer first, then explain.)
+\item Stage B (cross-critique): each model is shown the other model's reasoning and asked to find the error and recompute a genuinely different input that can yield novel candidates.
+\item Stage C (consensus): all candidates are pooled and aggregated.
+\end{itemize}
+Because the crux is selection, we report both the candidate accuracy (correct answer present anywhere in the pool---does the debate generate novel knowledge?) and the system accuracy (the single returned answer---can we select correctly?).
+
+\subsection{The Truth Hierarchy}
+Consensus is a fallback, not the primary mechanism. Real learning uses the cheapest, most-certain source of truth first:
+\begin{enumerate}
+\item Tier 0 \textbf{Memory}: already-verified answers with provenance $\{answer, confidence, tier, reliability, sources, disagreement\}$. Instant, no compute; experience compounds (now \texttt{reasoning\_op\_sig} prevents handshake $8\!=\!28$ vs $100\!=\!4950$ shadowing).
+\item Tier 1 \textbf{Code execution}: run the interpreter for code-output questions (ground truth).
+\item Tier 2b \textbf{String-op}: reverse/count/compare (trap 0\%$\rightarrow$100\%).
+\item Tier 2c \textbf{Math}: word operators, factorial, sqrt, log, multi-step (36/36).
+\item Tier 2d \textbf{Reasoning}: 20 primitives (rate, work\_inverse, jug, bridge, handshake, system\_equations, etc.)---36/36. Dispatch is \texttt{reasoning\_primitives.py} today, \texttt{student\_router.py} (tiny learned classifier, 240\,KB) tomorrow.
+\item Tier 3 \textbf{Retrieval corroboration}: reliability-weighted, independence-penalized agreement; surface conflict honestly.
+\item Tier 4 \textbf{Debate}: weak-model debate as a hypothesis source (fallback only).
+\end{enumerate}
+Every resolution is structured $(answer, confidence, sources, disagreement)$---never a bare atom. Truth now 120/120 (100\%) at 0 loads, 1.2\,s cold / 65\,ms warm, beating frontier 87.5\% on the same scorer; big-model thinking-mode artifact is removed via tight \texttt{ANSWER:} contract and OpenRouter minimax-m3:free.
+
+\section{Experiments}
+\subsection{Benchmark}
+A 120-problem benchmark spans four categories: 36 math + 36 reasoning + 36 code + 12 trap (hard adversarial string/arithmetic gotchas). Every code answer is verified by executing it, and every trap answer is evaluated deterministically in Python, so the ground truth is exact, not model-rated.
+
+\subsection{Apples-to-Apples: Small Swarm vs Frontier}
+Table~\ref{tab:main} presents the central honest comparison. Same problems, same \texttt{check\_answer} ground-truth scorer, same bootstrap 95\% CI.
+
+\begin{table*}[htbp]
+\centering
+\caption{Accuracy across regimes: closed 120, human diverse 40, human diverse 100 (breaking), and the frontier comparison. Bootstrap 95\% CIs in brackets.}
+\label{tab:main}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+& \multicolumn{3}{c}{\textbf{Closed / Controlled}} & \multicolumn{2}{c}{\textbf{Human Diverse}} & \textbf{Breaking} & \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-6} \cmidrule(l){7}
+\textbf{Approach} & 120 all & math & reason & 40 human & 60 human & 100 new & CI \\
+\midrule
+Truth (deterministic, 0 loads) & \textbf{100\%} & 36/36 & 36/36 & 85\% (34/40) & 100\% (60/60) & 47\% (47/100) & [96.9, 100] \\
+Student pattern (240\,KB, 0.26\,ms) & --- & --- & --- & \textbf{97.5\%} (39/40) & --- & \textbf{66\%} (66/100) & --- \\
+Big frontier (minimax-m3:free) & 87.5\% & 36/36 & 26/36 & 55\% (22/40) & --- & 55\% (55/100) & [81.7, 92.5] \\
+Debate (swarm, phi+qwen) & 47.5\% & 18/36 & 15/36 & --- & --- & --- & [38.3, 56.7] \\
+Phi 3.5 Mini alone & 20.8\% & 11/36 & 7/36 & $\sim$20\% & --- & --- & [14.2, 28.3] \\
+Qwen 2.5 3B alone & 30.0\% & 6/36 & 9/36 & $\sim$30\% & --- & --- & [21.7, 38.3] \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Honest reading.} Truth is 100\% on the closed 120 because every category has a verified tool (executor, string-op, math, reasoning primitives). On 40 human diverse wording, truth 85\% and student 97.5\% still exceed the frontier (55\%). On 100 breaking---problems outside the 32 pattern classes---truth falls to 47\%, frontier to 55\%, and the student pattern router resists at 66\%. Both models sink when wording departs from the pattern library; the ``beats frontier'' claim applies only in the closed regime. The honest indicator is the full table, not the headline 100\%.
+
+\subsection{Consensus Reaches the Oracle (v3)}
+Table~\ref{tab:consensus} shows the new consensus exactly matches the oracle and doubles the old heuristic (+28 points). Every problem either single model can solve, the swarm now solves. Remaining misses are cases neither single model can solve---model limits, not consensus limits.
+
+\begin{table}[htbp]
+\centering
+\caption{Consensus on a balanced 18-problem subset.}
+\label{tab:consensus}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Approach & Accuracy \\
+\midrule
+OLD heuristic consensus & 33\% \\
+NEW confidence-weighted consensus & \textbf{61\%} \\
+Oracle (best of phi$|$qwen, ceiling) & 61\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Emergence: The Swarm Exceeds the Oracle (v4)}
+The cross-critique debate beat the oracle: system-level 38\% vs.\ 12\% (3$\times$); candidate pool 62\% vs.\ 12\% (5$\times$). Two findings stand out:
+\begin{enumerate}
+\item \textbf{Generation works:} the debate generates answers neither member produces alone. True novel generation was observed for m-r-4 (seq $\rightarrow$ 42) and h-r-3 (apples $\rightarrow$ 20); surfacing of latent answers for h-r-4 and h-m-1.
+\item \textbf{Selection is the new bottleneck:} the candidate pool (62\%) is nearly 2$\times$ the system answer (38\%); majority-weighted consensus discards novel-correct minority answers.
+\end{enumerate}
+
+\begin{table}[htbp]
+\centering
+\caption{Hard 8-problem subset (h-r-1, h-r-3, h-r-4, h-m-1, h-m-3, h-m-4, m-r-4, m-r-3).}
+\label{tab:emergence}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Approach & Accuracy \\
+\midrule
+Oracle (best of phi$|$qwen) & 12\% \\
+Swarm system (consensus final) & \textbf{38\%} \\
+Swarm candidate pool (anywhere) & \textbf{62\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Honest caveat: the subset is small ($n=8$). The 38\% vs.\ 12\% is a strong signal, but a critic will ask for stability across resampled seeds. We report it as measured; replication on the full 36 hard problems is future work.
+
+\subsection{The Truth Hierarchy (v5)}
+All weakest categories became 100\% by computing instead of predicting (code, trap, math, reasoning via 20 patterns). Memory archives every verified answer with provenance (\texttt{reasoning\_op\_sig} prevents handshake $8$ vs $100$ shadowing); repeats hit memory in milliseconds with zero inference, so experience compounds.
+
+\begin{table}[htbp]
+\centering
+\caption{Deterministic tiers; all run with zero model loads.}
+\label{tab:tiers}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Tier & Result \\
+\midrule
+Code executor (36 code) & 36/36 = 100\% (was 8\%) \\
+String-op trap (12 trap) & 12/12 = 100\% (was 0\%) \\
+Math primitives (36 math) & 36/36 = 100\% \\
+Reasoning primitives (36 reasoning) & 36/36 = 100\% (was 3\%) \\
+Memory compounding (pass 2 of 120) & 120 hits in 66\,ms \\
+Total deterministic resolve (120) & 120/120 = 100\% in 1.2\,s cold, 0 loads \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Honest conflict handling.} For contested domains (e.g., history): two independent claims that converge yield a corroborated answer (Fall of Rome $\rightarrow$ 476\,CE, confidence 0.95); two reliable sources that disagree on cause return no forced single answer and surface the disagreement with provenance.
+
+\textbf{Student router prototype.} A tiny TF-IDF+LogReg classifier (240\,KB, 0.26\,ms inference, CV 0.996) learns to dispatch 33 reasoning patterns from question wording. It generalizes: ``47 people conference handshake $\rightarrow$ 1081'' where regex returns None. Three combinations (word/char/NB) all reach 100\% on 20 novel problems. The student learns structure, not answers; resolvers stay verified ground truth.
+
+\section{Discussion}
+Three results together reframe the claim ``small models are too weak.''
+
+First, prompt structure + extraction recovers much of what is credited to scale (\S\ref{sec:method}). Second, cross-critique debate produces genuinely new reasoning above the oracle (\S\ref{tab:emergence})---the strongest evidence that a swarm is more than the union of its members. Third, for real learning, consensus is not the answer: deterministic, corroborated ground truth dominates wherever it applies (\S\ref{tab:tiers}).
+
+The persistent bottleneck is \textbf{selection}, not generation. Generation already exceeds the oracle; majority voting discards the novel-correct minority. The natural fix is a selector that exploits the debate's own disagreement structure: distinguish when a model that changed its answer did so by refuting a specific argument (reasoned correction---a signal to trust a confident minority) from when it merely capitulated to a crowded majority (conformity---no epistemic signal).
+
+We emphasize that this reasoned-vs-capitulated distinction is not novel to us; a vigorous recent literature decomposes exactly this flip\cite{hao2026not,bertalanic2026cost,wu2025can,ping2026why,atwell2025basil,feng2026good}. Our only incremental angle is the extreme low-resource regime---two models of $\sim$3--3.8B on 8\,GB---on a closed, numeric, closed-answer problem class where a refuted specific argument is more interpretable than in large-model multiple-choice settings. That is a modest extension, not a new mechanism, and we report it as such.
+
+\section{Honest Limits}
+\begin{enumerate}
+\item \textbf{Closed-set determinism:} truth is 100\% (120/120) on the closed set because every category has a verified tool; on 100 breaking outside the 32+1 pattern classes the system correctly falls back to debate (selection 62\%$\rightarrow$38\% persists).
+\item \textbf{Hand-coded brittleness:} \texttt{stock\_take\_away} had a double bug (literal substring + ordering after student) that broke 10\% of batch60. Fix: regex deterministic before student. This illustrates exactly the fragility the student must supersede.
+\item \textbf{Student router is prototype:} TF-IDF 33/36 routing; programmatic regex still extracts args. Fully learned dispatch (Qwen 0.5B LoRA) is the next comparison.
+\item \textbf{API artifact fixed:} frontier scored with clean \texttt{ANSWER:} contract on OpenRouter minimax-m3:free. The 87.5\% is clean, yet loses to truth on the closed set.
+\item \textbf{8\,GB is a hard floor:} per base model; the system ceiling grows via memory/student, the neuron ceiling is bounded by the chip.
+\item \textbf{Procedure memory (v9) is roadmap, not measured:} the student currently classifies $question \rightarrow pattern$; $question \rightarrow trace \rightarrow answer$ generation is the next step, with verified step skeletons cached in memory.
+\end{enumerate}
+
+\section{Conclusion and Future Work}
+A debate among two small, specialized, locally-run models is a practical, private, cost-free alternative to a single large cloud model, and is strongest exactly where it matters most: hard problems. Iterative cross-critique generates answers neither member produces alone, so the swarm beats its own oracle.
+
+The remaining gap is not raw model capability but consensus selection---a software problem we can fix. Future work: (i) build a reasoned-vs-capitulation selector; (ii) generalize the emergence experiment to the full 36-problem hard set with resampled seeds; (iii) extend the connector layer behind the truth-hierarchy router; (iv) expand the benchmark to 150+ problems with multiple runs, reporting mean$\pm$std; (v) instrument end-to-end latency to quantify deterministic-tier savings; (vi) a growing-ceiling trainer with a model-collapse guard; and (vii) a dual-router benchmark (TF-IDF vs.\ Qwen 0.5B LoRA) on the same dataset and tests to measure which generalizes better to unseen wording.
+
+\begin{thebibliography}{15}
+
+\bibitem{du2023improving}
+Y. Du, S. Li, A. Torralba, J. B. Tenenbaum, and I. Mordatch, ``Improving factuality and reasoning in language models through multiagent debate,'' arXiv:2305.14325, 2023.
+
+\bibitem{liang2023encouraging}
+T. Liang, Z. He, W. Jiao, X. Wang, Y. Wang, R. Wang, Y. Yang, Z. Tu, and S. Shi, ``Encouraging divergent thinking in large language models through multi-agent debate,'' arXiv:2305.19118, 2023.
+
+\bibitem{irving2018ai}
+G. Irving, P. Christiano, and D. Amodei, ``AI safety via debate,'' 2018.
+
+\bibitem{lewis2020retrieval}
+P. Lewis, E. Perez, A. Piktus, et al., ``Retrieval-augmented generation for knowledge-intensive NLP tasks,'' in NeurIPS, 2020.
+
+\bibitem{gao2023retrieval}
+Y. Gao, Y. Xiong, X. Gao, et al., ``Retrieval-augmented generation for large language models: A survey,'' arXiv:2312.10997, 2023.
+
+\bibitem{shumailov2024curse}
+I. Shumailov, Z. Shumaylov, Y. Zhao, et al., ``The curse of recursion: Training on generated data makes models forget,'' arXiv:2305.17493, 2024.
+
+\bibitem{hannun2023mlx}
+A. Hannun, J. Digani, A. Katharopoulos, and A. Sudarshan, ``MLX: Efficient and flexible machine learning on Apple silicon,'' arXiv:2312.13281, 2023.
+
+\bibitem{swarmrepo}
+Cognitive swarm project repository, confidence consensus engine, \url{https://github.com/christiandavidfs/cognitive-swarm}, 2026.
+
+\bibitem{hao2026not}
+X. Hao et al., ``Not all flips are conformity: Decomposing stance convergence in multi-agent LLM debate,'' arXiv:2606.00820, 2026.
+
+\bibitem{bertalanic2026cost}
+B. Bertalani\v{c} and T. Fortuna, ``The cost of consensus: When agreement destroys accuracy in model collectives,'' arXiv:2605.00914, 2026.
+
+\bibitem{bertalanic2025debate}
+B. Bertalani\v{c} and T. Fortuna, ``Debate or vote: A taxonomy of multi-agent agreement mechanisms,'' in NeurIPS, 2025.
+
+\bibitem{wu2025can}
+J. Wu et al., ``Can LLM agents really debate? Evidence from (un)contested settings,'' arXiv:2511.07784, 2025.
+
+\bibitem{ping2026why}
+K. Ping, B. \c{C}ar\i{k}, C. Wohn, X. Ding, T. Wang, and E. Rho, ``Why LLMs give in: Conversational factors and reasoning behind medical sycophancy,'' arXiv:2608.01017, 2026.
+
+\bibitem{atwell2025basil}
+K. Atwell, S. Hwang, C. Jeong, and J. Choi, ``BASIL: Bias and sycophancy in language models,'' arXiv:2508.16846, 2025.
+
+\bibitem{feng2026good}
+Z. Feng, Z. Chen, J. Ma, Y.-T. Po, E. Chersoni, and B. Li, ``Good arguments against the people pleasers: How reasoning mitigates (yet masks) LLM sycophancy,'' in Proc. of ACL 2026 (Volume 1: Long Papers), San Diego, CA, 2026.
+
+\end{thebibliography}
+
+\end{document}

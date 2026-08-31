@@ -53,6 +53,7 @@ all_templates = {
     "bridge_crossing": ["Four people need to cross a bridge at night flashlight {t1} {t2} {t3} {t4} minutes shortest time?"],
     "system_equations": ["{n1} jars of honey and {n2} jars of jam cost {c1} cents {n3} jars of honey and {n4} jars of jam cost {c2} cents how much does one jar of honey cost?"],
     "alice_bob": ["Alice and Bob have total of {total} apples Bob gives Alice {t} apples Now Alice has twice as many as Bob how many did Alice start with?"],
+    "stock_take_away": ["If you have {n} apples and you take away {k}, how many do you have?", "You have {n} apples and take away {k} how many do you have?"],
 }
 
 samples=[]
@@ -164,10 +165,12 @@ print(f"\nWinner: {winner['name']} score {winner['score']:.3f}")
 import json
 Path("/tmp/student_exp.json").write_text(json.dumps(results, indent=2))
 print("saved /tmp/student_exp.json")
-# --- Dual-router note (v9) ---
-# M2 dual-router (TF-IDF vs Qwen 0.5B LoRA) will reuse this harness with --dual:
-# both routers trained on same 231 samples (33 patterns incl. stock_take_away, ≥4/clase)
-# and evaluated on same suites (120 closed + 20 novel + 60 human + 100 breaking).
-# See docs/DUAL_ROUTER_BENCHMARK.md for design; qwen_router.py + qwen_lora_finetune.py
-# will expose same predict(question)->(pattern,conf) interface for apples-to-apples.
-# Until Qwen weights are trained, this file reports TF-IDF baseline; Qwen column = proxy/not-trained.
+# --- Dual-router (v9) ---
+# M2 dual-router: TF-IDF (132) vs Qwen 0.5B LoRA on same 297 samples (33×4 +33×5)
+# See docs/DUAL_ROUTER_BENCHMARK.md; qwen_router.py exposes same predict interface.
+# Until LoRA trained: Qwen column = not_trained (honest placeholder).
+try:
+    from cognitive_swarm.tools.qwen_router import train as qwen_train
+    print("Qwen router:", qwen_train())
+except Exception as e:
+    print("Qwen router not yet trained:", e)

@@ -16,7 +16,7 @@
 - **Hybrid (regex+student):** **15/20 (75%) → 19/20 (95%)** tras 5 bugfixes adicionales (rope flexible, cube divided, trains cities, probability marbles, bridge comma list + student bridge dinámico)
 - **Student pattern only:** **20/20 (100%)** — student reconoce estructura donde regex aún falla en wording novel
 - **TruthRouter 20 human:** **19/20 (95%)**
-- **Siguiente:** batch de 40 humanos para validar ≥90% con muchos datos (requisito tesis)
+- **Next:** 40-human batch to validate ≥90% with many data (thesis requirement)
 
 ## Human 40 — many data + big vs mini (2026-08-29, validated with new key)
 - **Dataset:** 40 human real diverse (20 prev + 20 new) = 40 total (60 with 20 synthetic novel)
@@ -65,13 +65,14 @@
   - `120 original: 119/120 (99.2%)` (one rounding edge), `20 novel: 19/20 (95%)`, `traces verifiable: 19/20`, `100 new diverse: 47/80 (58.8%)` (80 not 100 due to 15 stock outside 32)
   - **Approach valid for Qwen:** same 226+100 with Gold traces, LoRA `r=8` would achieve same `19/20` traces verifiable, `<500ms`, `<100MB`
 
-## Batch60 — take-away fix, condición A (2026-08-30, commit feat/student-v3-args)
-- **Hallazgo honesto — bug determinístico, no aprendizaje:** el patrón `stock_take_away` ("If you have 5 apples and you take away 2, how many do you have?" → `2`) tenía **doble bug** en `reasoning_primitives.py:95`:
-  1. `re.search(r"take\s+away\s+(\d+)", ql) and "how\s+many.*you\s+have" in ql` — segundo operando era **substring literal con backslashes**, nunca matcheaba → caía al student que lo robaba como `simple_subtract` (daba `3,1,0` en vez de `2,4,5`).
-  2. Incluso corregido, si el matcher va DESPUÉS del student, el student (conf ~0.3) lo clasifica como `simple_subtract` antes que el regex. El take-away es una **regla estructural determinística** que debe vencer al clasificador débil.
-- **Fix condición A (sin reentrenar student, pkl committed):** mover `stock_take_away` **antes del student** con `re.search` corregido + handler `resolve → str(args["taken"])`. **60/60 (100%)** en `batch60_final.json` (antes 54/60, 6 fallos todos take-away). Cero regresión: `120 benchmark 119/120` (mismo que committed, 1 fallo pre-existente en reasoning), `20 novel 18/20` (mismo que committed, 2 paraphrases pre-existentes).
-- **Lección para la tesis:** el bug ilustra la fragilidad del hand-coded (un `in` vs `re.search` rompe 10% del batch) — exactamente lo que el student pretende superar. El take-away hoy se resuelve por regex determinístico, NO porque el student lo aprendiera; documentamos condición A vs condición B (reentrenar student con clase `stock_take_away` desbalancea 29/32 clases con 2 samples → olvido catastrófico en `same_weight`/`min_sisters`).
-- **Próximo:** batch 100→200 humano; condición B queda como experimento controlado (añadir clase take_away + rebalancear a ≥4 samples/clase) y la comparativa **dual-router TF-IDF vs Qwen** sobre mismas pruebas (ver ROADMAP M2 dual).
+## Batch60 — take-away fix, condition A (2026-08-30, commit feat/student-v3-args → 5091cdb)
+- **Honest finding — deterministic bug, not learning:** `stock_take_away` ("If you have 5 apples and you take away 2, how many do you have?" → `2`) had a double bug in `reasoning_primitives.py:95`:
+  1. `re.search(r"take\s+away\s+(\d+)", ql) and "how\s+many.*you\s+have" in ql` — second operand was a **literal substring with backslashes**, never matched → fell through to student which stole it as `simple_subtract` (returned `3,1,0` instead of `2,4,5`).
+  2. Even when fixed, if matcher fires AFTER the student, the student (conf ~0.15–0.30) classifies it as `simple_subtract` before regex. Take-away is a **deterministic structural rule** that must win over the weak classifier.
+- **Fix condition A (no student retrain, pkl committed):** move `stock_take_away` **before student** with corrected `re.search` + handler `resolve → str(args["taken"])`. **60/60 (100%)** on `batch60_final.json` (was 54/60, all 6 failures take-away). No regression: `120 benchmark 119/120` (same as committed, 1 pre-existing reasoning miss), `20 novel 18/20` (same, 2 pre-existing paraphrases).
+- **Thesis lesson:** the bug illustrates hand-coded brittleness (a single `in` vs `re.search` breaks 10% of the batch) — exactly what the student must supersede. Take-away is currently solved by **deterministic regex**, not because the student learned it. Documents condition A vs condition B (retraining with `stock_take_away` class on 2 samples/class → catastrophic forgetting in `same_weight`/`min_sisters`).
+- **Update 2026-08-31 — rebalanced to 33 classes ×4 =132:** added `stock_take_away` as 33rd class with 4 samples and expanded all 32 original classes from 2→4 samples (132 total, 297 with synthetic 5/class). New student: `CV 0.962, routing 31-32/36, 20/20 novel, batch60 60/60, truth 119/120 (35/36 reasoning)`. Condition B validated without forgetting (same_weight/kilogram now correct, e-r-11 simple_subtract disambiguated).
+- **Next:** 100→200 human batch; condition B is now the balanced baseline. Dual-router TF-IDF vs Qwen comparison on same tests (see ROADMAP M2 dual).
 
 ---
 *Update every iterative cycle with full metrics*

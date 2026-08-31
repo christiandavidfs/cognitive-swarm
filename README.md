@@ -29,18 +29,18 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 | **Big frontier `minimax-m3` (OpenRouter free, ANSWER: contract)** | **87.5% (105/120)** | [81.7, 92.5] | — | 22/40 (55%) | — | Free (cloud) | No |
 | **Student tiny TF-IDF word 1-2 (240KB, 0.26ms, CV 1.00)** | **91.7% routing (33/36)** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
 
-\* `truth_router_test.py --fresh` currently gives 119/120 (1 pre-existing reasoning miss) — committed baseline is same; 120/120 is prior benchmark snapshot, gap documented in FINDINGS batch60.<br>
-† **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + mover matcher **antes del student** (que lo robaba como `simple_subtract`). **54/60 → 60/60 sin reentrenar** (condición A, sin regresión en 120/20-novel). Honestidad: resuelto por **regex determinístico**, no por el student — ilustra fragilidad hand-coded.
+\* `truth_router_test.py --fresh` currently 119/120 (1 pre-existing reasoning miss) — same as committed baseline; 120/120 is prior snapshot, gap documented in FINDINGS batch60.<br>
+† **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + move matcher **before student** (stole as `simple_subtract`). **54/60 → 60/60 no retrain** (condition A, no regression on 120/20-novel). Honest: solved by **deterministic regex**, not student — illustrates hand-coded brittleness.
 
 ### Main findings (v9 — 120 + 60 human + 100 breaking)
 
 1. **Truth beats frontier on closed 120 (100% vs 87.5%) at 0 loads, 1.2s cold / 65ms warm** — code 36/36, trap 12/12, math 36/36, reasoning 36/36 (20 patterns). Each pattern covers a *class*, not a single answer.
-2. **Batch60 (60 humanos)** validado a **60/60 (100%)** tras fix double-bug de `stock_take_away` — sin tocar el pkl del student. Prueba que muchos datos diversos revelan bugs que 20 no ven.
-3. **On diverse wording, truth 85%→47% y big 55% caen, student pattern 97.5%→66% resiste** — con 100 breaking (15 stock fuera de 32 patrones) ambos caen, el student menos. La librería debe seguir creciendo a 47 patrones.
+2. **Batch60 (60 human) 60/60 (100%)** after double-bug fix `stock_take_away` — no pkl retrain. Proves many diverse data reveal bugs that 20 do not.
+3. **On diverse wording, truth 85%→47% and big 55% drop, student pattern 97.5%→66% resists** — with 100 breaking (15 stock outside 32) both drop, student less. Library must grow to 47 patterns.
 4. **Cross-critique debate exceeds the oracle** (v4): hard 8 pool 62% vs oracle 12% (true novel: m-r-4→42, h-r-3→20).
-5. **Consensus reaches oracle ceiling** (v3): 61% vs 33% old; reasoned selector recupera minorías via self-overturn.
-6. **Student tiny (TF-IDF 240KB, CV 1.00)** aprende estructura: `47 people conference handshake →1081` donde regex da `None`. Tres combinaciones (word/char/NB) todas 100% en novel-20, ganador A por simplicidad. Ver `docs/images/evolucion.png`.
-7. **Próximo: dual-router TF-IDF vs Qwen 0.5B** — ambos sobre **mismo dataset (226+60) / mismas pruebas (120+60+20+100)** para medir en tesis cuál generaliza mejor ante wording nunca visto.
+5. **Consensus reaches oracle ceiling** (v3): 61% vs 33% old; reasoned selector recovers minority via self-overturn.
+6. **Student tiny (TF-IDF 240KB, CV 0.962)** learns structure: `47 people conference handshake →1081` where regex is `None`. Three combos (word/char/NB) all 100% on novel-20, winner by simplicity. See `docs/images/evolucion.png`.
+7. **Next: dual-router TF-IDF vs Qwen 0.5B** — both on **same dataset (132+165) / same tests (120+60+20+100)** to measure which generalizes better to unseen wording.
 
 ### Notable result
 
@@ -157,7 +157,7 @@ python -m cognitive_swarm.evaluation.emergence_test
 python cognitive_swarm/evaluation/student_experiment.py
 python -m cognitive_swarm.tools.student_router  # train -> pkl
 
-# Batch humano 60 (condición A fix)
+# Human batch 60 (condition A fix)
 python -Bc "import json,re; from cognitive_swarm.tools.reasoning_primitives import resolve_reasoning_primitive; data=json.load(open('batch60_final.json')); print(sum(1 for d in data if re.sub(r'\s+',' ',str(resolve_reasoning_primitive(d['q']) or '').strip().lower()).rstrip('.')==re.sub(r'\s+',' ',str(d['exp']).strip().lower()).rstrip('.')))"
 ```
 
