@@ -270,8 +270,8 @@ answers**. Two fixes, in priority order:
 
 ## 12. Honest limits (read before extending)
 
-1. **Truth is 100% on a closed 120-set, not general reasoning.** Deterministic tools are exact on these patterns; outside them the system correctly falls back to debate (where selection still 62%→38%).
-2. **Student router is prototype (30/36).** Programmatic regex is placeholder for learned dispatch; until args are also predicted, routing is not fully non-programmatic.
+1. **Truth is 100%* on a closed 120-set, not general reasoning.** Deterministic tools are exact on these patterns; outside them the system correctly falls back to debate (where selection still 62%→38%). *`truth_router_test.py --fresh` currently 119/120 (35/36 reasoning, 1 pre-existing miss).
+2. **Student router is prototype (31-32/36, 247KB, 800 feats, 33 classes).** Programmatic regex is placeholder for learned dispatch; `stock_take_away` now deterministic before student + rebalanced 33×4=132 (297 with synthetic). Until Qwen 0.5B LoRA is trained, routing is hybrid.
 3. **Connector quality is still the real bottleneck** for open factual tasks.
 4. **Model-collapse risk** for the fine-tune loop: without fresh external signal each cycle, the swarm parrots itself.
 5. **8GB is a hard floor per base model.** System ceiling grows via memory/student; neuron ceiling bounded by chip.

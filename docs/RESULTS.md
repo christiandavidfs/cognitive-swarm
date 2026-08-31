@@ -129,7 +129,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 ![Evolution of performance on new questions](images/evolucion.png)
 
-*Truth 100% closed, but drops to 47% on 100 stock breaking outside 32 patterns. Student pattern holds 91.7% → 100% → 97.5% → 66% where regex and big drop to 55%. Big frontier 87.5% closed drops to 55% on human diverse — same drop as truth, proves diverse wording breaks all except student that learned structure. Mini phi/qwen stay ~20-30% in all runs (no learning, no memory).*
+*Truth 100%* closed, but drops to 47% on 100 stock breaking outside 33 patterns. Student pattern holds 91.7% → 100% → 97.5% → 66% where regex and big drop to 55%. Big frontier 87.5% closed drops to 55% on human diverse — same drop as truth, proves diverse wording breaks all except student that learned structure. Mini phi/qwen stay ~20-30% in all runs (no learning, no memory). *119/120 actual fresh.
 
 ![Student aprendizaje iterativo](images/student_learning.png)
 
@@ -150,7 +150,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 > `cognitive_swarm/orchestration/truth_router.py` (reasoning before math),
 > `cognitive_swarm/orchestration/corroboration.py`,
 > `cognitive_swarm/tools/reasoning_primitives.py` (20 patterns),
-> `cognitive_swarm/tools/student_router.py` (tiny 50KB prototype).
+> `cognitive_swarm/tools/student_router.py` (tiny 247KB, 33 classes, 800 feats) + `qwen_router.py` scaffold.
 
 ## The tier order (cheapest-most-certain first) — current v7
 

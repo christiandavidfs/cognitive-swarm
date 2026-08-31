@@ -34,7 +34,7 @@ QwenRouter:   Qwen2.5-0.5B-Instruct-4bit + LoRA r=8 alpha=16, <100MB LoRA, <500m
 | 120 closed | 120 | routing vs regex, exact answer via `resolve_*` (`check_answer`) |
 | 20 novel (fixed) | 20 | never-seen numbers, distinct wording (handshake 47 etc.) |
 | 60 human batch60 | 60 | real human wording, includes 6 take_away |
-| 100 breaking | 100 | 15 stock outside 32 patterns — stress test |
+| 100 breaking | 100 | 15 stock outside 33 patterns — stress test |
 
 Metrics side-by-side per router: `train_acc / CV 3-fold / routing 36 / novel 20/20 / human 60 / breaking 100 / size / lat_ms`. Saved to `results_dual.json` for thesis.
 

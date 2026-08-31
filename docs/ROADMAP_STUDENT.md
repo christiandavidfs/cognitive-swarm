@@ -15,7 +15,7 @@
    ↓ archives in verified_memory with provenance {answer, tier, sources, disagreement}
 
 2. Synthetic generator → 5 paraphrases per pattern with random numbers (e.g., 47 vs 100 handshake)
-   Dataset = orig 66 + synthetic → 226+
+   Dataset = orig 132 (33×4) + synthetic 165 (33×5) → 297
 
 3. Re-train student (warm-start from pkl) → TF-IDF + LogReg or Qwen2.5-0.5B LoRA
    Metrics: train_acc, CV 3-fold, routing 36, novel 20, size, lat_ms

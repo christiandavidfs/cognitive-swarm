@@ -154,9 +154,9 @@ Tier 1  CODE EXEC : code-output question -> run the interpreter. Ground truth.
 Tier 2b STRING-OP : reverse/count/compare — trap 0%→100%.
 Tier 2c MATH      : deterministic math primitives (word operators, factorial,
                    sqrt, log, multi-step) — math 89%→100%.
-Tier 2d REASONING : 20 reasoning primitives (rate, work_inverse, jug, bridge,
-                   handshake, system_equations, etc.) dispatched via
-                   reasoning_primitives.py today, student_router.py tomorrow.
+Tier 2d REASONING : 20+1 reasoning primitives (rate, work_inverse, jug, bridge,
+                    handshake, system_equations, stock_take_away, etc.) dispatched via
+                    reasoning_primitives.py today, student_router.py (33 classes, 800 feats) tomorrow.
 Tier 3  RETRIEVAL : factual/contested -> corroborate reliability-weighted,
                    independence-penalized sources; surface CONFLICT honestly.
 Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).

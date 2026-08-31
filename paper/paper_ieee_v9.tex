@@ -92,7 +92,7 @@ Consensus is a fallback, not the primary mechanism. Real learning uses the cheap
 \item Tier 1 \textbf{Code execution}: run the interpreter for code-output questions (ground truth).
 \item Tier 2b \textbf{String-op}: reverse/count/compare (trap 0\%$\rightarrow$100\%).
 \item Tier 2c \textbf{Math}: word operators, factorial, sqrt, log, multi-step (36/36).
-\item Tier 2d \textbf{Reasoning}: 20 primitives (rate, work\_inverse, jug, bridge, handshake, system\_equations, etc.)---36/36. Dispatch is \texttt{reasoning\_primitives.py} today, \texttt{student\_router.py} (tiny learned classifier, 240\,KB) tomorrow.
+\item Tier 2d \textbf{Reasoning}: 20+1 primitives (rate, work\_inverse, jug, bridge, handshake, system\_equations, stock\_take\_away, etc.)---36/36*. Dispatch is \texttt{reasoning\_primitives.py} today, \texttt{student\_router.py} (247KB, 800 feats, 33 classes) + \texttt{qwen\_router.py} scaffold tomorrow. *119/120 actual fresh.
 \item Tier 3 \textbf{Retrieval corroboration}: reliability-weighted, independence-penalized agreement; surface conflict honestly.
 \item Tier 4 \textbf{Debate}: weak-model debate as a hypothesis source (fallback only).
 \end{enumerate}
@@ -192,7 +192,7 @@ Total deterministic resolve (120) & 120/120 = 100\% in 1.2\,s cold, 0 loads \\
 
 \textbf{Honest conflict handling.} For contested domains (e.g., history): two independent claims that converge yield a corroborated answer (Fall of Rome $\rightarrow$ 476\,CE, confidence 0.95); two reliable sources that disagree on cause return no forced single answer and surface the disagreement with provenance.
 
-\textbf{Student router prototype.} A tiny TF-IDF+LogReg classifier (240\,KB, 0.26\,ms inference, CV 0.996) learns to dispatch 33 reasoning patterns from question wording. It generalizes: ``47 people conference handshake $\rightarrow$ 1081'' where regex returns None. Three combinations (word/char/NB) all reach 100\% on 20 novel problems. The student learns structure, not answers; resolvers stay verified ground truth.
+\textbf{Student router prototype.} A tiny TF-IDF+LogReg classifier (247\,KB, 800 feats, 0.26\,ms inference, CV 0.962, 33 classes) learns to dispatch reasoning patterns from question wording. It generalizes: ``47 people conference handshake $\rightarrow$ 1081'' and ``kilogram steel'' where regex returns None. Three combinations (word/char/NB) all reach 100\% on 20 novel problems; 132 TRAINING (33$\times$4) +165 synthetic =297. The student learns structure, not answers; resolvers stay verified ground truth.
 
 \section{Discussion}
 Three results together reframe the claim ``small models are too weak.''
