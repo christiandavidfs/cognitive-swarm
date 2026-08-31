@@ -1,0 +1,6 @@
+services:
+  swarm-validate:
+    build: .
+    volumes:
+      - .:/app
+    command: python cognitive_swarm/evaluation/truth_router_test.py --fresh
