@@ -1,6 +1,23 @@
 # Usage Guide
 
-## Basic Usage
+## Docker — One-Command Validation (recommended for reviewers)
+
+```bash
+# No local Python/MLX install needed for deterministic tiers (truth 120/120, batch60/200, student)
+git clone https://github.com/christiandavidfs/cognitive-swarm.git && cd swarm
+docker build -t swarm .
+docker run --rm swarm
+# Expected inside container:
+#   truth 120/120 (36/36/36/12) 0 loads, 1.2s cold / 69ms warm
+#   batch60 60/60, batch200 200/200
+#   student TF-IDF 33/36 (91.7%), Qwen 0.5B LoRA 33/36 (150 iters)
+
+# Re-run any deterministic test inside Docker
+docker run --rm swarm python cognitive_swarm/evaluation/truth_router_test.py --fresh
+docker run --rm swarm python cognitive_swarm/evaluation/student_experiment.py
+```
+
+## Basic Usage (local)
 
 ### Single Model Mode
 
