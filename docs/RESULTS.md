@@ -121,7 +121,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
    has no overlap on this benchmark. Honest limit: truth is deterministic tooling over a
    *fixed* 120-problem set — generalization to open reasoning outside these patterns still
    needs debate (Tier 4) and the planned procedure/primitive memory (ARCHITECTURE.md).
-5. **Student router v3-v4 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on **297 samples (33×4 TRAINING 132 + 33×5 synthetic 165)**: **CV 0.962-1.00, train 1.00, routing 31-32/36, novel 20/20 (100%), <0.3ms, <440KB**. Winner **A: TF-IDF word 1-2 + LogReg 800 feats 240KB, 0.26ms** — chosen for simplicity. Key test: `47 people conference handshake →1081` and `kilogram steel` (regex fails, student correct) = reasoning, not memorization. v4 adds `stock_take_away` as 33rd class + `extract_args` with disambiguation (`give away` vs `take away`).
+5. **Student router v3-v4 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on **297 samples (33×4 TRAINING 132 + 33×5 synthetic 165)**: **CV 0.962-1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <440KB**. Winner **A: TF-IDF word 1-2 + LogReg 800 feats 240KB, 0.26ms** — chosen for simplicity. Key test: `47 people conference handshake →1081` and `kilogram steel` (regex fails, student correct) = reasoning, not memorization. v4 adds `stock_take_away` as 33rd class + `extract_args` with disambiguation (`give away` vs `take away`).
 
 ### Evolution on new questions — tiny vs big vs mini
 
@@ -129,7 +129,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 
 ![Evolution of performance on new questions](images/evolucion.png)
 
-*Truth 100%* closed, but drops to 47% on 100 stock breaking outside 33 patterns. Student pattern holds 91.7% → 100% → 97.5% → 66% where regex and big drop to 55%. Big frontier 87.5% closed drops to 55% on human diverse — same drop as truth, proves diverse wording breaks all except student that learned structure. Mini phi/qwen stay ~20-30% in all runs (no learning, no memory). *119/120 actual fresh.
+*Truth 100%* closed, but drops to 47% on 100 stock breaking outside 33 patterns. Student pattern holds 91.7% → 100% → 97.5% → 66% where regex and big drop to 55%. Big frontier 87.5% closed drops to 55% on human diverse — same drop as truth, proves diverse wording breaks all except student that learned structure. Mini phi/qwen stay ~20-30% in all runs (no learning, no memory). *120/120 fresh.
 
 ![Student aprendizaje iterativo](images/student_learning.png)
 

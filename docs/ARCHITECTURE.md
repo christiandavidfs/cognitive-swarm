@@ -164,7 +164,7 @@ without touching the model.
 a tiny learned model (vision: *small tiny model only for solving problems*).
 - **Training data:** 132 paraphrases across 33 patterns ×4 (e.g. 5 machines/7 ovens both → `rate_machines` with different numbers, +`stock_take_away` 4) so the student learns **structure, not the answer**. With synthetic 5/class via `all_templates`: 297 total (132+165).
 - **Model:** TF-IDF (1-2gram, 800 feats) + LogisticRegression, ~240KB, 0.26ms inference, `TRAINING_DATA` in-repo.
-- **Current:** `train_acc 1.0, CV 0.962, THRESHOLD 0.07 → 31-32/36 routing` vs regex on reasoning set (20/20 novel, 60/60 batch60). Wired as hybrid in `detect_reasoning_pattern` (deterministic `stock_take_away` before student, resolvers stay verified ground truth).
+- **Current:** `train_acc 1.0, CV 0.962, THRESHOLD 0.07 → 33/36 routing (91.7%)` vs regex on reasoning set (20/20 novel, 60/60 batch60, 120/120 fresh). Wired as hybrid in `detect_reasoning_pattern` (deterministic `stock_take_away` before student, resolvers stay verified ground truth).
 - **Next:** Qwen2.5-0.5B LoRA (`qwen_router.py`) on same 297, same `predict` interface — dual benchmark TF-IDF vs Qwen — then `truth_router` dispatches fully via student — knowledge can change (different numbers), reasoning stays.
 
 ## 7. The growing-ceiling trainer (hive-mind loop)
@@ -270,8 +270,8 @@ answers**. Two fixes, in priority order:
 
 ## 12. Honest limits (read before extending)
 
-1. **Truth is 100%* on a closed 120-set, not general reasoning.** Deterministic tools are exact on these patterns; outside them the system correctly falls back to debate (where selection still 62%→38%). *`truth_router_test.py --fresh` currently 119/120 (35/36 reasoning, 1 pre-existing miss).
-2. **Student router is prototype (31-32/36, 247KB, 800 feats, 33 classes).** Programmatic regex is placeholder for learned dispatch; `stock_take_away` now deterministic before student + rebalanced 33×4=132 (297 with synthetic). Until Qwen 0.5B LoRA is trained, routing is hybrid.
+1. **Truth is 100% on a closed 120-set, not general reasoning.** Deterministic tools are exact on these patterns; outside them the system correctly falls back to debate (where selection still 62%→38%). `truth_router_test.py --fresh` now 120/120 after 3-failure fix.
+2. **Student router is hybrid (33/36, 247KB, 800 feats, 33 classes).** `stock_take_away` deterministic before student + rebalanced 33×4=132 (297 with synthetic). Until Qwen 0.5B LoRA is trained, dispatch remains hybrid.
 3. **Connector quality is still the real bottleneck** for open factual tasks.
 4. **Model-collapse risk** for the fine-tune loop: without fresh external signal each cycle, the swarm parrots itself.
 5. **8GB is a hard floor per base model.** System ceiling grows via memory/student; neuron ceiling bounded by chip.

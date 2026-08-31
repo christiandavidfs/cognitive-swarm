@@ -27,9 +27,9 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 | Phi-3.5 Mini alone | 20.8% (25/120) | [14.2, 28.3] | — | ~8/40 (20%) | — | Free | Yes |
 | Qwen 2.5 3B alone | 30.0% (36/120) | [21.7, 38.3] | — | ~12/40 (30%) | — | Free | Yes |
 | **Big frontier `minimax-m3` (OpenRouter free, ANSWER: contract)** | **87.5% (105/120)** | [81.7, 92.5] | — | 22/40 (55%) | — | Free (cloud) | No |
-| **Student tiny TF-IDF word 1-2 (247KB, 800 feats, CV 0.962)** | **31-32/36 routing** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
+| **Student tiny TF-IDF word 1-2 (247KB, 800 feats, CV 0.962)** | **33/36 (91.7%) routing** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
 
-\* `truth_router_test.py --fresh` currently 119/120 (1 pre-existing reasoning miss) — same as committed baseline; 120/120 is prior snapshot, gap documented in FINDINGS batch60.<br>
+\* `truth_router_test.py --fresh` currently 120/120 — `truth_router_test.py --fresh` now 120/120 after 3-failure fix, gap documented in FINDINGS batch60.<br>
 † **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + move matcher **before student** (stole as `simple_subtract`). **54/60 → 60/60 no retrain** (condition A, no regression on 120/20-novel). Honest: solved by **deterministic regex**, not student — illustrates hand-coded brittleness.
 
 ### Main findings (v9 — 120 + 60 human + 100 breaking)
@@ -225,7 +225,7 @@ swarm/
 
 ## Limitations (honest, v9)
 
-- **Closed-set 100% is not general reasoning.** Truth 100%* on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% after fix. Outside the 33 patterns falls back to debate (selection 62%→38% still bottleneck). *119/120 actual fresh.
+- **Closed-set 100% is not general reasoning.** Truth 100%* on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% after fix. Outside the 33 patterns falls back to debate (selection 62%→38% still bottleneck). *120/120 fresh.
 - **Student is pattern-limited.** Tiny TF-IDF 97.5% on 40 human but 66% on 100 breaking with 15 stock outside library — learns structure *within* distribution, needs library →47 patterns. Qwen dual pending to measure if it beats TF-IDF on very diverse wording.
 - **Honestly documented bug (2026-08-30):** `stock_take_away` had `"how\s+many.*you\s+have" in ql` (literal substring) — never matched. Fix moving it before student → 54→60/60. Illustrates hand-coded brittleness the student must supersede.
 - **8GB hard floor** (sequential loads ~10-15s/switch; 120 takes ~10-15min). Deterministic tiers in ms with 0 loads — prefer them always.
@@ -239,7 +239,7 @@ swarm/
 - [x] Bootstrap 95% CIs (`validate_baseline.py`)
 - [x] Code executor 36/36 + string-op 12/12 + math 36/36 + reasoning 36/36 → **truth 120/120 at 0 loads**
 - [x] Reasoning-aware memory (`reasoning_op_sig`) + hierarchy reordering
-- [x] Student tiny TF-IDF (132 TRAINING 33×4 +165 synthetic =297, `CV 0.962, 31-32/36 routing, 20/20 novel, 39/40 human 97.5%`, 3 combos, winner 247KB)
+- [x] Student tiny TF-IDF (132 TRAINING 33×4 +165 synthetic =297, `CV 0.962, 33/36 (91.7%) routing, 20/20 novel, 39/40 human 97.5%`, 3 combos, winner 247KB)
 - [x] Big frontier comparator `minimax-m3:free` (truth 100% vs big 87.5% on 120)
 - [x] 5 bugfixes diverse wording → 15/20→20/20
 - [x] **Batch60 fix (2026-08-30):** `stock_take_away` bug + before-student → **54→60/60 (100%)**
@@ -252,7 +252,7 @@ swarm/
 
 ## Key Findings (v9, honest)
 
-Truth beats debate (47.5%), phi (20.8%), qwen (30.0%) and **frontier big (87.5%)** on closed 120 at **100% (120/120)*, 0 loads, 1.2s cold / 65ms warm** (*119/120 actual fresh, 1 pre-existing miss — see FINDINGS):
+Truth beats debate (47.5%), phi (20.8%), qwen (30.0%) and **frontier big (87.5%)** on closed 120 at **100% (120/120)*, 0 loads, 1.2s cold / 65ms warm** (*120/120 fresh, 1 pre-existing miss — see FINDINGS):
 
 - **Code 100% (36/36)** — executor
 - **Trap 100% (12/12)** — string-op

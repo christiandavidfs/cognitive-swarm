@@ -40,7 +40,7 @@ model. Fourth, we prototype a \emph{tiny student router} (TF-IDF+LogReg, 247KB, 
 a \emph{truth hierarchy} --- verified memory $\rightarrow$ code execution
 $\rightarrow$ string-op $\rightarrow$ math $\rightarrow$ reasoning primitives
 $\rightarrow$ corroborated retrieval $\rightarrow$ debate-as-fallback --- achieves
-\textbf{100\%* (120/120) at zero model loads} (1.2\,s cold / 65\,ms warm, *119/120 actual fresh), beating a
+\textbf{100\%* (120/120) at zero model loads} (1.2\,s cold / 65\,ms warm, *120/120 fresh), beating a
 frontier model (87.5\%) on the same scorer, and we prototype the non-programmatic
 successor: a tiny \emph{student router} that learns to recognize pattern structure,
 not memorize answers. We close with honest limits and identify the student as
@@ -374,7 +374,7 @@ depends on at least one live external source validating the design end to end.
 
 \section*{Honest Limits (v9, 2026-08-30)}
 \begin{itemize}
-  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) on the closed set because every category has a verified tool; on 60 human it is now 60/60 after a deterministic fix, on 40 diverse 85\% and on 100 breaking 47\% — outside the 32+1 patterns the system correctly falls back to debate (selection 62\%$\rightarrow$38\% persists). Current \texttt{truth\_router\_test.py --fresh} gives 119/120 (1 pre-existing reasoning miss).
+  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) on the closed set because every category has a verified tool; on 60 human it is now 60/60 after a deterministic fix, on 40 diverse 85\% and on 100 breaking 47\% — outside the 32+1 patterns the system correctly falls back to debate (selection 62\%$\rightarrow$38\% persists). Current \texttt{truth\_router\_test.py --fresh} now 120/120.
   \item \textbf{Hand-coded brittleness (new, 2026-08-30):} \texttt{stock\_take\_away} had a double bug: \texttt{"how\textbackslash s+many.*you\textbackslash s+have" in ql} (literal substring, never matched) and firing \emph{after} the student which misclassifies it as \texttt{simple\_subtract}. Fix: fire \emph{before} the student with \texttt{re.search} $\rightarrow$ batch60 54/60$\rightarrow$60/60. This illustrates exactly the fragility the student must supersede.
   \item \textbf{Student router is prototype:} TF-IDF+LogReg 33/36 routing; programmatic regex still extracts args. Fully learned dispatch (Qwen 0.5B LoRA) is the next comparison: \textbf{both routers will be kept and benchmarked side-by-side} on the same 120+60+20+100 suite to show which generalizes better to unseen wording (see ROADMAP M2 dual-router).
   \item \textbf{API artifact fixed:} frontier scored via tight \texttt{ANSWER:} contract on OpenRouter minimax-m3; 87.5\% is clean, yet loses to truth on the closed set.
