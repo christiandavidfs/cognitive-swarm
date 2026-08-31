@@ -1,0 +1,1002 @@
+[
+  {
+    "q": "Which is larger 14/20 or 32/8?",
+    "exp": "32/8",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "Two trains 30 km apart travel toward each other at 22 km/h and 9 km/h when meet?",
+    "exp": "1.0",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Farmer has 57 sheep, all but 13 die. How many are left?",
+    "exp": "13",
+    "pat": "all_but"
+  },
+  {
+    "q": "You have 13 apples and give away 21 how many left?",
+    "exp": "-8",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "Rope 20 cm cut one piece is 28 times as long as the other how long is shorter?",
+    "exp": "0",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "12 builders can build a house in 14 days. How many builders needed for 8 days?",
+    "exp": "21",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "What is the 33th odd positive integer?",
+    "exp": "65",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Each dog sees 8 cats how many cats?",
+    "exp": "24",
+    "pat": "dogs_see_cats"
+  },
+  {
+    "q": "Doctor is Robert's brother but Robert is not doctor's brother how?",
+    "exp": "doctor is female",
+    "pat": "doctors_brother"
+  },
+  {
+    "q": "You have 26 liter jug and 21 liter jug what exact amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "A snail in a 12-foot pit climbs 3 feet by day and slides 2 feet each night. How many days?",
+    "exp": "10",
+    "pat": "snail_well"
+  },
+  {
+    "q": "You have 25 liter jug and 7 liter jug what exact amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "Rope 8 cm cut one piece is 6 times as long as the other how long is shorter?",
+    "exp": "1",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "Electric train going 48 km/h wind 12 which way smoke?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "39 people can build a house in 18 days how many people are needed to build it in 40 days?",
+    "exp": "17",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Cube cut into 25 equal smaller cubes how many have exactly one face painted?",
+    "exp": "6",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Two trains 8 km apart travel toward each other at 19 km/h and 28 km/h when meet?",
+    "exp": "0.2",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "15 people can build a house in 16 days how many people are needed to build it in 12 days?",
+    "exp": "20",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "You have 20 apples and give away 6 how many left?",
+    "exp": "14",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "Farmer has 53 sheep, all but 11 die. How many are left?",
+    "exp": "11",
+    "pat": "all_but"
+  },
+  {
+    "q": "If you have 27 apples and you take away 7, how many do you have?",
+    "exp": "7",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Which is larger 28/19 or 17/23?",
+    "exp": "28/19",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "If you have 29 apples and you take away 4, how many do you have?",
+    "exp": "4",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "An electric train travels at 85 km/h, wind 25 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "Cube cut into 31 equal smaller cubes how many have exactly one face painted?",
+    "exp": "6",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Family has 15 children each child has at least one sister minimum children?",
+    "exp": "15",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Rope 5 cm cut one piece is 11 times as long as the other how long is shorter?",
+    "exp": "0",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "29 people can build a house in 19 days how many people are needed to build it in 6 days?",
+    "exp": "91",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Farmer has 15 sheep all but 30 die how many left?",
+    "exp": "30",
+    "pat": "all_but"
+  },
+  {
+    "q": "Family has 11 children each child has at least one sister minimum children?",
+    "exp": "11",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "41 gardeners take 32 hours to weed how long for 36 gardeners?",
+    "exp": "1",
+    "pat": "rate_workers"
+  },
+  {
+    "q": "In a group of 19 people each person shakes hands with every other person exactly once how many handshakes occur?",
+    "exp": "171",
+    "pat": "handshake"
+  },
+  {
+    "q": "Farmer has 25 sheep all but 6 die how many left?",
+    "exp": "6",
+    "pat": "all_but"
+  },
+  {
+    "q": "What is the 5th odd positive integer?",
+    "exp": "9",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Family has 4 kids, each kid has a sister. Minimum kids?",
+    "exp": "4",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Each dog sees 48 cats how many cats?",
+    "exp": "144",
+    "pat": "dogs_see_cats"
+  },
+  {
+    "q": "Rope 17 cm cut one piece is 7 times as long as the other how long is shorter?",
+    "exp": "2",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "Car uses 10 liters per 100 km how many liters for 21 km?",
+    "exp": "2",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "50 eggs for 23 people how many eggs for 6 people?",
+    "exp": "13",
+    "pat": "recipe_scaling"
+  },
+  {
+    "q": "Car uses 26 liters per 100 km how many liters for 22 km?",
+    "exp": "5",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Farmer has 28 sheep, all but 8 die. How many are left?",
+    "exp": "8",
+    "pat": "all_but"
+  },
+  {
+    "q": "Plane crashes on border where do you bury survivors?",
+    "exp": "no survivors to bury",
+    "pat": "trick_survivors_not_buried"
+  },
+  {
+    "q": "Which weighs more a pound of feathers or a pound of bricks?",
+    "exp": "same",
+    "pat": "same_weight"
+  },
+  {
+    "q": "Two trains 27 km apart travel toward each other at 12 km/h and 10 km/h when meet?",
+    "exp": "1.2",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Farmer has 20 sheep, all but 13 die. How many are left?",
+    "exp": "13",
+    "pat": "all_but"
+  },
+  {
+    "q": "Cube cut into 14 equal smaller cubes how many have exactly one face painted?",
+    "exp": "0",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Family has 14 children each child has at least one sister minimum children?",
+    "exp": "14",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Which weighs more a pound of feathers or a pound of steel?",
+    "exp": "same",
+    "pat": "same_weight"
+  },
+  {
+    "q": "What is the 44th odd positive integer?",
+    "exp": "87",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Car uses 40 liters per 100 km how many liters for 12 km?",
+    "exp": "4",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Rope 7 cm cut one piece is 48 times as long as the other how long is shorter?",
+    "exp": "0",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "Cube cut into 13 equal smaller cubes how many have exactly one face painted?",
+    "exp": "0",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Snail at bottom of 29 foot well climbs 25 feet each day slides back 18 feet how many days to top?",
+    "exp": "12",
+    "pat": "snail_well"
+  },
+  {
+    "q": "27 eggs for 3 people how many eggs for 27 people?",
+    "exp": "243",
+    "pat": "recipe_scaling"
+  },
+  {
+    "q": "41 gardeners take 7 hours to weed how long for 27 gardeners?",
+    "exp": "1",
+    "pat": "rate_workers"
+  },
+  {
+    "q": "Family has 28 children each child has at least one sister minimum children?",
+    "exp": "28",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "If you have 19 apples and you take away 24, how many do you have?",
+    "exp": "24",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "You have 7 liter jug and 37 liter jug what exact amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "In a group of 26 people each person shakes hands with every other person exactly once how many handshakes occur?",
+    "exp": "325",
+    "pat": "handshake"
+  },
+  {
+    "q": "Two fathers and two sons go fishing each catches one fish how many fish total?",
+    "exp": "3",
+    "pat": "fathers_sons"
+  },
+  {
+    "q": "An electric train travels at 64 km/h, wind 25 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "What is the 19th odd positive integer?",
+    "exp": "37",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "You have 15 apples and give away 16 how many left?",
+    "exp": "-1",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "A vehicle uses 12 liters per 100 km. How much for 156 km?",
+    "exp": "18.72",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "If you have 9 apples and you take away 30, how many do you have?",
+    "exp": "30",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "What appears once in a minute twice in a moment and never in a thousand?",
+    "exp": "m",
+    "pat": "letter_riddle"
+  },
+  {
+    "q": "Bag has 25 blue and 16 red balls probability of red?",
+    "exp": "0.39",
+    "pat": "simple_probability"
+  },
+  {
+    "q": "Car uses 23 liters per 100 km how many liters for 17 km?",
+    "exp": "3",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Car uses 21 liters per 100 km how many liters for 7 km?",
+    "exp": "1",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A vehicle uses 14 liters per 100 km. How much for 184 km?",
+    "exp": "25.76",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 194 km?",
+    "exp": "17.46",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Snail at bottom of 46 foot well climbs 37 feet each day slides back 20 feet how many days to top?",
+    "exp": "2",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Cube cut into 20 equal smaller cubes how many have exactly one face painted?",
+    "exp": "6",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Two trains 10 km apart travel toward each other at 32 km/h and 23 km/h when meet?",
+    "exp": "0.2",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Two trains 30 km apart travel toward each other at 11 km/h and 21 km/h when meet?",
+    "exp": "0.9",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Which weighs more a pound of feathers or a pound of lead?",
+    "exp": "same",
+    "pat": "same_weight"
+  },
+  {
+    "q": "Which is larger 12/17 or 22/21?",
+    "exp": "22/21",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "If you have 5 apples and you take away 2, how many do you have?",
+    "exp": "2",
+    "pat": "stock"
+  },
+  {
+    "q": "Rope 40 cm cut one piece is 17 times as long as the other how long is shorter?",
+    "exp": "2",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "What is the 10th odd positive integer?",
+    "exp": "19",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Two trains 10 km apart travel toward each other at 16 km/h and 45 km/h when meet?",
+    "exp": "0.2",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Car uses 8 liters per 100 km how many liters for 24 km?",
+    "exp": "1",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Farmer has 37 sheep all but 10 die how many left?",
+    "exp": "10",
+    "pat": "all_but"
+  },
+  {
+    "q": "47 jars of honey and 12 jars of jam cost 37 cents 5 jars of honey and 26 jars of jam cost 40 cents how much does one jar of honey cost?",
+    "exp": "12",
+    "pat": "system_equations"
+  },
+  {
+    "q": "Car uses 8 liters per 100 km how many liters for 5 km?",
+    "exp": "0",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Which fraction is larger: 4/2 or 1/5?",
+    "exp": "4/2",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "In a room of 54 people, each greets every other once. How many greetings?",
+    "exp": "1431",
+    "pat": "handshake"
+  },
+  {
+    "q": "Family has 17 children each child has at least one sister minimum children?",
+    "exp": "17",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Cube cut into 48 equal smaller cubes how many have exactly one face painted?",
+    "exp": "24",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "Crash on border of two countries where are survivors buried?",
+    "exp": "no survivors to bury",
+    "pat": "trick_survivors_not_buried"
+  },
+  {
+    "q": "If you have 12 apples and you take away 23, how many do you have?",
+    "exp": "23",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Farmer has 36 sheep, all but 15 die. How many are left?",
+    "exp": "15",
+    "pat": "all_but"
+  },
+  {
+    "q": "In a room of 59 people, each greets every other once. How many greetings?",
+    "exp": "1711",
+    "pat": "handshake"
+  },
+  {
+    "q": "38 gardeners take 3 hours to weed how long for 46 gardeners?",
+    "exp": "1",
+    "pat": "rate_workers"
+  },
+  {
+    "q": "42 people can build a house in 8 days how many people are needed to build it in 29 days?",
+    "exp": "11",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Farmer has 27 sheep all but 9 die how many left?",
+    "exp": "9",
+    "pat": "all_but"
+  },
+  {
+    "q": "Farmer has 29 sheep all but 5 die how many left?",
+    "exp": "5",
+    "pat": "all_but"
+  },
+  {
+    "q": "Four people need to cross a bridge at night flashlight 31 37 48 22 minutes shortest time?",
+    "exp": "17",
+    "pat": "bridge_crossing"
+  },
+  {
+    "q": "Each dog sees 39 cats how many cats?",
+    "exp": "117",
+    "pat": "dogs_see_cats"
+  },
+  {
+    "q": "If you have 5 apples and you take away 5, how many do you have?",
+    "exp": "5",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 4, how many do you have?",
+    "exp": "4",
+    "pat": "stock"
+  },
+  {
+    "q": "Which weighs more a pound of feathers or a pound of iron?",
+    "exp": "same",
+    "pat": "same_weight"
+  },
+  {
+    "q": "Car uses 13 liters per 100 km how many liters for 27 km?",
+    "exp": "3",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "If you have 16 apples and you take away 19, how many do you have?",
+    "exp": "19",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Which is larger 31/38 or 9/5?",
+    "exp": "9/5",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "Bag has 13 blue and 32 red balls probability of red?",
+    "exp": "0.71",
+    "pat": "simple_probability"
+  },
+  {
+    "q": "Four people need to cross a bridge at night flashlight 16 46 43 19 minutes shortest time?",
+    "exp": "17",
+    "pat": "bridge_crossing"
+  },
+  {
+    "q": "Snail at bottom of 35 foot well climbs 14 feet each day slides back 35 feet how many days to top?",
+    "exp": "102",
+    "pat": "snail_well"
+  },
+  {
+    "q": "If you have 18 apples and you take away 26, how many do you have?",
+    "exp": "26",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Each dog sees 43 cats how many cats?",
+    "exp": "129",
+    "pat": "dogs_see_cats"
+  },
+  {
+    "q": "Bat and ball cost $12.10 together bat costs $12 more than ball how much is ball?",
+    "exp": "0.05",
+    "pat": "bat_and_ball"
+  },
+  {
+    "q": "If you have 50 apples and you take away 24, how many do you have?",
+    "exp": "24",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Which months have at least 28 days?",
+    "exp": "12",
+    "pat": "all_months"
+  },
+  {
+    "q": "Snail at bottom of 10 foot well climbs 21 feet each day slides back 30 feet how many days to top?",
+    "exp": "1",
+    "pat": "snail_well"
+  },
+  {
+    "q": "What comes next in sequence 2, 6, 12, 20?",
+    "exp": "42",
+    "pat": "triangular_sequence"
+  },
+  {
+    "q": "You have 35 liter jug and 19 liter jug what exact amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "Which is larger 25/17 or 18/30?",
+    "exp": "25/17",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "Which is larger 14/18 or 23/20?",
+    "exp": "23/20",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "What is heavier, a kilogram of steel or a kilogram of feathers?",
+    "exp": "same",
+    "pat": "stock"
+  },
+  {
+    "q": "Snail at bottom of 12 foot well climbs 27 feet each day slides back 19 feet how many days to top?",
+    "exp": "12",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Farmer has 13 sheep all but 30 die how many left?",
+    "exp": "30",
+    "pat": "all_but"
+  },
+  {
+    "q": "Two trains 10 km apart travel toward each other at 22 km/h and 17 km/h when meet?",
+    "exp": "0.3",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 62 km?",
+    "exp": "5.58",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "What is the 16th odd positive integer?",
+    "exp": "31",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Rope 4 cm cut one piece is 40 times as long as the other how long is shorter?",
+    "exp": "0",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "You have 22 apples and give away 17 how many left?",
+    "exp": "5",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "A snail in a 21-foot pit climbs 3 feet by day and slides 1 feet each night. How many days?",
+    "exp": "10",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Rope 22 cm cut one piece is 14 times as long as the other how long is shorter?",
+    "exp": "1",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "11 people can build a house in 6 days how many people are needed to build it in 13 days?",
+    "exp": "5",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Farmer has 13 sheep all but 19 die how many left?",
+    "exp": "19",
+    "pat": "all_but"
+  },
+  {
+    "q": "Bag has 37 blue and 49 red balls probability of red?",
+    "exp": "0.57",
+    "pat": "simple_probability"
+  },
+  {
+    "q": "In a room of 16 people, each greets every other once. How many greetings?",
+    "exp": "120",
+    "pat": "handshake"
+  },
+  {
+    "q": "Electric train going 31 km/h wind 10 which way smoke?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "Farmer has 5 sheep all but 49 die how many left?",
+    "exp": "49",
+    "pat": "all_but"
+  },
+  {
+    "q": "38 jars of honey and 48 jars of jam cost 30 cents 38 jars of honey and 3 jars of jam cost 10 cents how much does one jar of honey cost?",
+    "exp": "12",
+    "pat": "system_equations"
+  },
+  {
+    "q": "A vehicle uses 10 liters per 100 km. How much for 291 km?",
+    "exp": "29.1",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "What is the 21th odd positive integer?",
+    "exp": "41",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "20 people can build a house in 22 days how many people are needed to build it in 6 days?",
+    "exp": "73",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Two trains 9 km apart travel toward each other at 20 km/h and 9 km/h when meet?",
+    "exp": "0.3",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Rope 13 cm cut one piece is 8 times as long as the other how long is shorter?",
+    "exp": "1",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 91 km?",
+    "exp": "8.19",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A snail in a 12-foot pit climbs 8 feet by day and slides 2 feet each night. How many days?",
+    "exp": "2",
+    "pat": "snail_well"
+  },
+  {
+    "q": "You have 37 apples and give away 36 how many left?",
+    "exp": "1",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "A vehicle uses 6 liters per 100 km. How much for 63 km?",
+    "exp": "3.78",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "3 jars of honey and 24 jars of jam cost 11 cents 43 jars of honey and 19 jars of jam cost 13 cents how much does one jar of honey cost?",
+    "exp": "12",
+    "pat": "system_equations"
+  },
+  {
+    "q": "You have 11 apples and give away 24 how many left?",
+    "exp": "-13",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "What is the 11th odd positive integer?",
+    "exp": "21",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "In a group of 18 people each person shakes hands with every other person exactly once how many handshakes occur?",
+    "exp": "153",
+    "pat": "handshake"
+  },
+  {
+    "q": "16 people can build a house in 19 days how many people are needed to build it in 28 days?",
+    "exp": "10",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "In a room of 24 people, each greets every other once. How many greetings?",
+    "exp": "276",
+    "pat": "handshake"
+  },
+  {
+    "q": "8 builders can build a house in 29 days. How many builders needed for 4 days?",
+    "exp": "58",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "What is the 15th odd positive integer?",
+    "exp": "29",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "34 machines make 34 widgets in 28 minutes how long for 32 machines to make 32 widgets?",
+    "exp": "28",
+    "pat": "rate_machines"
+  },
+  {
+    "q": "In a group of 4 people each person shakes hands with every other person exactly once how many handshakes occur?",
+    "exp": "6",
+    "pat": "handshake"
+  },
+  {
+    "q": "Four people need to cross a bridge at night flashlight 20 21 41 16 minutes shortest time?",
+    "exp": "17",
+    "pat": "bridge_crossing"
+  },
+  {
+    "q": "Family has 7 kids, each kid has a sister. Minimum kids?",
+    "exp": "7",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Family has 9 children each child has at least one sister minimum children?",
+    "exp": "9",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "You have 12 apples and give away 26 how many left?",
+    "exp": "-14",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "12 gardeners take 43 hours to weed how long for 13 gardeners?",
+    "exp": "1",
+    "pat": "rate_workers"
+  },
+  {
+    "q": "Two trains 7 km apart travel toward each other at 22 km/h and 27 km/h when meet?",
+    "exp": "0.1",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "If you have 7 apples and you take away 15, how many do you have?",
+    "exp": "15",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Alice and Bob have total of 30 apples Bob gives Alice 11 apples Now Alice has twice as many as Bob how many did Alice start with?",
+    "exp": "25",
+    "pat": "alice_bob"
+  },
+  {
+    "q": "How many months have 28 days?",
+    "exp": "12",
+    "pat": "stock"
+  },
+  {
+    "q": "A vehicle uses 12 liters per 100 km. How much for 186 km?",
+    "exp": "22.32",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "3 boxes labeled Apples Oranges Apples&Oranges every label wrong which box to pick?",
+    "exp": "mixed",
+    "pat": "mislabeled_boxes"
+  },
+  {
+    "q": "46 people can build a house in 18 days how many people are needed to build it in 28 days?",
+    "exp": "29",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "6 eggs for 40 people how many eggs for 50 people?",
+    "exp": "7",
+    "pat": "recipe_scaling"
+  },
+  {
+    "q": "Snail at bottom of 32 foot well climbs 3 feet each day slides back 49 feet how many days to top?",
+    "exp": "102",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Two trains 21 km apart travel toward each other at 8 km/h and 25 km/h when meet?",
+    "exp": "0.6",
+    "pat": "trains_meet"
+  },
+  {
+    "q": "Snail at bottom of 30 foot well climbs 30 feet each day slides back 24 feet how many days to top?",
+    "exp": "12",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Rope 18 cm cut one piece is 16 times as long as the other how long is shorter?",
+    "exp": "1",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "Cube cut into 28 equal smaller cubes how many have exactly one face painted?",
+    "exp": "6",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "12 eggs for 15 people how many eggs for 21 people?",
+    "exp": "16",
+    "pat": "recipe_scaling"
+  },
+  {
+    "q": "You have 38 apples and take away 29 how many do you have?",
+    "exp": "29",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Car uses 19 liters per 100 km how many liters for 8 km?",
+    "exp": "1",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "Which is larger 21/24 or 15/6?",
+    "exp": "15/6",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "Electric train going 17 km/h wind 5 which way smoke?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "Farmer has 7 sheep all but 17 die how many left?",
+    "exp": "17",
+    "pat": "all_but"
+  },
+  {
+    "q": "If you have 7 apples and you take away 5, how many do you have?",
+    "exp": "5",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "43 machines make 43 widgets in 47 minutes how long for 17 machines to make 17 widgets?",
+    "exp": "47",
+    "pat": "rate_machines"
+  },
+  {
+    "q": "Bag has 47 blue and 46 red balls probability of red?",
+    "exp": "0.49",
+    "pat": "simple_probability"
+  },
+  {
+    "q": "Farmer has 23 sheep all but 12 die how many left?",
+    "exp": "12",
+    "pat": "all_but"
+  },
+  {
+    "q": "If you have 16 apples and you take away 26, how many do you have?",
+    "exp": "26",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "Cube cut into 10 equal smaller cubes how many have exactly one face painted?",
+    "exp": "0",
+    "pat": "painted_cube"
+  },
+  {
+    "q": "You have 15 apples and give away 21 how many left?",
+    "exp": "-6",
+    "pat": "simple_subtract"
+  },
+  {
+    "q": "Rope 10 cm cut one piece is 17 times as long as the other how long is shorter?",
+    "exp": "0",
+    "pat": "rope_cut"
+  },
+  {
+    "q": "Snail at bottom of 15 foot well climbs 27 feet each day slides back 23 feet how many days to top?",
+    "exp": "12",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Car uses 28 liters per 100 km how many liters for 9 km?",
+    "exp": "2",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "If you have 5 apples and you take away 30, how many do you have?",
+    "exp": "30",
+    "pat": "stock_take_away"
+  },
+  {
+    "q": "With a 9-liter and 8-liter jug, which amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "All cats are animals some animals are dogs can we conclude some cats are dogs?",
+    "exp": "no",
+    "pat": "invalid_syllogism"
+  },
+  {
+    "q": "Four people need to cross a bridge at night flashlight 11 19 10 9 minutes shortest time?",
+    "exp": "17",
+    "pat": "bridge_crossing"
+  },
+  {
+    "q": "12 builders can build a house in 15 days. How many builders needed for 5 days?",
+    "exp": "36",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "19 jars of honey and 6 jars of jam cost 8 cents 43 jars of honey and 30 jars of jam cost 20 cents how much does one jar of honey cost?",
+    "exp": "12",
+    "pat": "system_equations"
+  },
+  {
+    "q": "Which way does smoke blow from electric train?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "15 builders can build a house in 20 days. How many builders needed for 9 days?",
+    "exp": "33",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "What is the 38th odd positive integer?",
+    "exp": "75",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Which fraction is larger: 6/6 or 4/6?",
+    "exp": "6/6",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "With a 12-liter and 9-liter jug, which amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "Snail at bottom of 25 foot well climbs 16 feet each day slides back 5 feet how many days to top?",
+    "exp": "12",
+    "pat": "snail_well"
+  }
+]

@@ -48,8 +48,10 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Results
+# Results (ignore by default, but keep thesis batches)
 *.json
+!batch60_final.json
+!batch200_final.json
 benchmark_results.json
 specialized_results.json
 comparison_results.json

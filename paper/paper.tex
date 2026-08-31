@@ -35,14 +35,12 @@ consensus engine matched the theoretical oracle on a balanced 18-problem
 subset (61\% vs.\ 61\%). Second, an \emph{iterative cross-critique debate}
 \emph{exceeded} the oracle on a hard 8-problem subset (system 38\% vs.\ oracle
 12\%; pool 62\%). Third, a \emph{truth hierarchy} of verified deterministic
-primitives reaches \textbf{100\% (120/120)} at zero loads, beating a frontier
-model. Fourth, we prototype a \emph{tiny student router} (TF-IDF+LogReg, 50KB)
-that learns to dispatch patterns — reasoning that compounds while knowledge can
-change. \textbf{Breaking change v9:} we move from \emph{classification} (\texttt{question $\rightarrow$ pattern}) to \emph{procedure memory} (\texttt{question $\rightarrow$ trace $\rightarrow$ answer}) where the student learns to \emph{generate} verifiable reasoning steps cached in \texttt{verified\_memory}. We show that for real learning, consensus is not the primary mechanism:
+primitives reaches \textbf{100\%* (120/120)} at zero loads, beating a frontier
+model. Fourth, we prototype a \emph{tiny student router} (TF-IDF+LogReg, 247KB, 800 feats, 33 classes) that learns to dispatch patterns — reasoning that compounds while knowledge can change. \textbf{Breaking change v9:} we move from \emph{classification} (\texttt{question $\rightarrow$ pattern}) to \emph{procedure memory} (\texttt{question $\rightarrow$ trace $\rightarrow$ answer}) where the student learns to \emph{generate} verifiable reasoning steps cached in \texttt{verified\_memory}. We show that for real learning, consensus is not the primary mechanism:
 a \emph{truth hierarchy} --- verified memory $\rightarrow$ code execution
 $\rightarrow$ string-op $\rightarrow$ math $\rightarrow$ reasoning primitives
 $\rightarrow$ corroborated retrieval $\rightarrow$ debate-as-fallback --- achieves
-\textbf{100\% (120/120) at zero model loads} (1.2\,s cold / 65\,ms warm), beating a
+\textbf{100\%* (120/120) at zero model loads} (1.2\,s cold / 65\,ms warm, *120/120 fresh), beating a
 frontier model (87.5\%) on the same scorer, and we prototype the non-programmatic
 successor: a tiny \emph{student router} that learns to recognize pattern structure,
 not memorize answers. We close with honest limits and identify the student as
@@ -180,7 +178,7 @@ cheapest, most-certain source of truth first:
   \item \textbf{Tier 2d --- Reasoning:} 20 primitives (rate, work\_inverse, jug, bridge,
         handshake, system\_equations, etc.) --- 36/36. Dispatch is
         \texttt{reasoning\_primitives.py} today, \texttt{student\_router.py}
-        (tiny learned classifier, 50KB) tomorrow.
+        (tiny learned classifier, 247KB, 800 feats, 33 classes) tomorrow.
   \item \textbf{Tier 3 --- Retrieval corroboration:} reliability-weighted,
         independence-penalized agreement; surface \emph{conflict} honestly.
   \item \textbf{Tier 4 --- Debate:} weak-model debate as a hypothesis source.
@@ -301,7 +299,7 @@ The cross-critique debate \emph{beat the oracle}: system-level 38\% vs.\ 12\%
   \end{tabular}}
 \end{table}
 
-All weakest categories became 100\% by \emph{computing} instead of predicting (code, trap, math, reasoning via 20 patterns). Memory archives every verified answer with provenance (`reasoning\_op\_sig` prevents handshake 8 vs 100 shadowing); repeats hit memory in milliseconds with zero inference, so experience compounds. Student router prototype (50KB) learns structure, not answers.
+All weakest categories became 100\% by \emph{computing} instead of predicting (code, trap, math, reasoning via 20+1 patterns). Memory archives every verified answer with provenance (`reasoning\_op\_sig` prevents handshake 8 vs 100 shadowing); repeats hit memory in milliseconds with zero inference, so experience compounds. Student router prototype (247KB, 800 feats, 33 classes) learns structure, not answers.
 
 \paragraph{Honest conflict handling.} For contested domains (e.g.\ history):
 two independent claims that converge yield a corroborated answer (Fall of Rome
@@ -374,15 +372,13 @@ highest-leverage step: it is what separates a designed truth hierarchy from a
 working one, since everything else --- selection, the benchmark, fine-tuning ---
 depends on at least one live external source validating the design end to end.
 
-\section*{Honest Limits}
+\section*{Honest Limits (v9, 2026-08-30)}
 \begin{itemize}
-  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) because every
-        category now has a verified tool; outside these 20 pattern classes the
-        system correctly falls back to debate (where selection still 62\%$\rightarrow$38\%).
-  \item \textbf{Student router is prototype:} TF-IDF+LogReg 30/36 routing; programmatic regex still extracts args. Fully learned dispatch needs arg prediction.
-  \item \textbf{API artifact fixed:} frontier scored via tight \texttt{ANSWER:} contract on OpenRouter minimax-m3; 87.5\% is clean, yet loses to truth on this fixed set.
-  \item \textbf{8\,GB is a hard model floor} per base model; the system ceiling
-        grows via memory/student, the neuron ceiling is bounded by the chip.
+  \item \textbf{Closed-set determinism:} truth is 100\% (120/120) on the closed set because every category has a verified tool; on 60 human it is now 60/60 after a deterministic fix, on 40 diverse 85\% and on 100 breaking 47\% — outside the 32+1 patterns the system correctly falls back to debate (selection 62\%$\rightarrow$38\% persists). Current \texttt{truth\_router\_test.py --fresh} now 120/120.
+  \item \textbf{Hand-coded brittleness (new, 2026-08-30):} \texttt{stock\_take\_away} had a double bug: \texttt{"how\textbackslash s+many.*you\textbackslash s+have" in ql} (literal substring, never matched) and firing \emph{after} the student which misclassifies it as \texttt{simple\_subtract}. Fix: fire \emph{before} the student with \texttt{re.search} $\rightarrow$ batch60 54/60$\rightarrow$60/60. This illustrates exactly the fragility the student must supersede.
+  \item \textbf{Student router is prototype:} TF-IDF+LogReg 33/36 routing; programmatic regex still extracts args. Fully learned dispatch (Qwen 0.5B LoRA) is the next comparison: \textbf{both routers will be kept and benchmarked side-by-side} on the same 120+60+20+100 suite to show which generalizes better to unseen wording (see ROADMAP M2 dual-router).
+  \item \textbf{API artifact fixed:} frontier scored via tight \texttt{ANSWER:} contract on OpenRouter minimax-m3; 87.5\% is clean, yet loses to truth on the closed set.
+  \item \textbf{8\,GB is a hard model floor} per base model; the system ceiling grows via memory/student, the neuron ceiling is bounded by the chip.
 \end{itemize}
 
 \bibliographystyle{plain}

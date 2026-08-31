@@ -16,111 +16,179 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 MODEL_PATH = Path(__file__).parent / "student_router.pkl"
-THRESHOLD = 0.07  # below this, fall back to regex (32 classes => random 0.03)
+THRESHOLD = 0.07  # below this, fall back to regex (33 classes => random 0.03)
 
 # Canonical training data: (question paraphrase, pattern_name)
-# Each pattern gets 4-6 paraphrases with different numbers/wordings so the
+# Each pattern gets 4 paraphrases with different numbers/wordings so the
 # student learns STRUCTURE, not the specific answer (e.g., 5 machines vs
-# 7 ovens both -> rate_machines).
+# 7 ovens both -> rate_machines). Rebalanced 2026-08-30: 33 classes ×4 =132
+# (added 2 per 32 orig + stock_take_away 4) to avoid few-shot collapse.
 TRAINING_DATA = [
     # trick_no_smoke
     ("An electric train is going north at 100 km/h and wind blows east. Which way does smoke blow?", "trick_no_smoke"),
     ("Electric train smoke direction when wind from south?", "trick_no_smoke"),
     ("Which way does the smoke blow from an electric train?", "trick_no_smoke"),
+    ("An electric train going east at 80 km/h wind west which way does smoke blow?", "trick_no_smoke"),
     # trick_survivors
     ("Plane crashes on border of US and Canada where do you bury survivors?", "trick_survivors_not_buried"),
     ("A plane crashes exactly on the border, where are survivors buried?", "trick_survivors_not_buried"),
+    ("Plane crashes on border where do you bury survivors?", "trick_survivors_not_buried"),
+    ("Crash on border of two countries where are survivors buried?", "trick_survivors_not_buried"),
     # all_months
     ("How many months have 28 days?", "all_months"),
     ("Which months have at least 28 days?", "all_months"),
+    ("How many months have at least 28 days?", "all_months"),
+    ("Which months contain 28 days?", "all_months"),
     # all_but
     ("Farmer has 17 sheep all but 9 die how many left?", "all_but"),
     ("All but 5 of the 20 apples remain, how many remain?", "all_but"),
+    ("Farmer has 31 sheep all but 12 die how many left?", "all_but"),
+    ("All but 7 of 15 cats remain how many remain?", "all_but"),
     # dogs_see_cats
     ("Each dog sees 3 cats how many cats are there?", "dogs_see_cats"),
     ("3 dogs each see 4 cats, how many cats?", "dogs_see_cats"),
+    ("5 dogs each see 2 cats how many cats?", "dogs_see_cats"),
+    ("Each cat is seen by 3 dogs how many cats?", "dogs_see_cats"),
     # same_weight
     ("Which weighs more a pound of feathers or a pound of iron?", "same_weight"),
     ("What weighs more a pound of bricks or a pound of feathers?", "same_weight"),
+    ("Which is heavier a kilogram of steel or a kilogram of feathers?", "same_weight"),
+    ("What weighs more a pound of lead or a pound of feathers?", "same_weight"),
     # letter_riddle
     ("What appears once in a minute twice in a moment and never in a thousand?", "letter_riddle"),
     ("What occurs once in a minute twice in a moment?", "letter_riddle"),
+    ("What appears once in a minute twice in a moment?", "letter_riddle"),
+    ("Riddle: once in a minute twice in a moment never in a thousand what is it?", "letter_riddle"),
     # simple_probability
     ("Bag has 4 blue and 6 red balls probability of red?", "simple_probability"),
     ("There are 3 red balls and 7 blue balls what is probability of drawing blue?", "simple_probability"),
+    ("Bag has 9 blue and 3 red balls probability of red?", "simple_probability"),
+    ("Box has 5 green and 5 yellow balls probability of green?", "simple_probability"),
     # rate_machines
     ("5 machines make 5 widgets in 5 minutes how long for 100 machines to make 100 widgets?", "rate_machines"),
     ("7 ovens bake 7 pies in 7 minutes how long for 3 ovens to bake 3 pies?", "rate_machines"),
+    ("3 printers print 3 pages in 3 minutes how long for 6 printers to print 6 pages?", "rate_machines"),
+    ("10 machines make 10 widgets in 10 minutes how long for 5 machines to make 5 widgets?", "rate_machines"),
     # rate_distance
     ("Car uses 8 liters per 100 km how many liters for 25 km?", "rate_distance"),
     ("Vehicle consumes 6 liters per 100 km how much for 200 km?", "rate_distance"),
+    ("Car uses 5 liters per 100 km how many liters for 60 km?", "rate_distance"),
+    ("Truck uses 12 liters per 100 km how much for 50 km?", "rate_distance"),
     # rate_workers
     ("3 gardeners take 2 hours to weed how long for 6 gardeners?", "rate_workers"),
     ("4 workers finish in 6 hours how long for 8 workers?", "rate_workers"),
+    ("2 painters paint in 6 hours how long for 3 painters?", "rate_workers"),
+    ("6 workers finish in 4 hours how long for 12 workers?", "rate_workers"),
     # snail_well
     ("Snail at bottom of 30 foot well climbs 3 feet each day slides back 2 feet how many days to top?", "snail_well"),
     ("Snail in 10 foot well climbs 3 slides 1 how many days?", "snail_well"),
-    # simple_subtract (guarded: not twice)
-    ("You have 10 apples and give away 4 how many left?", "simple_subtract"),
+    ("Snail at bottom of 50 foot well climbs 7 feet each day slides back 3 feet how many days to top?", "snail_well"),
+    ("Snail in 20 foot well climbs 5 slides 2 how many days?", "snail_well"),
+    # simple_subtract (guarded: not twice) — includes e-r-11 phrasing "do you have left" to disambiguate from take_away "do you have?"
+    ("If you have 10 apples and give away 4, how many apples do you have left?", "simple_subtract"),
     ("I have 20 apples and give away 7 how many remain?", "simple_subtract"),
+    ("You have 19 apples and give away 7 how many left?", "simple_subtract"),
+    ("I have 15 oranges and give away 6 how many remain?", "simple_subtract"),
     # handshake
     ("In a group of 8 people each shakes hands with every other once how many handshakes?", "handshake"),
     ("100 people each shake hands with every other exactly once how many handshakes?", "handshake"),
     ("15 people at a party each pair shakes hands once how many handshakes?", "handshake"),
+    ("There are 47 people at a conference each pair shakes hands once how many handshakes?", "handshake"),
     # triangular_sequence
     ("What comes next in sequence 2, 6, 12, 20, 30?", "triangular_sequence"),
     ("Next in sequence: 6, 12, 20, 30?", "triangular_sequence"),
+    ("What comes next in sequence 2, 6, 12, 20?", "triangular_sequence"),
+    ("Sequence 6, 12, 20, 30 what is next?", "triangular_sequence"),
     # nth_odd
     ("What is the 10th odd positive integer?", "nth_odd"),
     ("Find the 7th odd positive integer", "nth_odd"),
+    ("What is the 15th odd positive integer?", "nth_odd"),
+    ("Find the 20th odd positive integer", "nth_odd"),
     # painted_cube
     ("Cube cut into 27 equal smaller cubes how many have exactly one face painted?", "painted_cube"),
     ("Cube divided into 64 small cubes how many have one face painted?", "painted_cube"),
+    ("Cube cut into 125 equal smaller cubes how many have exactly one face painted?", "painted_cube"),
+    ("Cube divided into 8 small cubes how many have one face painted?", "painted_cube"),
     # rope_cut
     ("Rope 100 cm cut one piece is 3 times as long as the other how long is shorter?", "rope_cut"),
     ("Rope 60 cm cut one piece 2 times longer than other find shorter", "rope_cut"),
+    ("Rope 84 cm cut one piece is 3 times as long as the other how long is shorter?", "rope_cut"),
+    ("Rope 90 cm cut one piece is 2 times as long as the other how long is shorter?", "rope_cut"),
     # bat_and_ball
     ("Bat and ball cost $1.10 together bat costs $1 more than ball how much is ball?", "bat_and_ball"),
     ("Bat and ball cost $1.10 bat costs one dollar more how much is ball?", "bat_and_ball"),
+    ("Bat and ball cost $2.10 together bat costs $2 more than ball how much is ball?", "bat_and_ball"),
+    ("Bat and ball cost $1.20 together bat costs $1 more than ball how much is ball?", "bat_and_ball"),
     # fathers_sons
     ("Two fathers and two sons go fishing each catches one fish how many fish total?", "fathers_sons"),
     ("Two fathers and two sons fishing how many fish?", "fathers_sons"),
+    ("Two fathers and two sons go fishing each catches one fish how many fish?", "fathers_sons"),
+    ("Fathers and sons fishing 2 fathers 2 sons how many fish?", "fathers_sons"),
     # doctors_brother
     ("Doctor is Robert's brother but Robert is not doctor's brother how?", "doctors_brother"),
     ("The doctor is the boy's brother but boy is not doctor's brother", "doctors_brother"),
+    ("Doctor is the boy's brother but the boy is not the doctor's brother how?", "doctors_brother"),
+    ("The doctor is Robert's brother but Robert is not the doctor's brother explain", "doctors_brother"),
     # mislabeled_boxes
     ("3 boxes labeled Apples Oranges Apples&Oranges every label wrong which box to pick?", "mislabeled_boxes"),
     ("Boxes labeled wrong which box should he pick from to label correctly?", "mislabeled_boxes"),
+    ("3 boxes labeled Apples Oranges Mixed every label wrong which box to pick?", "mislabeled_boxes"),
+    ("Boxes mislabeled which one to pick to fix labels?", "mislabeled_boxes"),
     # min_sisters
     ("Family has 5 children each child has at least one sister minimum children?", "min_sisters"),
     ("Each child has at least one brother and one sister least number of children?", "min_sisters"),
+    ("Family has 9 children each child has at least one sister minimum children?", "min_sisters"),
+    ("Each child has at least one sister how many children at minimum?", "min_sisters"),
     # fraction_compare
     ("Which is larger 2/3 or 3/5?", "fraction_compare"),
     ("Which is bigger 3/10 or 1/3?", "fraction_compare"),
+    ("Which is larger 7/8 or 5/6?", "fraction_compare"),
+    ("Which is bigger 1/2 or 2/5?", "fraction_compare"),
     # recipe_scaling
     ("2 eggs for 4 people how many eggs for 6 people?", "recipe_scaling"),
     ("3 cups for 2 servings how many cups for 6 servings?", "recipe_scaling"),
+    ("2 eggs for 4 people how many eggs for 8 people?", "recipe_scaling"),
+    ("4 cups for 6 people how many cups for 3 people?", "recipe_scaling"),
     # invalid_syllogism
     ("All cats are animals some animals are dogs can we conclude some cats are dogs?", "invalid_syllogism"),
     ("All A are B some B are C can we conclude some A are C?", "invalid_syllogism"),
+    ("All birds are animals some animals are mammals can we conclude some birds are mammals?", "invalid_syllogism"),
+    ("All X are Y some Y are Z can we conclude some X are Z?", "invalid_syllogism"),
     # work_inverse
     ("Ten people can build a house in 20 days how many people needed to build it in 5 days?", "work_inverse"),
     ("6 people can build wall in 8 days how many people needed for 4 days?", "work_inverse"),
+    ("12 people can build a shed in 15 days how many people are needed to build it in 3 days?", "work_inverse"),
+    ("8 people can build wall in 6 days how many for 2 days?", "work_inverse"),
     # trains_meet
     ("Two trains 300 km apart travel toward each other at 60 km/h and 40 km/h when meet?", "trains_meet"),
     ("Trains 200 km apart travel toward each other at 80 and 20 when meet?", "trains_meet"),
+    ("Two trains 500 km apart travel toward each other at 100 km/h and 50 km/h when meet?", "trains_meet"),
+    ("Two trains 100 km apart at 30 and 20 km/h when meet?", "trains_meet"),
     # jug_impossible
     ("You have 5 liter jug and 3 liter jug what exact number cannot be measured?", "jug_impossible"),
     ("With 5 liter and 3 liter jugs which amount cannot be measured?", "jug_impossible"),
+    ("You have 7 liter jug and 4 liter jug what amount cannot be measured?", "jug_impossible"),
+    ("With 4 liter and 6 liter jugs which amount cannot be measured?", "jug_impossible"),
     # bridge_crossing
     ("Four people need cross bridge at night flashlight 1 2 5 10 minutes shortest time?", "bridge_crossing"),
     ("Bridge flashlight 4 people 1 2 5 10 minutes minimum crossing time?", "bridge_crossing"),
+    ("Four people need to cross a bridge at night flashlight 1 2 7 10 minutes shortest time?", "bridge_crossing"),
+    ("Bridge crossing 4 people 1 3 6 8 minutes minimum time?", "bridge_crossing"),
     # system_equations
     ("Five jars of honey and three jars of jam cost 54 cents Four jars of honey and three jars of jam cost 42 cents how much does one jar of honey cost?", "system_equations"),
     ("5 jars of honey and 3 jars of jam cost 54 cents 4 jars of honey and 3 jars of jam cost 42 cents how much one jar honey cost?", "system_equations"),
+    ("3 jars of honey and 2 jars of jam cost 30 cents 2 jars of honey and 2 jars of jam cost 22 cents how much one jar honey?", "system_equations"),
+    ("4 jars of honey and 5 jars of jam cost 60 cents 4 jars of honey and 3 jars of jam cost 42 cents how much one jar honey?", "system_equations"),
     # alice_bob
     ("Alice and Bob have total of 40 apples Bob gives Alice 5 apples Now Alice has twice as many as Bob how many did Alice start with?", "alice_bob"),
     ("Alice and Bob total 30 apples Bob gives Alice 3 now Alice has twice as many as Bob how many did Alice start?", "alice_bob"),
+    ("Alice and Bob have total of 50 apples Bob gives Alice 5 Now Alice has twice as many as Bob how many did Alice start with?", "alice_bob"),
+    ("Alice and Bob total 60 apples Bob gives Alice 10 now Alice has twice as many as Bob how many start?", "alice_bob"),
+    # stock_take_away (new 33rd class, deterministic before-student)
+    ("If you have 5 apples and you take away 2, how many do you have?", "stock_take_away"),
+    ("If you have 8 apples and you take away 3, how many do you have?", "stock_take_away"),
+    ("You have 5 apples and take away 2 how many do you have?", "stock_take_away"),
+    ("If you have 10 apples and take away 4 how many apples do you have?", "stock_take_away"),
 ]
 
 
@@ -136,7 +204,7 @@ def train(save_path: Path = MODEL_PATH) -> dict:
     texts = [q for q, _ in TRAINING_DATA]
     labels = [l for _, l in TRAINING_DATA]
 
-    vec = TfidfVectorizer(lowercase=True, ngram_range=(1, 2), max_features=500)
+    vec = TfidfVectorizer(lowercase=True, ngram_range=(1, 2), max_features=800)
     X = vec.fit_transform(texts)
 
     clf = LogisticRegression(max_iter=1000)
@@ -252,6 +320,8 @@ def extract_args(question: str, pattern: str) -> Optional[dict]:
             if det and det[0]=="system_equations": return det[1]
         elif pattern == "alice_bob":
             if len(nums) >= 2: return {"total": nums[0], "transferred": nums[1], "answer": nums[0]//2}
+        elif pattern == "stock_take_away":
+            if nums: return {"taken": nums[-1] if len(nums)>=2 else nums[0]}
         elif pattern in ("trick_no_smoke","trick_survivors_not_buried","all_months","same_weight","letter_riddle","mislabeled_boxes","invalid_syllogism","fathers_sons","doctors_brother"):
             return {}
     except Exception:

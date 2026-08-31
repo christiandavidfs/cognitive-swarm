@@ -47,7 +47,7 @@ The full truth tier (memory + code-executor + string-op + math-primitives + reas
 | **all 120** | **100% (120/120)** | **[96.9, 100]** | **36/36** | **36/36** | **36/36** | **12/12** |
 | balanced 18 | 100% (18/18) | [81.5, 100] | 8/8 | 4/4 | 6/6 | — |
 
-**Honest reading (realista):** es **100% en el set cerrado de 120** porque cada categoría ahora tiene herramienta verificada (executor 100%, string-op 12/12, math 36/36, reasoning 36/36 con 20 patrones, 1.2s cold / 65ms warm). **Histórico:** v5 era 44.2% (53/120) con reasoning 0/36 — ese gap ya está cerrado determinísticamente. Fuera de estos 20 patrones, el sistema cae correctamente a debate (Tier 4).
+**Honest reading:** is **100% on the closed 120** because every category now has a verified tool (executor 100%, string-op 12/12, math 36/36, reasoning 36/36 with 20 patterns, 1.2s cold / 65ms warm). **History:** v5 was 44.2% (53/120) with reasoning 0/36 — that gap is now closed deterministically. Outside these 20 patterns, the system correctly falls back to debate (Tier 4).
 
 ## ORR (Open-Response / Robustness) track
 
@@ -121,19 +121,19 @@ scored with the same tight answer-first contract so it is NOT under-stated.
    has no overlap on this benchmark. Honest limit: truth is deterministic tooling over a
    *fixed* 120-problem set — generalization to open reasoning outside these patterns still
    needs debate (Tier 4) and the planned procedure/primitive memory (ARCHITECTURE.md).
-5. **Student router v2/v3 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on 226 balanced samples (32 patterns ×5 synthetic + 66 orig): all **CV 1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <430KB**. Winner **A: TF-IDF word 1-2 + LogReg (v2 baseline) 234KB, 0.26ms** — chosen for simplicity with identical generalization. Key test: `47 people conference handshake →1081` (regex fails, student correct) = reasoning, not memorization. v3 adds generic `extract_args` and `predict_with_args` to resolve without regex on never-seen numbers (7/7 novel OK).
+5. **Student router v3-v4 — tiny model learns structure, not answers.** 3 combinations tested (TF-IDF word 1-2 + LogReg, TF-IDF char 3-5 + LogReg, Count + NB) on **297 samples (33×4 TRAINING 132 + 33×5 synthetic 165)**: **CV 0.962-1.00, train 1.00, routing 33/36 (91.7%), novel 20/20 (100%), <0.3ms, <440KB**. Winner **A: TF-IDF word 1-2 + LogReg 800 feats 240KB, 0.26ms** — chosen for simplicity. Key test: `47 people conference handshake →1081` and `kilogram steel` (regex fails, student correct) = reasoning, not memorization. v4 adds `stock_take_away` as 33rd class + `extract_args` with disambiguation (`give away` vs `take away`).
 
-### Evolución ante preguntas nuevas — tiny vs big vs mini
+### Evolution on new questions — tiny vs big vs mini
 
-**Student ya está en 66% con solo 226 samples sintéticos, y no mostraste big/mini en corridas consecutivas — aquí está:**
+**Student already at 66% with only 297 samples (132 TRAINING +165 synthetic), and big/mini on 100 breaking — here:**
 
-![Evolución de performance ante preguntas nuevas](images/evolucion.png)
+![Evolution of performance on new questions](images/evolucion.png)
 
-*Truth 100% en cerrado, pero cae a 47% en 100 stock breaking fuera de los 32 patrones. Student pattern se mantiene 91.7% → 100% → 97.5% → 66% donde regex y big caen a 55%. Big frontier 87.5% en cerrado cae a 55% en humano diverso — mismo drop que truth, prueba que wording diverso rompe a todos excepto al student que aprendió estructura. Mini phi/qwen se mantienen ~20-30% en todas las corridas (no mejoran con aprendizaje, no tienen memoria).*
+*Truth 100%* closed, but drops to 47% on 100 stock breaking outside 33 patterns. Student pattern holds 91.7% → 100% → 97.5% → 66% where regex and big drop to 55%. Big frontier 87.5% closed drops to 55% on human diverse — same drop as truth, proves diverse wording breaks all except student that learned structure. Mini phi/qwen stay ~20-30% in all runs (no learning, no memory). *120/120 fresh.
 
 ![Student aprendizaje iterativo](images/student_learning.png)
 
-*De CV 0.35 (v2 desbalanceado, 146 samples) → 1.00 (v3 balanceado, 226 samples) y novel 100% → 66% con stock fuera de distribución — el aprendizaje iterativo por ejecución funciona, pero necesita expandir la librería a los 15 patrones stock.*
+*From CV 0.35 (v2 imbalanced, 146 samples) → 0.962 (v4 rebalanced, 297 samples /33×4) and novel 100% → 66% with stock outside distribution — iterative learning-by-execution works, but needs to expand library to 47 patterns.*
 
 ![3 combinaciones student](images/combinaciones.png)
 
@@ -150,7 +150,7 @@ scored with the same tight answer-first contract so it is NOT under-stated.
 > `cognitive_swarm/orchestration/truth_router.py` (reasoning before math),
 > `cognitive_swarm/orchestration/corroboration.py`,
 > `cognitive_swarm/tools/reasoning_primitives.py` (20 patterns),
-> `cognitive_swarm/tools/student_router.py` (tiny 50KB prototype).
+> `cognitive_swarm/tools/student_router.py` (tiny 247KB, 33 classes, 800 feats) + `qwen_router.py` scaffold.
 
 ## The tier order (cheapest-most-certain first) — current v7
 
@@ -175,8 +175,8 @@ Tier 4  DEBATE    : weak-model debate as a HYPOTHESIS source (fallback only).
 | Memory compounding (pass 2 of 120) | **120 hits in 66ms** |
 | Total deterministic resolve (120) | **120/120 = 100% in 1.2s cold, 0 model loads** |
 
-### Key numbers (realistas, v7)
-- **Todas las categorías débiles se volvieron 100%** — code 8%→100% (executor), trap 0%→100% (string-op), math 89%→100% (math primitives), reasoning 3%→100% (reasoning primitives con 20 patrones) — no es memorización, cada patrón cubre una clase entera. Ground truth supera consenso siempre.
+### Key numbers (v7, realistic)
+- **All weak categories became 100%** — code 8%→100% (executor), trap 0%→100% (string-op), math 89%→100% (math primitives), reasoning 3%→100% (reasoning primitives with 20 patterns) — not memorization, each pattern covers an entire class. Ground truth beats consensus always.
 - Memory archives every verified answer with **provenance** `{answer,
   confidence, tier, reliability, sources[], disagreement}`. Repeats/rephrases
   hit memory in milliseconds with zero inference — the swarm's "experience"

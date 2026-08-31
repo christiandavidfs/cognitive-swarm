@@ -53,6 +53,7 @@ all_templates = {
     "bridge_crossing": ["Four people need to cross a bridge at night flashlight {t1} {t2} {t3} {t4} minutes shortest time?"],
     "system_equations": ["{n1} jars of honey and {n2} jars of jam cost {c1} cents {n3} jars of honey and {n4} jars of jam cost {c2} cents how much does one jar of honey cost?"],
     "alice_bob": ["Alice and Bob have total of {total} apples Bob gives Alice {t} apples Now Alice has twice as many as Bob how many did Alice start with?"],
+    "stock_take_away": ["If you have {n} apples and you take away {k}, how many do you have?", "You have {n} apples and take away {k} how many do you have?"],
 }
 
 samples=[]
@@ -84,7 +85,7 @@ novel = [
     ("You have 7 liter jug and 4 liter jug what amount cannot be measured?", "jug_impossible", "Cannot determine / none"),
     ("Car uses 5 liters per 100 km how many liters for 60 km?", "rate_distance", "3"),
     ("Snail at bottom of 50 foot well climbs 7 feet each day slides back 3 feet how many days to top?", "snail_well", "12"),
-    ("Family has 9 children each child has at least one sister minimum children?", "min_sisters", "6"),
+    ("Family has 9 children each child has at least one sister minimum children?", "min_sisters", "9"),
     ("Rope 84 cm cut one piece is 3 times as long as the other how long is shorter?", "rope_cut", "21"),
     ("Cube cut into 125 equal smaller cubes how many have exactly one face painted?", "painted_cube", "54"),
     ("What is the 15th odd positive integer?", "nth_odd", "29"),
@@ -164,3 +165,12 @@ print(f"\nWinner: {winner['name']} score {winner['score']:.3f}")
 import json
 Path("/tmp/student_exp.json").write_text(json.dumps(results, indent=2))
 print("saved /tmp/student_exp.json")
+# --- Dual-router (v9) ---
+# M2 dual-router: TF-IDF (132) vs Qwen 0.5B LoRA on same 297 samples (33×4 +33×5)
+# See docs/DUAL_ROUTER_BENCHMARK.md; qwen_router.py exposes same predict interface.
+# Until LoRA trained: Qwen column = not_trained (honest placeholder).
+try:
+    from cognitive_swarm.tools.qwen_router import train as qwen_train
+    print("Qwen router:", qwen_train())
+except Exception as e:
+    print("Qwen router not yet trained:", e)

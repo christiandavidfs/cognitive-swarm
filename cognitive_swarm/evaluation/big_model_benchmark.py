@@ -55,6 +55,8 @@ def build_prompt(problem):
 
 def extract_answer(text: str) -> str:
     """Mirror the local _extract_plain: read the ANSWER: marker line."""
+    if text is None:
+        return ""
     if "ANSWER:" in text:
         idx = text.index("ANSWER:") + len("ANSWER:")
         return text[idx:].strip().split("\n")[0].strip()

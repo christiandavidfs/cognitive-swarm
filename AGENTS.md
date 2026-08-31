@@ -57,8 +57,8 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 | Cross-critique debate (v4) | **beats oracle**: hard 8-problem subset oracle 12% → system 38%, candidate pool 62% |
 | Code executor (v5) | **100% on code** (was 8%); deterministic, 0 model loads |
 | Memory compounding | pass 2 resolves 15/36 in 5.3ms; corroboration handles history conflicts honestly |
-| **120-problem benchmark (credibility phase)** | **truth 100% (120/120) / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 100% math + 100% reasoning via deterministic tools (executor + string-op + math + reasoning primitives), 0 model loads, 1.2s cold / 65ms warm |
-| **Student router v2/v3 (tiny, 50KB-240KB)** | **33/36 routing (91.7%), 20/20 novel (100%), CV 1.00, <0.3ms**; 3 combinations tested (TF-IDF word LogReg winner 234KB) all 100% novel — proves it learns structure, not memorization (handshake 47 conference) |
+| **120-problem benchmark (credibility phase)** | **truth 100% (120/120) / phi 20.8% [14.2-28.3] / qwen 30.0% [21.7-38.3] / big (minimax-m3) 87.5% [81.7-92.5]**; truth = 100% code + 100% trap + 100% math + 100% reasoning via deterministic tools (executor + string-op + math + reasoning primitives), 0 model loads, 1.2s cold / 65ms warm — `truth_router_test.py --fresh` now 120/120 after 3-failure fix |
+| **Student router v3-v4 (tiny, 247KB, 33 classes)** | **132 samples (33×4, +stock_take_away), 297 with synthetic (33×5), CV 0.962-0.993, routing 33/36 (91.7%), 20/20 novel (100%), <0.3ms**; 3 combos word/char/NB (winner A word 1-2), dual TF-IDF vs Qwen 0.5B scaffold for apples-to-apples vs phi/qwen/big — proves structure, not memorization (handshake 47, kilogram steel) |
 | **Open-response robustness (ORR)** | phi 2/6, qwen 1/6: both handle absurdism; neither has a stable "self" (song Jaccard=0); phi acknowledges a distressed user, qwen answers only the factual part |
 
 ## Open items / next (turn these into tasks when picked up)
@@ -67,7 +67,8 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 - **String-op micro-primitives** (`count_char`, `count_vowels`, `count_letters`,
   `reverse`, `compare`) — DONE, trap 0% → 100% (12/12).
 - **Math primitives** — DONE, math 89% → 100% (37/37 word-operators + multi-step).
-- **Reasoning primitives** — DONE, reasoning 3% → 100% (35/35 patterns: rate, work_inverse, jug, bridge, system_equations, handshake, etc.) via `cognitive_swarm/tools/reasoning_primitives.py` — truth overall 70.8% → **100% (120/120)** at 0 model loads.
+- **Reasoning primitives** — DONE, reasoning 3% → 100% (35/35 patterns: rate, work_inverse, jug, bridge, system_equations, handshake, etc.) via `cognitive_swarm/tools/reasoning_primitives.py` — truth overall 70.8% → **100% (120/120)** at 0 model loads. *Current fresh 120/120 after 3-failure fix (age_difference, fraction-chain, trains_meet) — stock_take_away fix 54→60/60 batch60, rebalanced 132 samples 33×4 (see FINDINGS).*
+- **Batch60 human 60/60** — DONE, take-away double bug fix (re.search + before-student) + rebalance 132 samples + age/trains/fraction fixes → 120/120.
 - **Procedure / primitive memory**: cache reasoning *processes* (verified
   lemmas, winning-debate step-skeletons, discovered correction rules), not just
   answers; RAG corpus stays outside on disk.

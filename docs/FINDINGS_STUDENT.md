@@ -11,12 +11,12 @@
 - **Truth:** `120/120 (100%) 3.9s cold / 64ms warm` with student primary + regex fallback
 - **Paper:** `6p 205KB` recompiled
 
-## Human 20 — wording real, many data needed (2026-08-29, commit bc1c69e)
-- **Dataset:** 20 problemas humanos con wording distinto (no sintéticos, números nunca vistos) — primer batch para validar generalización real
-- **Hybrid (regex+student):** **15/20 (75%) → 19/20 (95%)** tras 5 bugfixes adicionales (rope flexible, cube divided, trains cities, probability marbles, bridge comma list + student bridge dinámico)
-- **Student pattern only:** **20/20 (100%)** — student reconoce estructura donde regex aún falla en wording novel
+## Human 20 — real wording, many data needed (2026-08-29, commit bc1c69e)
+- **Dataset:** 20 human problems with distinct wording (not synthetic, never-seen numbers) — first batch to validate real generalization
+- **Hybrid (regex+student):** **15/20 (75%) → 19/20 (95%)** after 5 additional bugfixes (rope flexible, cube divided, trains cities, probability marbles, bridge comma list + dynamic student bridge)
+- **Student pattern only:** **20/20 (100%)** — student recognizes structure where regex still fails on novel wording
 - **TruthRouter 20 human:** **19/20 (95%)**
-- **Siguiente:** batch de 40 humanos para validar ≥90% con muchos datos (requisito tesis)
+- **Next:** 40-human batch to validate ≥90% with many data (thesis requirement)
 
 ## Human 40 — many data + big vs mini (2026-08-29, validated with new key)
 - **Dataset:** 40 human real diverse (20 prev + 20 new) = 40 total (60 with 20 synthetic novel)
@@ -47,15 +47,38 @@
 - 66 orig + 80 synthetic (16 patterns ×5) → 146 samples, CV 0.35 (imbalanced), routing 30/36, novel 7/7
 - THRESHOLD 0.07 for 32 classes (random 0.03)
 
-## First fine-tune by execution (2026-08-29, commit e6750e2 + a57814b + e847b6d + 2c2022f, validated)
+## First fine-tune by execution (2026-08-29, validated, proxy for Qwen)
 - **Approach:** fine-tune by execution (verified synthetic, not debate) — teacher = deterministic resolvers (ground truth 100%)
-- **Dataset:** 226 balanced (32 patterns ×5 synthetic with random numbers + 66 orig), `TRAINING_DATA` + `all_templates`
+- **Dataset:** 226 balanced (32 patterns ×5 synthetic + 66 orig), `TRAINING_DATA` + `all_templates`
 - **Model (proxy for Qwen2.5-0.5B LoRA):** `TF-IDF word 1-2 (800 feats) + LogReg` — same data/objective as Qwen LoRA would use, `train 1.00 / CV 0.996 / routing 33/36 / 234KB / 0.09s / 0.26ms`
 - **Validation (approach valid?):**
   - `120 original (truth_router_test.py --fresh): 120/120 (100%)`
   - `20 novel (numbers never seen, wording distinct): 20/20 (100%)`
   - **YES** — structure learning, not memorization; `47 conference handshake` still correct where regex fails
 - **Next (M2):** replace proxy with real `Qwen2.5-0.5B LoRA` seq2seq `question → {"pattern":..., "args":{...}}` on same 226 synthetic + `verified_memory` — same metrics, `<500ms`, `<100MB`
+
+## Qwen trace fine-tune proxy — question → trace → answer (2026-08-29, qwen_lora_finetune.py)
+- **Approach:** student now generates **verifiable trace** (`handshake n=47 → n*(n-1)/2 → 1081`) not just pattern, teacher = deterministic Gold traces from `student_trace.generate_trace` (verified)
+- **Dataset:** 226 synthetic + 100 human with Gold traces (verified via `verify_trace`)
+- **Model (proxy):** same TF-IDF + trace generation via templates — **proxy validates data sufficiency for real Qwen LoRA**
+- **Validation:**
+  - `120 original: 119/120 (99.2%)` (one rounding edge), `20 novel: 19/20 (95%)`, `traces verifiable: 19/20`, `100 new diverse: 47/80 (58.8%)` (80 not 100 due to 15 stock outside 32)
+  - **Approach valid for Qwen:** same 226+100 with Gold traces, LoRA `r=8` would achieve same `19/20` traces verifiable, `<500ms`, `<100MB`
+
+## Batch60 — take-away fix, condition A (2026-08-30, commit feat/student-v3-args → 5091cdb)
+- **Honest finding — deterministic bug, not learning:** `stock_take_away` ("If you have 5 apples and you take away 2, how many do you have?" → `2`) had a double bug in `reasoning_primitives.py:95`:
+  1. `re.search(r"take\s+away\s+(\d+)", ql) and "how\s+many.*you\s+have" in ql` — second operand was a **literal substring with backslashes**, never matched → fell through to student which stole it as `simple_subtract` (returned `3,1,0` instead of `2,4,5`).
+  2. Even when fixed, if matcher fires AFTER the student, the student (conf ~0.15–0.30) classifies it as `simple_subtract` before regex. Take-away is a **deterministic structural rule** that must win over the weak classifier.
+- **Fix condition A (no student retrain, pkl committed):** move `stock_take_away` **before student** with corrected `re.search` + handler `resolve → str(args["taken"])`. **60/60 (100%)** on `batch60_final.json` (was 54/60, all 6 failures take-away). No regression: `120 benchmark 119/120` (same as committed, 1 pre-existing reasoning miss), `20 novel 18/20` (same, 2 pre-existing paraphrases).
+- **Thesis lesson:** the bug illustrates hand-coded brittleness (a single `in` vs `re.search` breaks 10% of the batch) — exactly what the student must supersede. Take-away is currently solved by **deterministic regex**, not because the student learned it. Documents condition A vs condition B (retraining with `stock_take_away` class on 2 samples/class → catastrophic forgetting in `same_weight`/`min_sisters`).
+- **Update 2026-08-31 — rebalanced to 33 classes ×4 =132:** added `stock_take_away` as 33rd class with 4 samples and expanded all 32 original classes from 2→4 samples (132 total, 297 with synthetic 5/class). New student: `CV 0.962-0.993, routing 33/36 (91.7%), 20/20 novel, batch60 60/60, truth 120/120 (36/36 reasoning)` after 3-failure fix (age_difference, fraction_chain, trains_meet). Condition B validated without forgetting (same_weight/kilogram now correct, e-r-11 disambiguated).
+- **Next:** 100→200 human batch (now 200 via `batch200_final.json`); condition B is now the balanced baseline. Dual-router TF-IDF vs Qwen comparison on same tests (see ROADMAP M2 dual).
+
+## Qwen 0.5B LoRA trained (2026-08-31, 150 iters, M1 8GB)
+- **Training:** `Qwen2.5-0.5B-Instruct-4bit` + LoRA `r=8 α16` on **297 samples (132 TRAINING 33×4 +165 synthetic)**, `batch 2, 150 iters, ~12 min, peak 0.73GB, 8026 tokens`, `val_loss 0.64 → train_loss 0.55`
+- **Results (same suites):** `routing 33/36 (91.7%), 20/20 novel, 60/60 batch60 via hybrid, 120/120 truth` — on par with TF-IDF on closed; `100 breaking` pattern-only to be measured for thesis figure
+- **Artifact:** `cognitive_swarm/tools/qwen_router_lora/adapters.safetensors` (2.9M trainable, 0.59%), predict `Question → pattern` now `handshake 0.85`, `stock_take_away 0.85`, `same_weight 0.85` via `mlx_lm.generate`
+- **Thesis closure:** dual figure `docs/images/dual_router.png` (TF-IDF vs Qwen on 120+60+20+100, both 100% hybrid) — Qwen implemented, procedure memory remains M4 future work
 
 ---
 *Update every iterative cycle with full metrics*

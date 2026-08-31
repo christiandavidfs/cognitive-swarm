@@ -1,0 +1,302 @@
+[
+  {
+    "q": "What is heavier, a kilogram of steel or a kilogram of feathers?",
+    "exp": "same",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 2, how many do you have?",
+    "exp": "2",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 4, how many do you have?",
+    "exp": "4",
+    "pat": "stock"
+  },
+  {
+    "q": "How many months have 28 days?",
+    "exp": "12",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 5, how many do you have?",
+    "exp": "5",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 5, how many do you have?",
+    "exp": "5",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 5, how many do you have?",
+    "exp": "5",
+    "pat": "stock"
+  },
+  {
+    "q": "What is heavier, a kilogram of steel or a kilogram of feathers?",
+    "exp": "same",
+    "pat": "stock"
+  },
+  {
+    "q": "How many months have 28 days?",
+    "exp": "12",
+    "pat": "stock"
+  },
+  {
+    "q": "How many months have 28 days?",
+    "exp": "12",
+    "pat": "stock"
+  },
+  {
+    "q": "If you have 5 apples and you take away 2, how many do you have?",
+    "exp": "2",
+    "pat": "stock"
+  },
+  {
+    "q": "What is heavier, a kilogram of steel or a kilogram of feathers?",
+    "exp": "same",
+    "pat": "stock"
+  },
+  {
+    "q": "15 builders can build a house in 20 days. How many builders needed for 9 days?",
+    "exp": "33",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "Farmer has 36 sheep, all but 15 die. How many are left?",
+    "exp": "15",
+    "pat": "all_but"
+  },
+  {
+    "q": "Farmer has 20 sheep, all but 13 die. How many are left?",
+    "exp": "13",
+    "pat": "all_but"
+  },
+  {
+    "q": "A vehicle uses 10 liters per 100 km. How much for 291 km?",
+    "exp": "29.1",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "12 builders can build a house in 15 days. How many builders needed for 5 days?",
+    "exp": "36",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "In a room of 7 people, each greets every other once. How many greetings?",
+    "exp": "21",
+    "pat": "handshake"
+  },
+  {
+    "q": "A vehicle uses 14 liters per 100 km. How much for 184 km?",
+    "exp": "25.76",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "An electric train travels at 87 km/h, wind 19 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "8 builders can build a house in 29 days. How many builders needed for 4 days?",
+    "exp": "58",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "In a room of 59 people, each greets every other once. How many greetings?",
+    "exp": "1711",
+    "pat": "handshake"
+  },
+  {
+    "q": "An electric train travels at 85 km/h, wind 25 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "Farmer has 53 sheep, all but 11 die. How many are left?",
+    "exp": "11",
+    "pat": "all_but"
+  },
+  {
+    "q": "In a room of 28 people, each greets every other once. How many greetings?",
+    "exp": "378",
+    "pat": "handshake"
+  },
+  {
+    "q": "A vehicle uses 6 liters per 100 km. How much for 63 km?",
+    "exp": "3.78",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 194 km?",
+    "exp": "17.46",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A snail in a 21-foot pit climbs 3 feet by day and slides 1 feet each night. How many days?",
+    "exp": "10",
+    "pat": "snail_well"
+  },
+  {
+    "q": "What is the 25th odd positive integer?",
+    "exp": "49",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Farmer has 57 sheep, all but 13 die. How many are left?",
+    "exp": "13",
+    "pat": "all_but"
+  },
+  {
+    "q": "Family has 9 kids, each kid has a sister. Minimum kids?",
+    "exp": "9",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "Family has 5 kids, each kid has a sister. Minimum kids?",
+    "exp": "6",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "An electric train travels at 100 km/h, wind 11 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "12 builders can build a house in 18 days. How many builders needed for 6 days?",
+    "exp": "36",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "What is the 44th odd positive integer?",
+    "exp": "87",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 62 km?",
+    "exp": "5.58",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "An electric train travels at 64 km/h, wind 25 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "Farmer has 28 sheep, all but 8 die. How many are left?",
+    "exp": "8",
+    "pat": "all_but"
+  },
+  {
+    "q": "In a room of 24 people, each greets every other once. How many greetings?",
+    "exp": "276",
+    "pat": "handshake"
+  },
+  {
+    "q": "Family has 5 kids, each kid has a sister. Minimum kids?",
+    "exp": "6",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "What is the 15th odd positive integer?",
+    "exp": "29",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Family has 7 kids, each kid has a sister. Minimum kids?",
+    "exp": "7",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "A vehicle uses 12 liters per 100 km. How much for 186 km?",
+    "exp": "22.32",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "With a 12-liter and 9-liter jug, which amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "An electric train travels at 51 km/h, wind 23 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "A snail in a 12-foot pit climbs 8 feet by day and slides 2 feet each night. How many days?",
+    "exp": "2",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Family has 4 kids, each kid has a sister. Minimum kids?",
+    "exp": "4",
+    "pat": "min_sisters"
+  },
+  {
+    "q": "An electric train travels at 90 km/h, wind 23 km/h, where does smoke go?",
+    "exp": "no smoke",
+    "pat": "trick_no_smoke"
+  },
+  {
+    "q": "In a room of 54 people, each greets every other once. How many greetings?",
+    "exp": "1431",
+    "pat": "handshake"
+  },
+  {
+    "q": "A vehicle uses 12 liters per 100 km. How much for 156 km?",
+    "exp": "18.72",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A vehicle uses 14 liters per 100 km. How much for 143 km?",
+    "exp": "20.02",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "A snail in a 12-foot pit climbs 3 feet by day and slides 2 feet each night. How many days?",
+    "exp": "10",
+    "pat": "snail_well"
+  },
+  {
+    "q": "Which fraction is larger: 4/2 or 1/5?",
+    "exp": "4/2",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "With a 9-liter and 8-liter jug, which amount cannot be measured?",
+    "exp": "Cannot determine / none",
+    "pat": "jug_impossible"
+  },
+  {
+    "q": "12 builders can build a house in 14 days. How many builders needed for 8 days?",
+    "exp": "21",
+    "pat": "work_inverse"
+  },
+  {
+    "q": "A vehicle uses 9 liters per 100 km. How much for 91 km?",
+    "exp": "8.19",
+    "pat": "rate_distance"
+  },
+  {
+    "q": "What is the 32th odd positive integer?",
+    "exp": "63",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "What is the 33th odd positive integer?",
+    "exp": "65",
+    "pat": "nth_odd"
+  },
+  {
+    "q": "Which fraction is larger: 6/6 or 4/6?",
+    "exp": "6/6",
+    "pat": "fraction_compare"
+  },
+  {
+    "q": "In a room of 16 people, each greets every other once. How many greetings?",
+    "exp": "120",
+    "pat": "handshake"
+  }
+]
