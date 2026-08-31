@@ -85,7 +85,7 @@ novel = [
     ("You have 7 liter jug and 4 liter jug what amount cannot be measured?", "jug_impossible", "Cannot determine / none"),
     ("Car uses 5 liters per 100 km how many liters for 60 km?", "rate_distance", "3"),
     ("Snail at bottom of 50 foot well climbs 7 feet each day slides back 3 feet how many days to top?", "snail_well", "12"),
-    ("Family has 9 children each child has at least one sister minimum children?", "min_sisters", "6"),
+    ("Family has 9 children each child has at least one sister minimum children?", "min_sisters", "9"),
     ("Rope 84 cm cut one piece is 3 times as long as the other how long is shorter?", "rope_cut", "21"),
     ("Cube cut into 125 equal smaller cubes how many have exactly one face painted?", "painted_cube", "54"),
     ("What is the 15th odd positive integer?", "nth_odd", "29"),
