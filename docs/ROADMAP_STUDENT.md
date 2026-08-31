@@ -33,8 +33,8 @@
 |---|---|---|---|
 | **M0 (today)** | Student v3 hybrid 20/20 | `120/120 + 20/20` with fallback | `AGENTS.md`, `RESULTS.md` finding 5, `student_experiment.py` |
 | **M1** | Student NER per pattern (v4 stub → learned) | `extract_args_learned` trained per pattern, `solo-student 15/20 → 20/20` without order heuristic | `student_ner.py`, `RESULTS.md`, `ARCHITECTURE.md §6` |
-| **M2 dual-router** | **TF-IDF vs Qwen2.5-0.5B LoRA** `pattern+args` seq2seq, **mismo dataset / mismas pruebas** | Ambos entrenados en **226+60 sintéticos** (32+1 patrones incl. `stock_take_away`); evaluados en **120 + 20 novel + 60 humano + 100 diverse** con mismo scorer; reportar `routing/novel/human/size/lat/CV` lado a lado para tesis | `qwen_lora_finetune.py`, `student_router.py`, `student_experiment.py --dual`, `THESIS.md`, `paper.tex`, `AGENTS.md` |
-| **M3** | 100→200 human batch + stock 47 patterns | Student (TF-IDF y Qwen) generaliza a wording humano nunca visto sin reentrenar | `CONCLUSIONS.md`, `FINDINGS.md` |
+| **M2 dual-router** | **TF-IDF vs Qwen2.5-0.5B LoRA** `pattern+args` seq2seq, **same dataset / same tests** | Both trained on **132 TRAINING +165 synthetic =297 (33 patterns incl. `stock_take_away`)**; evaluated on **120 + 20 novel + 60 human + 100 diverse** with same scorer; report `routing/novel/human/size/lat/CV` side-by-side for thesis | `qwen_lora_finetune.py`, `student_router.py`, `student_experiment.py --dual`, `THESIS.md`, `paper.tex`, `AGENTS.md` |
+| **M3** | 100→200 human batch + stock 47 patterns | Student (TF-IDF and Qwen) generalizes to never-seen human wording without retraining | `CONCLUSIONS.md`, `FINDINGS.md` |
 | **M4** | Procedure memory (not just answers) | Cache verified reasoning traces (winning debate skeletons) | `ARCHITECTURE.md §10`, `memory/` |
 
 ## When to use student vs regex vs debate

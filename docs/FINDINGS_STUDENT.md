@@ -11,10 +11,10 @@
 - **Truth:** `120/120 (100%) 3.9s cold / 64ms warm` with student primary + regex fallback
 - **Paper:** `6p 205KB` recompiled
 
-## Human 20 — wording real, many data needed (2026-08-29, commit bc1c69e)
-- **Dataset:** 20 problemas humanos con wording distinto (no sintéticos, números nunca vistos) — primer batch para validar generalización real
-- **Hybrid (regex+student):** **15/20 (75%) → 19/20 (95%)** tras 5 bugfixes adicionales (rope flexible, cube divided, trains cities, probability marbles, bridge comma list + student bridge dinámico)
-- **Student pattern only:** **20/20 (100%)** — student reconoce estructura donde regex aún falla en wording novel
+## Human 20 — real wording, many data needed (2026-08-29, commit bc1c69e)
+- **Dataset:** 20 human problems with distinct wording (not synthetic, never-seen numbers) — first batch to validate real generalization
+- **Hybrid (regex+student):** **15/20 (75%) → 19/20 (95%)** after 5 additional bugfixes (rope flexible, cube divided, trains cities, probability marbles, bridge comma list + dynamic student bridge)
+- **Student pattern only:** **20/20 (100%)** — student recognizes structure where regex still fails on novel wording
 - **TruthRouter 20 human:** **19/20 (95%)**
 - **Next:** 40-human batch to validate ≥90% with many data (thesis requirement)
 

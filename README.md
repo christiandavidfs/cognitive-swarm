@@ -227,10 +227,10 @@ swarm/
 
 - **Closed-set 100% is not general reasoning.** Truth 100%* on fixed 120 because every category has a verified tool; on 40 human 85%, on 100 breaking 47-48%, on 60 human 100% after fix. Outside the 33 patterns falls back to debate (selection 62%→38% still bottleneck). *119/120 actual fresh.
 - **Student is pattern-limited.** Tiny TF-IDF 97.5% on 40 human but 66% on 100 breaking with 15 stock outside library — learns structure *within* distribution, needs library →47 patterns. Qwen dual pending to measure if it beats TF-IDF on very diverse wording.
-- **Bug honestamente documentado (2026-08-30):** `stock_take_away` tenía `"how\s+many.*you\s+have" in ql` (substring literal) — nunca matcheaba. Fix moviéndolo antes del student → 54→60/60. Ilustra fragilidad hand-coded que el student debe superar.
-- **8GB hard floor** (sequential loads ~10-15s/switch; 120 tarda ~10-15min). Tiers determinísticos en ms con 0 loads — preferirlos siempre.
+- **Honestly documented bug (2026-08-30):** `stock_take_away` had `"how\s+many.*you\s+have" in ql` (literal substring) — never matched. Fix moving it before student → 54→60/60. Illustrates hand-coded brittleness the student must supersede.
+- **8GB hard floor** (sequential loads ~10-15s/switch; 120 takes ~10-15min). Deterministic tiers in ms with 0 loads — prefer them always.
 - **Small models lack stable self** (ORR Jaccard 0) y over-engineer lateral.
-- **Deterministic tiers reproducibles; debate no-determinístico** (reportar "solved in any run" + bootstrap CI).
+- **Deterministic tiers reproducible; debate non-deterministic** (report "solved in any run" + bootstrap CI).
 - **Frontier scoring needs clean ANSWER: contract** (fixed 87.5%, old 8% was thinking-mode artifact).
 
 ## Future Work (v9)
@@ -252,14 +252,14 @@ swarm/
 
 ## Key Findings (v9, honest)
 
-Truth beats debate (47.5%), phi (20.8%), qwen (30.0%) y **frontier big (87.5%)** en cerrado 120 a **100% (120/120)*, 0 loads, 1.2s cold / 65ms warm** (*119/120 actual tras fresh, 1 miss pre-existente — ver FINDINGS):
+Truth beats debate (47.5%), phi (20.8%), qwen (30.0%) and **frontier big (87.5%)** on closed 120 at **100% (120/120)*, 0 loads, 1.2s cold / 65ms warm** (*119/120 actual fresh, 1 pre-existing miss — see FINDINGS):
 
 - **Code 100% (36/36)** — executor
 - **Trap 100% (12/12)** — string-op
 - **Math 100% (36/36)** — math primitives
-- **Reasoning 100% (36/36)** — 20+1 primitives (cada patrón cubre una clase)
+- **Reasoning 100% (36/36)** — 20+1 primitives (each pattern covers a class)
 
-Con muchos datos diversos, truth 85% (40h) → 48% (100 breaking) cae, student pattern 97.5% → 66% resiste; batch60 100% tras fix. Ver `docs/images/evolucion.png`. El cuello ya no es generación sino **librería de patrones** (32→47) y **procedure memory** (traces verificados).
+With many diverse data, truth 85% (40h) → 48% (100 breaking) drops, student pattern 97.5% → 66% resists; batch60 100% after fix. See `docs/images/evolucion.png`. The bottleneck is no longer generation but **pattern library** (32→47) and **procedure memory** (verified traces).
 
 **Images:** `docs/RESULTS.md` → `evolucion.png`, `student_learning.png`, `combinaciones.png`.
 
