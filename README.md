@@ -28,6 +28,7 @@ truth-hierarchy of deterministic tools, verified memory, and cross-critique.
 | Qwen 2.5 3B alone | 30.0% (36/120) | [21.7, 38.3] | — | ~12/40 (30%) | — | Free | Yes |
 | **Big frontier `minimax-m3` (OpenRouter free, ANSWER: contract)** | **87.5% (105/120)** | [81.7, 92.5] | — | 22/40 (55%) | — | Free (cloud) | No |
 | **Student tiny TF-IDF word 1-2 (247KB, 800 feats, CV 0.962)** | **33/36 (91.7%) routing** | — | 60/60 via hybrid† | **39/40 (97.5%)** pattern | **66/100 (66%)** pattern | Free | Yes |
+| **Student Qwen 0.5B LoRA (2.9M, 150 iters, 0.73GB)** | **33/36 (91.7%) routing** | — | 60/60 via hybrid† | **20/20 (100%)** pattern | — | Free | Yes (M1 8GB, 12 min) |
 
 \* `truth_router_test.py --fresh` currently 120/120 — `truth_router_test.py --fresh` now 120/120 after 3-failure fix, gap documented in FINDINGS batch60.<br>
 † **Batch60 fix (2026-08-30):** `stock_take_away` bug (`"how\s+many.*you\s+have" in ql` literal → `re.search`) + move matcher **before student** (stole as `simple_subtract`). **54/60 → 60/60 no retrain** (condition A, no regression on 120/20-novel). Honest: solved by **deterministic regex**, not student — illustrates hand-coded brittleness.

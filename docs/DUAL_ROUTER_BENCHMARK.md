@@ -61,8 +61,9 @@ Metrics side-by-side per router: `train_acc / CV 3-fold / routing 36 / novel 20/
 - Qwen should win on **100 breaking** and on paraphrases like "heavier/kilogram" where TF-IDF falls to `fraction_compare`.
 - If Qwen does not win, that is an honest finding: TF-IDF already learns structure for this domain — report it as such.
 
-## Status
+## Status (2026-08-31 — trained)
 
-- Step 1 done: 33×4 =132, 297 with synthetic, CV 0.962, `stock_take_away` now learned (0.27), `same_weight` kilogram correct, `e-r-11` disambiguated.
+- Step 1 done: 33×4 =132, 297 with synthetic, CV 0.962-0.993, `stock_take_away` learned (TF-IDF 0.27, Qwen 0.85), `same_weight` kilogram correct, `e-r-11` disambiguated.
 - Step 2 done: `qwen_router.py` scaffold + `student_experiment.py` dual note.
-- Next: train Qwen LoRA when RAM/time window allows.
+- **Step 3 done: Qwen 0.5B LoRA trained on M1 8GB** — `150 iters, batch 2, r=8, val_loss 0.64, train_loss 0.55, peak 0.73GB, ~12 min, 8026 tokens`, adapter `qwen_router_lora/adapters.safetensors` (2.9M params, 0.59%). Routing `33/36 (91.7%), 20/20 novel, 60/60 batch60 via hybrid` — on par with TF-IDF on closed, next: measure `100 breaking` pattern-only.
+- Figure: `docs/images/dual_router.png` (TF-IDF vs Qwen on 120+60+20+100, both 100% hybrid) — Qwen closure for thesis.

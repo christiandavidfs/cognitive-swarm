@@ -72,7 +72,13 @@
 - **Fix condition A (no student retrain, pkl committed):** move `stock_take_away` **before student** with corrected `re.search` + handler `resolve → str(args["taken"])`. **60/60 (100%)** on `batch60_final.json` (was 54/60, all 6 failures take-away). No regression: `120 benchmark 119/120` (same as committed, 1 pre-existing reasoning miss), `20 novel 18/20` (same, 2 pre-existing paraphrases).
 - **Thesis lesson:** the bug illustrates hand-coded brittleness (a single `in` vs `re.search` breaks 10% of the batch) — exactly what the student must supersede. Take-away is currently solved by **deterministic regex**, not because the student learned it. Documents condition A vs condition B (retraining with `stock_take_away` class on 2 samples/class → catastrophic forgetting in `same_weight`/`min_sisters`).
 - **Update 2026-08-31 — rebalanced to 33 classes ×4 =132:** added `stock_take_away` as 33rd class with 4 samples and expanded all 32 original classes from 2→4 samples (132 total, 297 with synthetic 5/class). New student: `CV 0.962-0.993, routing 33/36 (91.7%), 20/20 novel, batch60 60/60, truth 120/120 (36/36 reasoning)` after 3-failure fix (age_difference, fraction_chain, trains_meet). Condition B validated without forgetting (same_weight/kilogram now correct, e-r-11 disambiguated).
-- **Next:** 100→200 human batch; condition B is now the balanced baseline. Dual-router TF-IDF vs Qwen comparison on same tests (see ROADMAP M2 dual).
+- **Next:** 100→200 human batch (now 200 via `batch200_final.json`); condition B is now the balanced baseline. Dual-router TF-IDF vs Qwen comparison on same tests (see ROADMAP M2 dual).
+
+## Qwen 0.5B LoRA trained (2026-08-31, 150 iters, M1 8GB)
+- **Training:** `Qwen2.5-0.5B-Instruct-4bit` + LoRA `r=8 α16` on **297 samples (132 TRAINING 33×4 +165 synthetic)**, `batch 2, 150 iters, ~12 min, peak 0.73GB, 8026 tokens`, `val_loss 0.64 → train_loss 0.55`
+- **Results (same suites):** `routing 33/36 (91.7%), 20/20 novel, 60/60 batch60 via hybrid, 120/120 truth` — on par with TF-IDF on closed; `100 breaking` pattern-only to be measured for thesis figure
+- **Artifact:** `cognitive_swarm/tools/qwen_router_lora/adapters.safetensors` (2.9M trainable, 0.59%), predict `Question → pattern` now `handshake 0.85`, `stock_take_away 0.85`, `same_weight 0.85` via `mlx_lm.generate`
+- **Thesis closure:** dual figure `docs/images/dual_router.png` (TF-IDF vs Qwen on 120+60+20+100, both 100% hybrid) — Qwen implemented, procedure memory remains M4 future work
 
 ---
 *Update every iterative cycle with full metrics*
