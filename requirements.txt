@@ -9,9 +9,11 @@ mlx-lm>=0.0.10
 psutil>=5.9.0
 pyyaml>=6.0
 
-# Optional: For future RAG support
-# chromadb>=0.4.0
-# sentence-transformers>=2.2.0
+# Vector store for verified memory (LanceDB)
+lancedb>=0.8.0
+sentence-transformers>=2.5.0
+pyarrow>=15.0.0
+pandas>=2.0.0
 
 # Development
 pytest>=7.0.0

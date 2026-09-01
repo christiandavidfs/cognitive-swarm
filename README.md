@@ -138,6 +138,37 @@ python cognitive_swarm/evaluation/truth_router_test.py --fresh
 python cognitive_swarm/evaluation/student_experiment.py
 ```
 
+### LanceDB Vector Memory (Optional - for semantic search)
+
+```bash
+# Already included in requirements.txt:
+# lancedb>=0.8.0
+# sentence-transformers>=2.5.0
+# pyarrow>=15.0.0
+# pandas>=2.0.0
+
+# No external services needed - runs entirely local as .lance files
+# Embedding model: all-MiniLM-L6-v2 (384 dim, ~90MB, CPU-only)
+
+# Initialize LanceDB memory (creates memory/lancedb/)
+python -c "
+from cognitive_swarm.memory.verified_memory_lancedb import VerifiedMemoryLanceDB
+mem = VerifiedMemoryLanceDB()
+mem.remember('What is 2+2?', '4', tier='calculator', source_type='math')
+print('LanceDB memory ready at:', mem.lancedb_path)
+"
+
+# Use with vector search
+python -c "
+from cognitive_swarm.memory.verified_memory_lancedb import VerifiedMemoryLanceDB
+mem = VerifiedMemoryLanceDB()
+mem.remember('EGFR inhibitors NSCLC', 'Osimertinib first-line', tier='retrieval', source_type='paper', year=2020)
+results = mem.lookup_with_vector('lung cancer EGFR treatment', metadata_filter={'source_type': 'paper'})
+for r in results:
+    print(f\"{r['answer']} (year={r['year']}, dist={r.get('_distance', 'N/A')})\")
+"
+```
+
 ## Usage
 
 ### Quick Start (Docker — one-command validation, no local install)
@@ -221,6 +252,8 @@ swarm/
 │   │   ├── validate_baseline.py      # bootstrap CI
 │   │   ├── big_model_benchmark.py    # minimax-m3:free
 │   │   └── orr_benchmark.py
+│   ├── tests/
+│   │   └── test_verified_memory_lancedb.py  # LanceDB memory tests
 │   └── config/ / models/ (MLX backends)
 ├── paper/paper.tex → paper.pdf (6p)
 ├── docs/ (RESULTS, CONCLUSIONS, ARCHITECTURE, FINDINGS_STUDENT, ROADMAP_STUDENT, THESIS)
