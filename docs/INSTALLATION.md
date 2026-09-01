@@ -30,6 +30,23 @@ pip install -r requirements.txt
 | psutil | Memory monitoring | >=5.9.0 |
 | pyyaml | Configuration | >=6.0 |
 | groq | API comparison | >=0.1.0 |
+| lancedb | Local vector store | >=0.8.0 |
+| sentence-transformers | Embeddings | >=2.5.0 |
+| pyarrow | Columnar format | >=15.0.0 |
+| pandas | Data analysis | >=2.0.0 |
+
+### LanceDB Vector Memory (Optional)
+
+LanceDB provides local vector search for the verified memory tier (Tier 0). No external services required — stores data as `.lance` files on disk.
+
+```bash
+# Already included in requirements.txt
+# Install with: pip install lancedb sentence-transformers pyarrow pandas
+```
+
+- **Embedding model**: `sentence-transformers/all-MiniLM-L6-v2` (384 dim, ~90MB, CPU-only, downloads on first use)
+- **Storage**: `memory/lancedb/` directory (auto-created)
+- **Schema**: Hybrid exact-code + vector with metadata filtering (tier, source_type, year, journal, etc.)
 
 ## Model Download
 
@@ -58,6 +75,15 @@ python cognitive_swarm/main.py --task "What is 2+2?" --mode single
 
 # Test debate mode
 python cognitive_swarm/main.py --task "What is 2+2?" --mode debate
+
+# Test LanceDB memory (optional)
+python -c "
+from cognitive_swarm.memory.verified_memory_lancedb import VerifiedMemoryLanceDB
+mem = VerifiedMemoryLanceDB()
+mem.remember('What is 2+2?', '4', tier='calculator')
+result = mem.lookup('What is 2+2?')
+print('LanceDB memory working:', result['answer'] == '4')
+"
 ```
 
 ## Hardware Notes
@@ -89,6 +115,16 @@ pip install mlx mlx-lm
 - Verify API key is valid
 - Check Groq status page
 
+### "No module named pandas" (LanceDB)
+```bash
+pip install pandas
+```
+
+### "No module named lancedb"
+```bash
+pip install lancedb
+```
+
 ## Development Setup
 
 ```bash
@@ -97,6 +133,9 @@ pip install pytest black flake8
 
 # Run tests
 pytest cognitive_swarm/tests/
+
+# Run LanceDB memory tests specifically
+pytest cognitive_swarm/tests/test_verified_memory_lancedb.py -v
 
 # Format code
 black cognitive_swarm/

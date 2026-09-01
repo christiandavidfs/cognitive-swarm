@@ -71,3 +71,6 @@ GROQ_API_KEY=
 *.bbl
 *.blg
 
+# LanceDB memory (created at runtime)
+memory/
+
