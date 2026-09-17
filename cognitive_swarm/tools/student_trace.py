@@ -38,6 +38,19 @@ TRACE_TEMPLATES = {
     "jug_impossible": "jugs {a}L and {b}L, gcd={gcd}, impossible = {ans}",
     "simple_probability": "target={n_target}/{n_total} = {ans}",
     "stock_take_away": "taken={taken} => you have {taken} = {ans}",
+    "stock_moses": "Moses took 0, Noah took animals => {ans} (moses)",
+    "stock_bear": "all walls south => North Pole => bear white = {ans}",
+    "stock_race": "overtake second => you are second = {ans}",
+    "stock_towel": "towel gets wetter as it dries = {ans}",
+    "stock_keyboard": "keys but no locks => keyboard = {ans}",
+    "stock_needle": "eye but cannot see => needle = {ans}",
+    "stock_eye": "eye but cannot see => needle = {ans}",
+    "stock_bricks": "bricks to complete => last brick = {ans}",
+    "stock_daughters": "daughters + brother => children = {ans}",
+    "stock_eggs": "12 eggs -3 break/fry/eat same 3 => {ans}",
+    "stock_absurd": "absurd => nonsense = {ans}",
+    "stock_factual": "capital France => Paris = {ans}",
+    "stock_circle": "circle sides => 0 = {ans}",
 }
 
 def generate_trace(question: str, pattern: str, args: Dict, answer: str) -> str:
@@ -88,6 +101,12 @@ def generate_trace(question: str, pattern: str, args: Dict, answer: str) -> str:
             return TRACE_TEMPLATES["simple_probability"].format(n_target=args["n_target"], n_total=args["n_total"], ans=answer)
         elif pattern == "stock_take_away":
             return TRACE_TEMPLATES["stock_take_away"].format(taken=args["taken"], ans=answer)
+        elif pattern in ("stock_moses","stock_bear","stock_race","stock_towel","stock_keyboard","stock_needle","stock_eye","stock_bricks","stock_daughters","stock_eggs","stock_absurd","stock_factual","stock_circle"):
+            # stock patterns have no args, trace is fixed
+            key = pattern
+            if key in TRACE_TEMPLATES:
+                return TRACE_TEMPLATES[key].format(ans=answer)
+            return f"{pattern} => {answer}"
         else:
             return f"{pattern}: args={args} -> {answer}"
     except Exception:
