@@ -42,6 +42,15 @@ def detect_reasoning_pattern(question: str) -> Optional[tuple]:
     if re.search(r"take\s+away\s+(\d+)", _ql0) and re.search(r"how\s+many.*you\s+have", _ql0):
         _m = re.search(r"take\s+away\s+(\d+)", _ql0)
         if _m: return ("stock_take_away", {"taken": int(_m.group(1))})
+    # give-away MUST also fire before student: TF-IDF confuses "give away" vs "take away"
+    # (both share "you have N ... away ... how many do you have"). Deterministic rule wins.
+    if re.search(r"give\s+away\s+(\d+)", _ql0) and re.search(r"how\s+many.*(you\s+have|remain|left)", _ql0):
+        _m2 = re.search(r"have\s+(\d+).*give\s+away\s+(\d+)", _ql0)
+        if _m2: return ("simple_subtract", {"have": int(_m2.group(1)), "give": int(_m2.group(2))})
+        _m2 = re.search(r"give\s+away\s+(\d+)", _ql0)
+        if _m2:
+            _have = re.search(r"have\s+(\d+)", _ql0)
+            if _have: return ("simple_subtract", {"have": int(_have.group(1)), "give": int(_m2.group(1))})
     # Student v3 primary dispatch (non-programmatic layer): try learned router first.
     # If student is confident and can extract args, we use it — proves structure learning.
     # Fallback to programmatic regex keeps 100% determinism while student improves.

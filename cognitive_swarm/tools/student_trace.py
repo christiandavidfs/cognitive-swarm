@@ -25,6 +25,19 @@ TRACE_TEMPLATES = {
     "rate_distance": "rate {c} L/100km, distance {d} km, fuel = {c}*{d}/100 = {ans}",
     "snail_well": "depth {depth}, climb {climb}, slide {slide}, days = {ans} (simulated)",
     "painted_cube": "n={n}, faces={faces}, painted = {ans}",
+    "rate_machines": "machines={n_machines}, time={time}, items={n_items}, rate => time = {time} (each makes 1 in {time}) = {ans}",
+    "all_but": "all but {n} die => survivors = {n} = {ans}",
+    "trains_meet": "distance={distance}, v1={v1}, v2={v2}, time = distance/(v1+v2) = {distance}/({v1}+{v2}) = {ans}",
+    "bridge_crossing": "times={times}, optimal = b+a+d+b+b = {ans} (bridge procedure)",
+    "system_equations": "honey system => answer = {ans} (solve linear)",
+    "alice_bob": "total={total}, transferred={transferred}, alice_start = (2*total-3*transferred)/3 = {ans}",
+    "rope_cut": "total={total}, k={multiplier}, shorter = total/(k+1) = {total}/{kp1} = {ans}",
+    "triangular_sequence": "terms={terms}, next = last + diff + second_diff = {ans}",
+    "nth_odd": "n={n}, nth_odd = 2*n-1 = 2*{n}-1 = {ans}",
+    "bat_and_ball": "total_cents={total_cents}, ball = (total-100)/2 = {ans}",
+    "jug_impossible": "jugs {a}L and {b}L, gcd={gcd}, impossible = {ans}",
+    "simple_probability": "target={n_target}/{n_total} = {ans}",
+    "stock_take_away": "taken={taken} => you have {taken} = {ans}",
 }
 
 def generate_trace(question: str, pattern: str, args: Dict, answer: str) -> str:
@@ -47,6 +60,34 @@ def generate_trace(question: str, pattern: str, args: Dict, answer: str) -> str:
             return TRACE_TEMPLATES["snail_well"].format(depth=args["depth"], climb=args["climb_per_day"], slide=args["slide_per_night"], ans=answer)
         elif pattern == "painted_cube":
             return TRACE_TEMPLATES["painted_cube"].format(n=args["n"], faces=args.get("faces",1), ans=answer)
+        elif pattern == "rate_machines":
+            return TRACE_TEMPLATES["rate_machines"].format(n_machines=args.get("n_machines",5), time=args.get("time",5), n_items=args.get("n_items",5), ans=answer)
+        elif pattern == "all_but":
+            return TRACE_TEMPLATES["all_but"].format(n=args["n"], ans=answer)
+        elif pattern == "trains_meet":
+            return TRACE_TEMPLATES["trains_meet"].format(distance=args["distance"], v1=args["v1"], v2=args["v2"], ans=answer)
+        elif pattern == "bridge_crossing":
+            return TRACE_TEMPLATES["bridge_crossing"].format(times=args["times"], ans=answer)
+        elif pattern == "system_equations":
+            return TRACE_TEMPLATES["system_equations"].format(ans=answer)
+        elif pattern == "alice_bob":
+            return TRACE_TEMPLATES["alice_bob"].format(total=args.get("total",0), transferred=args.get("transferred",0), ans=answer)
+        elif pattern == "rope_cut":
+            return TRACE_TEMPLATES["rope_cut"].format(total=args["total"], multiplier=args["multiplier"], kp1=args["multiplier"]+1, ans=answer)
+        elif pattern == "triangular_sequence":
+            return TRACE_TEMPLATES["triangular_sequence"].format(terms=args.get("terms",[]), ans=answer)
+        elif pattern == "nth_odd":
+            return TRACE_TEMPLATES["nth_odd"].format(n=args["n"], ans=answer)
+        elif pattern == "bat_and_ball":
+            return TRACE_TEMPLATES["bat_and_ball"].format(total_cents=args.get("total_cents",0), ans=answer)
+        elif pattern == "jug_impossible":
+            import math
+            a = args.get("a",0); b = args.get("b",0)
+            return TRACE_TEMPLATES["jug_impossible"].format(a=a, b=b, gcd=math.gcd(a,b), ans=answer)
+        elif pattern == "simple_probability":
+            return TRACE_TEMPLATES["simple_probability"].format(n_target=args["n_target"], n_total=args["n_total"], ans=answer)
+        elif pattern == "stock_take_away":
+            return TRACE_TEMPLATES["stock_take_away"].format(taken=args["taken"], ans=answer)
         else:
             return f"{pattern}: args={args} -> {answer}"
     except Exception:
