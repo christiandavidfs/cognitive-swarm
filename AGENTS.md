@@ -69,9 +69,7 @@ Tier 4  DEBATE    : weak-model debate = HYPOTHESIS source (fallback only).
 - **Math primitives** — DONE, math 89% → 100% (37/37 word-operators + multi-step).
 - **Reasoning primitives** — DONE, reasoning 3% → 100% (35/35 patterns: rate, work_inverse, jug, bridge, system_equations, handshake, etc.) via `cognitive_swarm/tools/reasoning_primitives.py` — truth overall 70.8% → **100% (120/120)** at 0 model loads. *Current fresh 120/120 after 3-failure fix (age_difference, fraction-chain, trains_meet) — stock_take_away fix 54→60/60 batch60, rebalanced 132 samples 33×4 (see FINDINGS).*
 - **Batch60 human 60/60** — DONE, take-away double bug fix (re.search + before-student) + rebalance 132 samples + age/trains/fraction fixes → 120/120.
-- **Procedure / primitive memory**: cache reasoning *processes* (verified
-  lemmas, winning-debate step-skeletons, discovered correction rules), not just
-  answers; RAG corpus stays outside on disk.
+- **Procedure / primitive memory**: DONE POC `20/20` verifiable traces via `cognitive_swarm/tools/student_trace.py:25` (handshake..stock_take_away, `procedure_sig` same for `100→88` handshake `6d8cef7d`), `give_away` vs `take_away` disambiguated before student `dec7619` (simple_subtract vs stock_take_away), `service` `cognitive-swarm-service` `de875eb` L1 `tier: procedure` on new numbers `0.3ms` `0 loads` + Databricks `testing.swarm_procedures` `20` rows live. Next: `20→40` stock `moses/bear...` `32→47` + `batch200` human, then Qwen LoRA `question→trace` distill. RAG corpus stays outside on disk.
 
 ## Operational facts (important)
 
