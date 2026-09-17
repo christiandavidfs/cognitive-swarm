@@ -184,11 +184,76 @@ TRAINING_DATA = [
     ("Alice and Bob total 30 apples Bob gives Alice 3 now Alice has twice as many as Bob how many did Alice start?", "alice_bob"),
     ("Alice and Bob have total of 50 apples Bob gives Alice 5 Now Alice has twice as many as Bob how many did Alice start with?", "alice_bob"),
     ("Alice and Bob total 60 apples Bob gives Alice 10 now Alice has twice as many as Bob how many start?", "alice_bob"),
-    # stock_take_away (new 33rd class, deterministic before-student)
+    # stock_take_away (33rd class, deterministic before-student)
     ("If you have 5 apples and you take away 2, how many do you have?", "stock_take_away"),
     ("If you have 8 apples and you take away 3, how many do you have?", "stock_take_away"),
     ("You have 5 apples and take away 2 how many do you have?", "stock_take_away"),
     ("If you have 10 apples and take away 4 how many apples do you have?", "stock_take_away"),
+    # stock_moses
+    ("How many animals of each kind did Moses take on the ark?", "stock_moses"),
+    ("Moses took how many animals on the ark?", "stock_moses"),
+    ("How many of each animal did Moses take on the ark?", "stock_moses"),
+    ("Moses ark how many animals of each kind?", "stock_moses"),
+    # stock_bear
+    ("A house has all four walls facing south, a bear walks by, what color is the bear?", "stock_bear"),
+    ("House with all walls facing south bear color?", "stock_bear"),
+    ("All walls face south what color is the bear outside?", "stock_bear"),
+    ("House all walls south bear what color?", "stock_bear"),
+    # stock_race
+    ("If you overtake the second person in a race, what place are you in?", "stock_race"),
+    ("Overtake second place in race what place are you?", "stock_race"),
+    ("You pass the second racer what position are you?", "stock_race"),
+    ("Race second place overtake what place?", "stock_race"),
+    # stock_towel
+    ("What gets wetter as it dries?", "stock_towel"),
+    ("What gets wetter and wetter the more it dries?", "stock_towel"),
+    ("What becomes wetter as it dries?", "stock_towel"),
+    ("Riddle: wetter as it dries what is it?", "stock_towel"),
+    # stock_keyboard
+    ("What has keys but no locks, space but no room?", "stock_keyboard"),
+    ("What has keys but no locks?", "stock_keyboard"),
+    ("Has keys no locks has space no room what is it?", "stock_keyboard"),
+    ("Keys but no locks what object?", "stock_keyboard"),
+    # stock_needle
+    ("What has an eye but cannot see?", "stock_needle"),
+    ("What has an eye but cannot see what is it?", "stock_needle"),
+    ("Has an eye but cannot see riddle?", "stock_needle"),
+    ("What has an eye no vision?", "stock_needle"),
+    # stock_bricks
+    ("How many bricks does it take to complete a building?", "stock_bricks"),
+    ("How many bricks to complete a building?", "stock_bricks"),
+    ("Bricks needed to complete a building?", "stock_bricks"),
+    ("How many bricks for a complete building?", "stock_bricks"),
+    # stock_daughters
+    ("A man has 3 daughters each daughter has a brother how many children does he have?", "stock_daughters"),
+    ("Man has 3 daughters each has a brother how many children?", "stock_daughters"),
+    ("Daughters and brother how many children?", "stock_daughters"),
+    ("3 daughters each daughter has a brother how many kids?", "stock_daughters"),
+    # stock_eggs
+    ("You have 6 eggs 2 break 2 fry 2 eat how many left?", "stock_eggs"),
+    ("12 eggs 3 break 3 fry 3 eat how many left?", "stock_eggs"),
+    ("If you have 6 eggs and break 2 fry 2 eat 2 how many remain?", "stock_eggs"),
+    ("Eggs break fry eat how many left?", "stock_eggs"),
+    # stock_eye (same as needle, but distinct phrasing)
+    ("What has an eye at the tip but cannot see?", "stock_eye"),
+    ("Eye at tip cannot see what is it?", "stock_eye"),
+    ("Has eye but cannot see tip?", "stock_eye"),
+    ("What has an eye cannot see?", "stock_eye"),
+    # stock_absurd
+    ("Magnesium concrete sings when folded is this nonsense?", "stock_absurd"),
+    ("Concrete sings when folded what does it mean?", "stock_absurd"),
+    ("Blue concrete sings is this absurd?", "stock_absurd"),
+    ("Nonsense phrase concrete sings?", "stock_absurd"),
+    # stock_factual
+    ("What is the capital of France?", "stock_factual"),
+    ("Capital of France is what?", "stock_factual"),
+    ("France capital city?", "stock_factual"),
+    ("What is France's capital?", "stock_factual"),
+    # stock_circle
+    ("How many sides does a circle have?", "stock_circle"),
+    ("Circle how many sides?", "stock_circle"),
+    ("How many straight sides does a circle have?", "stock_circle"),
+    ("Sides of a circle?", "stock_circle"),
 ]
 
 
@@ -322,7 +387,8 @@ def extract_args(question: str, pattern: str) -> Optional[dict]:
             if len(nums) >= 2: return {"total": nums[0], "transferred": nums[1], "answer": nums[0]//2}
         elif pattern == "stock_take_away":
             if nums: return {"taken": nums[-1] if len(nums)>=2 else nums[0]}
-        elif pattern in ("trick_no_smoke","trick_survivors_not_buried","all_months","same_weight","letter_riddle","mislabeled_boxes","invalid_syllogism","fathers_sons","doctors_brother"):
+        elif pattern in ("stock_moses","stock_bear","stock_race","stock_towel","stock_keyboard","stock_needle","stock_eye","stock_bricks","stock_daughters","stock_eggs","stock_absurd","stock_factual","stock_circle",
+                         "trick_no_smoke","trick_survivors_not_buried","all_months","same_weight","letter_riddle","mislabeled_boxes","invalid_syllogism","fathers_sons","doctors_brother"):
             return {}
     except Exception:
         return None

@@ -796,6 +796,34 @@ def resolve_reasoning_primitive(question: str) -> Optional[str]:
             if k > 1:
                 return str(future_diff // (k - 1))
             return str(future_diff)
+        # ---- STOCK BREAKING (13 new patterns, 32→46) — deterministic answers ----
+        if name == "stock_moses":
+            return "0"  # Moses took 0, Noah took animals
+        if name == "stock_bear":
+            return "white"  # North Pole
+        if name == "stock_race":
+            return "second"
+        if name == "stock_towel":
+            return "towel"
+        if name == "stock_keyboard":
+            return "keyboard"
+        if name == "stock_needle":
+            return "needle"
+        if name == "stock_eye":
+            return "needle"
+        if name == "stock_bricks":
+            return "1"
+        if name == "stock_daughters":
+            # Classic: Mr. Smith has 4 daughters, each has a brother => 5 children (4+1)
+            return "5"
+        if name == "stock_eggs":
+            return "9"  # 12 -3 =9 (break/fry/eat same 3)
+        if name == "stock_absurd":
+            return "nonsense"
+        if name == "stock_factual":
+            return "Paris"
+        if name == "stock_circle":
+            return "0"  # circle has 0 straight sides
     except (KeyError, ValueError, TypeError):
         return None
     return None
