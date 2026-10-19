@@ -821,7 +821,15 @@ def resolve_reasoning_primitive(question: str) -> Optional[str]:
         if name == "stock_absurd":
             return "nonsense"
         if name == "stock_factual":
-            return "Paris"
+            # Entity guard (2026-10-19): the stock answer is only true for
+            # France. The TF-IDF student fires stock_factual for ANY
+            # "capital of X" phrasing (measured: Japan/Brazil conf=0.105) —
+            # returning "Paris" unconditionally enshrined wrong facts into
+            # verified memory with reliability 1.0. Unknown country now
+            # falls through (None) to honest tiers instead of a confident lie.
+            if "france" in question.lower():
+                return "Paris"
+            return None
         if name == "stock_circle":
             return "0"  # circle has 0 straight sides
     except (KeyError, ValueError, TypeError):
